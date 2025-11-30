@@ -1,0 +1,1018 @@
+import { SUPPORTED_LANGUAGE_CODES } from './languages';
+
+const baseCommon = {
+  nav: {
+    overview: 'Overview',
+    infrastructure: 'Infrastructure',
+    dailyOps: 'Daily Operations',
+    energy: 'Energy',
+    quality: 'Water Quality',
+    forecasting: 'Forecasting',
+    gis: 'GIS Map',
+    accountability: 'Accountability',
+    ticketing: 'Help Desk',
+    console: 'Dashboard',
+    logout: 'Sign Out',
+  },
+  metrics: {
+    pumpStatus: 'Pump Status',
+    flowRate: 'Flow Rate',
+    pressure: 'Pressure',
+    tankLevel: 'Tank Level',
+    activeAlerts: 'Active Alerts',
+    energyTracking: 'Energy Tracking',
+    pumpTemperature: 'Pump Temperature',
+    nextSupply: 'Next Supply',
+    tds: 'Water TDS',
+  },
+  gis: {
+    legend: 'Legend',
+    layers: 'Layers',
+    lastRefresh: 'Last refresh',
+    healthScore: 'Network Health Score',
+    alertFeed: 'Live Alert Feed',
+    noFeature: 'Select a map feature to inspect detailed telemetry.',
+    totalLength: 'Network Length',
+    totalSegments: 'Active Segments',
+    avgPressure: 'Avg Pressure',
+  },
+  language: {
+    selectorLabel: 'Language',
+    searchPlaceholder: 'Search language…',
+  },
+  actions: {
+    viewFullMap: 'View Full Map',
+    refresh: 'Refresh',
+  },
+  quality: {
+    turbidity: 'Turbidity',
+    chlorine: 'Chlorine',
+    ph: 'pH Level',
+  },
+  general: {
+    warning: 'Warning',
+    critical: 'Critical',
+    normal: 'Normal',
+  },
+  accessibility: {
+    button: 'Accessibility',
+    title: 'Accessibility Settings',
+    close: 'Close Panel',
+    textSize: 'Text Size',
+    darkMode: 'Dark Mode',
+    darkModeHint: 'Reduce eye strain in low light',
+    highContrast: 'High Contrast',
+    highContrastHint: 'Increase color contrast for readability',
+    reducedMotion: 'Reduce Motion',
+    reducedMotionHint: 'Disable interface animations',
+    info: 'These settings help make the platform more accessible for users with visual impairments or motion sensitivity.',
+    reset: 'Reset to Defaults',
+  },
+  technician: {
+    header: 'System Overview',
+    liveBadge: 'LIVE',
+    lastUpdate: 'Last Update',
+    offline: 'Offline Mode',
+    online: 'Online Mode',
+    liveOn: 'Live Data ON',
+    liveOff: 'Live Data OFF',
+    refresh: 'Refresh',
+    updating: 'Updating...',
+    powerConsumption: 'Power Consumption',
+    alerts: {
+      lowTank: 'Tank level below 30%',
+      maintenance: 'Scheduled maintenance due',
+    },
+  },
+  guest: {
+    welcome: 'Welcome Guest!',
+    offline: 'Offline Mode Active',
+    online: 'Online Mode Active',
+    refresh: 'Refresh Data',
+    waterScoreTitle: 'Your Water Score',
+    waterScoreSubtitle: 'Excellent! Keep up the great work.',
+    totalPoints: 'Total Points',
+    viewAchievements: 'View Achievements',
+    lastSync: 'Last Sync',
+    justNow: 'Just now',
+    stats: {
+      waterDelivered: 'Water Delivered',
+      monthlyTarget: 'of monthly target',
+      systemUptime: 'System Uptime',
+      reliability: 'Excellent reliability',
+      familiesServed: 'Families Served',
+      coverage: 'Coverage in area',
+      activeAlerts: 'Active Alerts',
+      today: 'Today',
+      nominal: 'All systems nominal',
+    },
+    achievements: 'Your Achievements',
+    weeklyPerformance: 'Weekly Performance',
+    impactScore: 'Impact Score',
+    cleanWater: 'Clean Water',
+    efficiency: 'Efficiency',
+    reliabilityScore: 'Reliability',
+    achievementsList: {
+      cleanWaterChampion: 'Clean Water Champion',
+      zeroWasteHero: 'Zero Waste Hero',
+      communityGuardian: 'Community Guardian',
+      efficiencyMaster: 'Efficiency Master',
+      locked: 'LOCKED',
+    },
+  },
+};
+
+const cloneCommon = () => JSON.parse(JSON.stringify(baseCommon));
+
+const deepMerge = (target, source) => {
+  Object.entries(source).forEach(([key, value]) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      if (!target[key]) target[key] = {};
+      deepMerge(target[key], value);
+      return;
+    }
+    target[key] = value;
+  });
+};
+
+const withOverrides = (overrides = {}) => {
+  const draft = cloneCommon();
+  deepMerge(draft, overrides);
+  return draft;
+};
+
+const resources = SUPPORTED_LANGUAGE_CODES.reduce((acc, code) => {
+  acc[code] = { common: cloneCommon() };
+  return acc;
+}, {});
+
+const assign = (code, overrides) => {
+  resources[code] = { common: withOverrides(overrides) };
+};
+
+resources.en = { common: baseCommon };
+
+const assamese = {
+  nav: {
+    overview: 'সাৰাংশ',
+    infrastructure: 'অৱকাঠামো',
+    dailyOps: 'দৈনিক কাৰ্য',
+    energy: 'শক্তি',
+    quality: 'জল গুণমান',
+    forecasting: 'পূৰ্বাভাস',
+    gis: 'GIS মানচিত্ৰ',
+    accountability: 'জবাবদিহিতা',
+    ticketing: 'সহায়তা ডেস্ক',
+    console: 'ডেশ্ববৰ্ড',
+    logout: 'সাইন আউট',
+  },
+  metrics: {
+    pumpStatus: 'পাম্পৰ অৱস্থা',
+    flowRate: 'প্ৰবাহৰ গতি',
+    pressure: 'চাপ',
+    tankLevel: 'টেংকৰ স্তৰ',
+    activeAlerts: 'সক্ৰিয় সতৰ্কতা',
+    energyTracking: 'শক্তি অনুসৰণ',
+    pumpTemperature: 'পাম্প তাপমান',
+    nextSupply: 'পৰৱৰ্তী যোগান',
+  },
+  gis: {
+    legend: 'বিৱৰণী',
+    layers: 'স্তৰসমূহ',
+    lastRefresh: 'শেহতীয়া আপডেট',
+    healthScore: 'জাল স্বাস্থ্য স্ক’ৰ',
+    alertFeed: 'সতৰ্কতা ফিড',
+    noFeature: 'বিৱৰণ চাবলৈ মানচিত্ৰ উপাদান বাছক.',
+  },
+  language: {
+    selectorLabel: 'ভাষা',
+    searchPlaceholder: 'ভাষা বিচাৰক…',
+  },
+  actions: {
+    viewFullMap: 'সম্পূৰ্ণ মানচিত্ৰ',
+    refresh: 'ৰিফ্ৰেশ',
+  },
+};
+
+const bengali = {
+  nav: {
+    overview: 'সংক্ষিপ্ত বিবরণ',
+    infrastructure: 'অবকাঠামো',
+    dailyOps: 'দৈনিক কার্যক্রম',
+    energy: 'শক্তি',
+    quality: 'পানির গুণমান',
+    forecasting: 'পূর্বাভাস',
+    gis: 'জিআইএস মানচিত্র',
+    accountability: 'জবাবদিহিতা',
+    ticketing: 'সহায়তা ডেস্ক',
+    console: 'ড্যাশবোর্ড',
+    logout: 'সাইন আউট',
+  },
+  metrics: {
+    pumpStatus: 'পাম্পের অবস্থা',
+    flowRate: 'প্রবাহের গতি',
+    pressure: 'চাপ',
+    tankLevel: 'ট্যাঙ্কের স্তর',
+    activeAlerts: 'সক্রিয় সতর্কতা',
+    energyTracking: 'শক্তি পর্যবেক্ষণ',
+    pumpTemperature: 'পাম্পের তাপমাত্রা',
+    nextSupply: 'পরবর্তী সরবরাহ',
+  },
+  gis: {
+    legend: 'লেজেন্ড',
+    layers: 'স্তরসমূহ',
+    lastRefresh: 'সর্বশেষ আপডেট',
+    healthScore: 'নেটওয়ার্ক স্বাস্থ্য স্কোর',
+    alertFeed: 'সতর্কতার ফিড',
+    noFeature: 'বিশদ দেখতে একটি মানচিত্র উপাদান নির্বাচন করুন.',
+  },
+  language: {
+    selectorLabel: 'ভাষা',
+    searchPlaceholder: 'ভাষা অনুসন্ধান করুন…',
+  },
+  actions: {
+    viewFullMap: 'সম্পূর্ণ মানচিত্র',
+    refresh: 'রিফ্রেশ',
+  },
+};
+
+const hindi = {
+  nav: {
+    overview: 'अवलोकन',
+    infrastructure: 'बुनियादी ढाँचा',
+    dailyOps: 'दैनिक संचालन',
+    energy: 'ऊर्जा',
+    quality: 'जल गुणवत्ता',
+    forecasting: 'पूर्वानुमान',
+    gis: 'जीआईएस मानचित्र',
+    accountability: 'जवाबदेही',
+    ticketing: 'सहायता डेस्क',
+    console: 'डैशबोर्ड',
+    logout: 'साइन आउट',
+  },
+  metrics: {
+    pumpStatus: 'पम्प की स्थिति',
+    flowRate: 'प्रवाह दर',
+    pressure: 'दबाव',
+    tankLevel: 'टैंक स्तर',
+    activeAlerts: 'सक्रिय अलर्ट',
+    energyTracking: 'ऊर्जा ट्रैकिंग',
+    pumpTemperature: 'पम्प तापमान',
+    nextSupply: 'अगली आपूर्ति',
+  },
+  gis: {
+    legend: 'लीजेंड',
+    layers: 'स्तर',
+    lastRefresh: 'अंतिम अद्यतन',
+    healthScore: 'नेटवर्क स्वास्थ्य स्कोर',
+    alertFeed: 'लाइव अलर्ट फ़ीड',
+    noFeature: 'विवरण देखने के लिए मानचित्र फीचर चुनें.',
+  },
+  language: {
+    selectorLabel: 'भाषा',
+    searchPlaceholder: 'भाषा खोजें…',
+  },
+  actions: {
+    viewFullMap: 'पूर्ण मानचित्र',
+    refresh: 'रीफ़्रेश',
+  },
+  quality: {
+    turbidity: 'मटमैलेपन',
+    chlorine: 'क्लोरीन',
+    ph: 'pH स्तर',
+  },
+  general: {
+    warning: 'चेतावनी',
+    critical: 'गंभीर',
+    normal: 'सामान्य',
+  },
+  accessibility: {
+    button: 'सुगम्यता',
+    title: 'सुगम्यता सेटिंग्स',
+    close: 'पैनल बंद करें',
+    textSize: 'पाठ आकार',
+    darkMode: 'डार्क मोड',
+    darkModeHint: 'कम रोशनी में आँखों का तनाव घटाएँ',
+    highContrast: 'उच्च कॉन्ट्रास्ट',
+    highContrastHint: 'बेहतर पठनीयता के लिए रंग उभारें',
+    reducedMotion: 'कम एनीमेशन',
+    reducedMotionHint: 'इंटरफ़ेस एनीमेशन बंद करें',
+    info: 'ये सेटिंग्स दृष्टि अथवा गति संवेदनशीलता वाले उपयोगकर्ताओं के लिए मंच को अधिक सुलभ बनाती हैं।',
+    reset: 'डिफ़ॉल्ट पर रीसेट करें',
+  },
+  technician: {
+    header: 'प्रणाली अवलोकन',
+    liveBadge: 'लाइव',
+    lastUpdate: 'अंतिम अपडेट',
+    offline: 'ऑफ़लाइन मोड',
+    online: 'ऑनलाइन मोड',
+    liveOn: 'लाइव डेटा चालू',
+    liveOff: 'लाइव डेटा बंद',
+    refresh: 'रीफ़्रेश',
+    updating: 'अपडेट हो रहा है...',
+    powerConsumption: 'ऊर्जा उपभोग',
+    alerts: {
+      lowTank: 'टैंक स्तर 30% से कम',
+      maintenance: 'निर्धारित रखरखाव लंबित',
+    },
+  },
+  guest: {
+    welcome: 'अतिथि का स्वागत!',
+    offline: 'ऑफ़लाइन मोड सक्रिय',
+    online: 'ऑनलाइन मोड सक्रिय',
+    refresh: 'डेटा रीफ़्रेश करें',
+    waterScoreTitle: 'आपका जल स्कोर',
+    waterScoreSubtitle: 'उत्कृष्ट! इसी तरह जारी रखें।',
+    totalPoints: 'कुल अंक',
+    viewAchievements: 'उपलब्धियाँ देखें',
+    lastSync: 'अंतिम सिंक',
+    justNow: 'अभी-अभी',
+    stats: {
+      waterDelivered: 'आपूर्ति किया गया जल',
+      monthlyTarget: 'मासिक लक्ष्य का',
+      systemUptime: 'प्रणाली अपटाइम',
+      reliability: 'उत्कृष्ट विश्वसनीयता',
+      familiesServed: 'सेवित परिवार',
+      coverage: 'क्षेत्र कवरेज',
+      activeAlerts: 'सक्रिय अलर्ट',
+      today: 'आज',
+      nominal: 'सभी प्रणालियाँ सामान्य',
+    },
+    achievements: 'आपकी उपलब्धियाँ',
+    weeklyPerformance: 'साप्ताहिक प्रदर्शन',
+    impactScore: 'प्रभाव स्कोर',
+    cleanWater: 'स्वच्छ जल',
+    efficiency: 'दक्षता',
+    reliabilityScore: 'विश्वसनीयता',
+    achievementsList: {
+      cleanWaterChampion: 'स्वच्छ जल चैंपियन',
+      zeroWasteHero: 'शून्य अपशिष्ट नायक',
+      communityGuardian: 'समुदाय संरक्षक',
+      efficiencyMaster: 'दक्षता विशेषज्ञ',
+      locked: 'लॉक्ड',
+    },
+  },
+};
+
+const gujarati = {
+  nav: {
+    overview: 'સારાંશ',
+    infrastructure: 'મૂલભૂત ઢાંચો',
+    dailyOps: 'દૈનિક કામગીરી',
+    energy: 'ઊર્જા',
+    quality: 'પાણીની ગુણવત્તા',
+    forecasting: 'પૂર્વાનુમાન',
+    gis: 'GIS નકશો',
+    accountability: 'જવાબદારી',
+    ticketing: 'મદદ ડેસ્ક',
+    console: 'ડેશબોર્ડ',
+    logout: 'સાઇન આઉટ',
+  },
+  metrics: {
+    pumpStatus: 'પંપની સ્થિતિ',
+    flowRate: 'પ્રવાહ દર',
+    pressure: 'દબાણ',
+    tankLevel: 'ટાંકીનું સ્તર',
+    activeAlerts: 'સક્રિય ચેતવનીઓ',
+    energyTracking: 'ઊર્જા ટ્રેકિંગ',
+    pumpTemperature: 'પંપ તાપમાન',
+    nextSupply: 'આગામી પુરવઠો',
+  },
+  gis: {
+    legend: 'કુંજિકા',
+    layers: 'સ્તરો',
+    lastRefresh: 'છેલ્લું અપડેટ',
+    healthScore: 'નેટવર્ક આરોગ્ય સ્કોર',
+    alertFeed: 'ચેતવણી ફીડ',
+    noFeature: 'વિગતો માટે નકશાનો ઘટક પસંદ કરો.',
+  },
+  language: {
+    selectorLabel: 'ભાષા',
+    searchPlaceholder: 'ભાષા શોધો…',
+  },
+  actions: {
+    viewFullMap: 'પૂર્ણ નકશો',
+    refresh: 'રિફ્રેશ',
+  },
+};
+
+const kannada = {
+  nav: {
+    overview: 'ಅವಲೋಕನ',
+    infrastructure: 'ಮೂಲಸೌಕರ್ಯ',
+    dailyOps: 'ದೈನಂದಿನ ಕಾರ್ಯಾಚರಣೆ',
+    energy: 'ಶಕ್ತಿ',
+    quality: 'ನೀರಿನ ಗುಣಮಟ್ಟ',
+    forecasting: 'ಪೂರ್ವಾನುಮಾನ',
+    gis: 'GIS ನಕ್ಷೆ',
+    accountability: 'ಹೊಣೆಗಾರಿಕೆ',
+    ticketing: 'ಸಹಾಯ ಕೇಂದ್ರ',
+    console: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
+    logout: 'ಸೈನ್ ಔಟ್',
+  },
+  metrics: {
+    pumpStatus: 'ಪಂಪ್ ಸ್ಥಿತಿ',
+    flowRate: 'ಹರಿವು ದರ',
+    pressure: 'ಒತ್ತಡ',
+    tankLevel: 'ಟ್ಯಾಂಕ್ ಮಟ್ಟ',
+    activeAlerts: 'ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು',
+    energyTracking: 'ಶಕ್ತಿ ಟ್ರ್ಯಾಕಿಂಗ್',
+    pumpTemperature: 'ಪಂಪ್ ತಾಪಮಾನ',
+    nextSupply: 'ಮುಂದಿನ ಸರಬರಾಜು',
+  },
+  gis: {
+    legend: 'ಲೀಜೆಂಡ್',
+    layers: 'ಪದರಗಳು',
+    lastRefresh: 'ಕೊನೆಯ ನವೀಕರಣ',
+    healthScore: 'ಜಾಲ ಆರೋಗ್ಯ ಅಂಕ',
+    alertFeed: 'ಎಚ್ಚರಿಕೆ ಫೀಡ್',
+    noFeature: 'ವಿವರಗಳಿಗೆ ನಕ್ಷೆಯ ಅಂಶ ಆರಿಸಿ.',
+  },
+  language: {
+    selectorLabel: 'ಭಾಷೆ',
+    searchPlaceholder: 'ಭಾಷೆ ಹುಡುಕಿ…',
+  },
+  actions: {
+    viewFullMap: 'ಪೂರ್ಣ ನಕ್ಷೆ',
+    refresh: 'ರೀಫ್ರೆಶ್',
+  },
+  quality: {
+    turbidity: 'ಮಬ್ಬು',
+    chlorine: 'ಕ್ಲೋರಿನ್',
+    ph: 'pH ಮಟ್ಟ',
+  },
+  general: {
+    warning: 'ಎಚ್ಚರಿಕೆ',
+    critical: 'ಗಂಭೀರ',
+    normal: 'ಸಾಮಾನ್ಯ',
+  },
+  accessibility: {
+    button: 'ಅಂಗಸೌಕರ್ಯ',
+    title: 'ಅಂಗವಿಕಲ ಸ್ನೇಹಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+    close: 'ಪ್ಯಾನೆಲ್ ಮುಚ್ಚಿ',
+    textSize: 'ಅಕ್ಷರ ಗಾತ್ರ',
+    darkMode: 'ಡಾರ್ಕ್ ಮೋಡ್',
+    darkModeHint: 'ಕಡಿಮೆ ಬೆಳಕಿನಲ್ಲಿ ಕಣ್ಣುಗಳ ಒತ್ತಡ ಕಡಿಮೆ ಮಾಡಿ',
+    highContrast: 'ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್',
+    highContrastHint: 'ಪಠ್ಯ ಓದಲು ಬಣ್ಣ ತೀವ್ರತೆ ಹೆಚ್ಚಿಸಿ',
+    reducedMotion: 'ಚಲನೆ ಕಡಿಮೆ',
+    reducedMotionHint: 'ಇಂಟರ್ಫೇಸ್ ಅನಿಮೇಶನ್‌ಗಳನ್ನು ನಿಲ್ಲಿಸಿ',
+    info: 'ಈ ಆಯ್ಕೆಗಳು ದೃಷ್ಟಿ ಅಥವಾ ಚಲನೆ ಸಂವೇದನೆ ಇರುವ ಬಳಕೆದಾರರಿಗೆ ವೇದಿಕೆಯನ್ನು ಸುಲಭಗೊಳಿಸುತ್ತವೆ.',
+    reset: 'ಪೂರ್ವನಿಯೋಜಿತಕ್ಕೆ ಮರುಹೊಂದಿಸಿ',
+  },
+  technician: {
+    header: 'ವ್ಯವಸ್ಥೆಯ ಅವಲೋಕನ',
+    liveBadge: 'ಲೈವ್',
+    lastUpdate: 'ಕೊನೆಯ ನವೀಕರಣ',
+    offline: 'ಆಫ್‌ಲೈನ್ ಮೋಡ್',
+    online: 'ಆನ್‌ಲೈನ್ ಮೋಡ್',
+    liveOn: 'ಲೈವ್ ಡೇಟಾ ON',
+    liveOff: 'ಲೈವ್ ಡೇಟಾ OFF',
+    refresh: 'ರೀಫ್ರೆಶ್',
+    updating: 'ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...',
+    powerConsumption: 'ವಿದ್ಯುತ್ ಬಳಕೆ',
+    alerts: {
+      lowTank: 'ಟ್ಯಾಂಕ್ ಮಟ್ಟ 30% ಕ್ಕಿಂತ ಕಡಿಮೆ',
+      maintenance: 'ವೇಳಾಪಟ್ಟಿ ನಿರ್ವಹಣೆ ಬಾಕಿ',
+    },
+  },
+  guest: {
+    welcome: 'ಅತಿಥಿಗೆ ಸ್ವಾಗತ!',
+    offline: 'ಆಫ್‌ಲೈನ್ ಮೋಡ್ ಸಕ್ರಿಯ',
+    online: 'ಆನ್‌ಲೈನ್ ಮೋಡ್ ಸಕ್ರಿಯ',
+    refresh: 'ಡೇಟಾ ರೀಫ್ರೆಶ್',
+    waterScoreTitle: 'ನಿಮ್ಮ ನೀರಿನ ಅಂಕ',
+    waterScoreSubtitle: 'ಅತ್ಯುತ್ತಮ! ಇದೇ ರೀತಿಯಲ್ಲಿ ಮುಂದುವರಿಸಿ.',
+    totalPoints: 'ಒಟ್ಟು ಅಂಕಗಳು',
+    viewAchievements: 'ಸಾಧನೆಗಳನ್ನು ನೋಡಿ',
+    lastSync: 'ಕೊನೆಯ ಸಮನ್ವಯ',
+    justNow: 'ಈಗಷ್ಟೆ',
+    stats: {
+      waterDelivered: 'ಪೂರೈಸಿದ ನೀರು',
+      monthlyTarget: 'ತಿಂಗಳ ಗುರಿಯ',
+      systemUptime: 'ವ್ಯವಸ್ಥೆಯ ಅಪ್‌ಟೈಮ್',
+      reliability: 'ಅತ್ಯುತ್ತಮ ವಿಶ್ವಾಸಾರ್ಹತೆ',
+      familiesServed: 'ಸೇವಿಸಿದ ಕುಟುಂಬಗಳು',
+      coverage: 'ಪ್ರದೇಶ ವ್ಯಾಪ್ತಿ',
+      activeAlerts: 'ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು',
+      today: 'ಇಂದು',
+      nominal: 'ಎಲ್ಲ ವ್ಯವಸ್ಥೆಗಳು ಸಾಮಾನ್ಯ',
+    },
+    achievements: 'ನಿಮ್ಮ ಸಾಧನೆಗಳು',
+    weeklyPerformance: 'ವಾರವಾರದ ಕಾರ್ಯಕ್ಷಮತೆ',
+    impactScore: 'ಪ್ರಭಾವ ಅಂಕ',
+    cleanWater: 'ಸ್ವಚ್ಛ ನೀರು',
+    efficiency: 'ದಕ್ಷತೆ',
+    reliabilityScore: 'ವಿಶ್ವಾಸಾರ್ಹತೆ',
+    achievementsList: {
+      cleanWaterChampion: 'ಸ್ವಚ್ಛ ನೀರಿನ ಚಾಂಪಿಯನ್',
+      zeroWasteHero: 'ಶೂನ್ಯ ತ್ಯಾಜ್ಯ ನಾಯಕ',
+      communityGuardian: 'ಸಮುದಾಯ ರಕ್ಷಕ',
+      efficiencyMaster: 'ದಕ್ಷತಾ ಪಟು',
+      locked: 'ಲಾಕ್',
+    },
+  },
+};
+
+const kashmiri = {
+  nav: {
+    overview: 'جائزو',
+    infrastructure: 'بنیادی ڈھانچہ',
+    dailyOps: 'روزانہ کاروائی',
+    energy: 'توانائی',
+    quality: 'پانی معیار',
+    forecasting: 'پیش گوئی',
+    gis: 'GIS نقشہ',
+    accountability: 'جوابدہی',
+    ticketing: 'مدد ڈیسک',
+    console: 'ڈیش بورڈ',
+    logout: 'سائن آؤٹ',
+  },
+  metrics: {
+    pumpStatus: 'پمپ کی حالت',
+    flowRate: 'بہاؤ کی شرح',
+    pressure: 'دباؤ',
+    tankLevel: 'ٹینک سطح',
+    activeAlerts: 'فعال الرٹس',
+    energyTracking: 'توانائی سراغ رسی',
+    pumpTemperature: 'پمپ درجہ حرارت',
+    nextSupply: 'اگلی ترسیل',
+  },
+  gis: {
+    legend: 'علامات',
+    layers: 'سطحیں',
+    lastRefresh: 'آخری تازہ کاری',
+    healthScore: 'نیٹ ورک صحت',
+    alertFeed: 'انتباہ فیڈ',
+    noFeature: 'تفصیل دیکھنے کیلئے نقشہ عنصر منتخب کریں.',
+  },
+  language: {
+    selectorLabel: 'زبان',
+    searchPlaceholder: 'زبان تلاش کریں…',
+  },
+  actions: {
+    viewFullMap: 'مکمل نقشہ',
+    refresh: 'ریفریش',
+  },
+};
+
+const malayalam = {
+  nav: {
+    overview: 'അവലോകനം',
+    infrastructure: 'അടിസ്ഥാന സൗകര്യങ്ങൾ',
+    dailyOps: 'ദൈനംദിന പ്രവർത്തനങ്ങൾ',
+    energy: 'ഊർജം',
+    quality: 'ജല ഗുണനിലവാരം',
+    forecasting: 'മുൻകൂട്ടി കണക്ക്',
+    gis: 'ജിഐഎസ് മാപ്പ്',
+    accountability: 'ഉത്തരവാദിത്വം',
+    ticketing: 'ഹെൽപ്പ് ഡെസ്ക്',
+    console: 'ഡാഷ്ബോർഡ്',
+    logout: 'സൈൻ ഔട്ട്',
+  },
+  metrics: {
+    pumpStatus: 'പമ്പിന്റെ നില',
+    flowRate: 'ഒഴുക്ക് നിരക്ക്',
+    pressure: 'മർദ്ദം',
+    tankLevel: 'ടാങ്ക് നില',
+    activeAlerts: 'സജീവ മുന്നറിയിപ്പുകൾ',
+    energyTracking: 'ഊർജം ട്രാക്കിംഗ്',
+    pumpTemperature: 'പമ്പ് താപനില',
+    nextSupply: 'അടുത്ത വിതരണ',
+  },
+  gis: {
+    legend: 'ലെജൻഡ്',
+    layers: 'പാളികൾ',
+    lastRefresh: 'അവസാന അപ്‌ഡേറ്റ്',
+    healthScore: 'നെറ്റ്‌വർക്ക് ആരോഗ്യ സ്കോർ',
+    alertFeed: 'മുന്നറിയിപ്പ് ഫീഡ്',
+    noFeature: 'വിശദാംശങ്ങൾക്ക് മാപ്പ് ഘടകം തിരഞ്ഞെടുക്കുക.',
+  },
+  language: {
+    selectorLabel: 'ഭാഷ',
+    searchPlaceholder: 'ഭാഷ തിരയുക…',
+  },
+  actions: {
+    viewFullMap: 'പൂർണ്ണ മാപ്പ്',
+    refresh: 'റിഫ്രെഷ്',
+  },
+};
+
+const marathi = {
+  nav: {
+    overview: 'आढावा',
+    infrastructure: 'पायाभूत सुविधा',
+    dailyOps: 'दैनंदिन कार्ये',
+    energy: 'ऊर्जा',
+    quality: 'पाण्याची गुणवत्ता',
+    forecasting: 'पूर्वानुमान',
+    gis: 'GIS नकाशा',
+    accountability: 'जबाबदारी',
+    ticketing: 'मदत डेस्क',
+    console: 'डॅशबोर्ड',
+    logout: 'साइन आऊट',
+  },
+  metrics: {
+    pumpStatus: 'पंप स्थिती',
+    flowRate: 'प्रवाह दर',
+    pressure: 'दाब',
+    tankLevel: 'टाकीची पातळी',
+    activeAlerts: 'सक्रिय चेतावणी',
+    energyTracking: 'ऊर्जा ट्रॅकिंग',
+    pumpTemperature: 'पंप तापमान',
+    nextSupply: 'पुढील पुरवठा',
+  },
+  gis: {
+    legend: 'सूची',
+    layers: 'स्तर',
+    lastRefresh: 'अंतिम अद्यतन',
+    healthScore: 'जाळे आरोग्य गुण',
+    alertFeed: 'चेतावणी फीड',
+    noFeature: 'तपशील पाहण्यासाठी नकाशातील घटक निवडा.',
+  },
+  language: {
+    selectorLabel: 'भाषा',
+    searchPlaceholder: 'भाषा शोधा…',
+  },
+  actions: {
+    viewFullMap: 'पूर्ण नकाशा',
+    refresh: 'रिफ्रेश',
+  },
+};
+
+const nepali = {
+  nav: {
+    overview: 'समग्र अवलोकन',
+    infrastructure: 'पूर्वाधार',
+    dailyOps: 'दैनिक सञ्चालन',
+    energy: 'ऊर्जा',
+    quality: 'पानीको गुणस्तर',
+    forecasting: 'पूर्वानुमान',
+    gis: 'GIS नक्सा',
+    accountability: 'जवाफदेहिता',
+    ticketing: 'सहायता डेस्क',
+    console: 'ड्यासबोर्ड',
+    logout: 'साइन आउट',
+  },
+  metrics: {
+    pumpStatus: 'पम्पको अवस्था',
+    flowRate: 'प्रवाह दर',
+    pressure: 'चाप',
+    tankLevel: 'ट्याङ्क स्तर',
+    activeAlerts: 'सक्रिय अलर्ट',
+    energyTracking: 'ऊर्जा ट्र्याकिङ',
+    pumpTemperature: 'पम्प तापक्रम',
+    nextSupply: 'अर्को आपूर्ति',
+  },
+  gis: {
+    legend: 'लेजन्ड',
+    layers: 'तहहरू',
+    lastRefresh: 'अन्तिम अद्यावधिक',
+    healthScore: 'नेटवर्क स्वास्थ्य स्कोर',
+    alertFeed: 'अलर्ट फिड',
+    noFeature: 'विस्तृत जानकारीका लागि नक्साको तत्व छान्नुहोस्.',
+  },
+  language: {
+    selectorLabel: 'भाषा',
+    searchPlaceholder: 'भाषा खोज्नुहोस्…',
+  },
+  actions: {
+    viewFullMap: 'पूरा नक्सा',
+    refresh: 'रिफ्रेस',
+  },
+};
+
+const odia = {
+  nav: {
+    overview: 'ସାରସଙ୍କ୍ଷେପ',
+    infrastructure: 'ଅବକାଠାମୋ',
+    dailyOps: 'ଦୈନନ୍ଦିନ କାର୍ଯ୍ୟ',
+    energy: 'ଉର୍ଜା',
+    quality: 'ଜଳ ଗୁଣବତ୍ତା',
+    forecasting: 'ପୂର୍ବାନୁମାନ',
+    gis: 'GIS ମାନଚିତ୍ର',
+    accountability: 'ଜବାବଦେହି',
+    ticketing: 'ସହାୟତା କେନ୍ଦ୍ର',
+    console: 'ଡ୍ୟାଶବୋର୍ଡ',
+    logout: 'ସାଇନ୍ ଆଉଟ୍',
+  },
+  metrics: {
+    pumpStatus: 'ପମ୍ପ ଅବସ୍ଥା',
+    flowRate: 'ପ୍ରବାହ ହାର',
+    pressure: 'ଚାପ',
+    tankLevel: 'ଟ୍ୟାଙ୍କ ସ୍ତର',
+    activeAlerts: 'ସକ୍ରିୟ ସତର୍କତା',
+    energyTracking: 'ଉର୍ଜା ଅନୁସରଣ',
+    pumpTemperature: 'ପମ୍ପ ତାପମାତ୍ରା',
+    nextSupply: 'ପରବର୍ତ୍ତୀ ଯୋଗାଣ',
+  },
+  gis: {
+    legend: 'ଲେଜେଣ୍ଡ',
+    layers: 'ସ୍ତରଗୁଡିକ',
+    lastRefresh: 'ଶେଷ ଅଦ୍ୟତନ',
+    healthScore: 'ନେଟୱାର୍କ ସ୍ୱାସ୍ଥ୍ୟ ସ୍କୋର',
+    alertFeed: 'ସତର୍କତା ଫିଡ୍',
+    noFeature: 'ବିସ୍ତୃତି ପାଇଁ ମାନଚିତ୍ର ଉପାଦାନ ବାଛନ୍ତୁ.',
+  },
+  language: {
+    selectorLabel: 'ଭାଷା',
+    searchPlaceholder: 'ଭାଷା ଖୋଜନ୍ତୁ…',
+  },
+  actions: {
+    viewFullMap: 'ସମ୍ପୂର୍ଣ୍ଣ ମାନଚିତ୍ର',
+    refresh: 'ରିଫ୍ରେଶ୍',
+  },
+};
+
+const punjabi = {
+  nav: {
+    overview: 'ਸੰਖੇਪ',
+    infrastructure: 'ਬੁਨਿਆਦੀ ਢਾਂਚਾ',
+    dailyOps: 'ਰੋਜ਼ਾਨਾ ਕਾਰਜ',
+    energy: 'ਊਰਜਾ',
+    quality: 'ਪਾਣੀ ਦੀ ਗੁਣਵੱਤਾ',
+    forecasting: 'ਪੂਰਵ ਅਨੁਮਾਨ',
+    gis: 'GIS ਨਕਸ਼ਾ',
+    accountability: 'ਜਵਾਬਦੇਹੀ',
+    ticketing: 'ਮਦਦ ਡੈਸਕ',
+    console: 'ਡੈਸ਼ਬੋਰਡ',
+    logout: 'ਸਾਈਨ ਆਉਟ',
+  },
+  metrics: {
+    pumpStatus: 'ਪੰਪ ਦੀ ਸਥਿਤੀ',
+    flowRate: 'ਪ੍ਰਵਾਹ ਦਰ',
+    pressure: 'ਦਬਾਅ',
+    tankLevel: 'ਟੈਂਕ ਪੱਧਰ',
+    activeAlerts: 'ਸਕ੍ਰਿਆ ਚੇਤਾਵਨੀਆਂ',
+    energyTracking: 'ਊਰਜਾ ਟ੍ਰੈਕਿੰਗ',
+    pumpTemperature: 'ਪੰਪ ਤਾਪਮਾਨ',
+    nextSupply: 'ਅਗਲਾ ਸਪਲਾਈ',
+  },
+  gis: {
+    legend: 'ਲੀਜੈਂਡ',
+    layers: 'ਪਰਤਾਂ',
+    lastRefresh: 'ਆਖਰੀ ਅੱਪਡੇਟ',
+    healthScore: 'ਨੈੱਟਵਰਕ ਸਿਹਤ ਸਕੋਰ',
+    alertFeed: 'ਚੇਤਾਵਨੀ ਫੀਡ',
+    noFeature: 'ਵੇਰਵੇ ਲਈ ਨਕਸ਼ੇ ਦਾ ਅੰਗ ਚੁਣੋ.',
+  },
+  language: {
+    selectorLabel: 'ਭਾਸ਼ਾ',
+    searchPlaceholder: 'ਭਾਸ਼ਾ ਲੱਭੋ…',
+  },
+  actions: {
+    viewFullMap: 'ਪੂਰਾ ਨਕਸ਼ਾ',
+    refresh: 'ਰਿਫ੍ਰੈਸ਼',
+  },
+};
+
+const sanskrit = {
+  nav: {
+    overview: 'अवलोकनम्',
+    infrastructure: 'आधारभूत संरचना',
+    dailyOps: 'दैनिक संचालनम्',
+    energy: 'ऊर्जा',
+    quality: 'जलमानम्',
+    forecasting: 'पूर्वानुमानः',
+    gis: 'GIS मानचित्रः',
+    accountability: 'उत्तरदायित्वम्',
+    ticketing: 'सहाय्य कक्षः',
+    console: 'दर्शकफलकम्',
+    logout: 'निर्गमनम्',
+  },
+  metrics: {
+    pumpStatus: 'पम्पस्थितिः',
+    flowRate: 'प्रवाहदरः',
+    pressure: 'दाबः',
+    tankLevel: 'टङ्कस्तरः',
+    activeAlerts: 'सक्रिय चेतनाः',
+    energyTracking: 'ऊर्जा अनुशीलनम्',
+    pumpTemperature: 'पम्प तापमानम्',
+    nextSupply: 'अगामी पूर्तिः',
+  },
+  gis: {
+    legend: 'सूचिका',
+    layers: 'स्तराः',
+    lastRefresh: 'अन्तिम अद्यतनम्',
+    healthScore: 'जाल स्वास्थ्याङ्कः',
+    alertFeed: 'चेतना वार्ता',
+    noFeature: 'विवरणं द्रष्टुं मानचित्रांशं वृणुत।',
+  },
+  language: {
+    selectorLabel: 'भाषा',
+    searchPlaceholder: 'भाषाम् अन्विष्यत…',
+  },
+  actions: {
+    viewFullMap: 'सम्पूर्ण मानचित्रम्',
+    refresh: 'पुनरीक्षणम्',
+  },
+};
+
+const tamil = {
+  nav: {
+    overview: 'மேலோட்டம்',
+    infrastructure: 'அடிப்படை வசதிகள்',
+    dailyOps: 'தினசரி செயல்பாடுகள்',
+    energy: 'ஆற்றல்',
+    quality: 'நீர்தரம்',
+    forecasting: 'முன்கூட்டிய கணிப்பு',
+    gis: 'GIS வரைபடம்',
+    accountability: 'பெறுப்புத் தன்மை',
+    ticketing: 'உதவி மையம்',
+    console: 'டாஷ்போர்ட்',
+    logout: 'வெளியேறு',
+  },
+  metrics: {
+    pumpStatus: 'பம்பின் நிலை',
+    flowRate: 'ஓட்ட அளவு',
+    pressure: 'அழுத்தம்',
+    tankLevel: 'தொட்டி நிலை',
+    activeAlerts: 'செயலில் உள்ள எச்சரிக்கைகள்',
+    energyTracking: 'ஆற்றல் கண்காணிப்பு',
+    pumpTemperature: 'பம்ப் வெப்பநிலை',
+    nextSupply: 'அடுத்த விநியோகம்',
+  },
+  gis: {
+    legend: 'விளக்கம்',
+    layers: 'அடுக்குகள்',
+    lastRefresh: 'கடைசி புதுப்பிப்பு',
+    healthScore: 'வலையமைப்பு நலன் மதிப்பெண்',
+    alertFeed: 'எச்சரிக்கை தகவல்',
+    noFeature: 'விவரங்களுக்கு வரைபட கூறைத் தேர்ந்தெடுக்கவும்.',
+  },
+  language: {
+    selectorLabel: 'மொழி',
+    searchPlaceholder: 'மொழியைத் தேடுங்கள்…',
+  },
+  actions: {
+    viewFullMap: 'முழு வரைபடம்',
+    refresh: 'புதுப்பிக்க',
+  },
+};
+
+const telugu = {
+  nav: {
+    overview: 'సారాంశం',
+    infrastructure: 'మౌలిక వసతులు',
+    dailyOps: 'దైనందిన కార్యకలాపాలు',
+    energy: 'శక్తి',
+    quality: 'నీటి నాణ్యత',
+    forecasting: 'అంచనా',
+    gis: 'GIS పటం',
+    accountability: 'జవాబుదారి',
+    ticketing: 'సహాయ కేంద్రం',
+    console: 'డ్యాష్‌బోర్డ్',
+    logout: 'సైన్ అవుట్',
+  },
+  metrics: {
+    pumpStatus: 'పంప్ స్థితి',
+    flowRate: 'ప్రవాహ రేటు',
+    pressure: 'పీడనం',
+    tankLevel: 'ట్యాంక్ స్థాయి',
+    activeAlerts: 'సక్రియ హెచ్చరికలు',
+    energyTracking: 'శక్తి ట్రాకింగ్',
+    pumpTemperature: 'పంప్ ఉష్ణోగ్రత',
+    nextSupply: 'తదుపరి సరఫరా',
+  },
+  gis: {
+    legend: 'లెజెండ్',
+    layers: 'పొరలు',
+    lastRefresh: 'చివరి నవీకరణ',
+    healthScore: 'నెట్‌వర్క్ ఆరోగ్య స్కోరు',
+    alertFeed: 'హెచ్చరిక ఫీడ్',
+    noFeature: 'వివరాల కోసం పటం అంశాన్ని ఎంచుకోండి.',
+  },
+  language: {
+    selectorLabel: 'భాష',
+    searchPlaceholder: 'భాషను వెతకండి…',
+  },
+  actions: {
+    viewFullMap: 'పూర్తి పటం',
+    refresh: 'రిఫ్రెష్',
+  },
+};
+
+const urdu = {
+  nav: {
+    overview: 'جائزہ',
+    infrastructure: 'بنیادی ڈھانچہ',
+    dailyOps: 'روزانہ کے اعمال',
+    energy: 'توانائی',
+    quality: 'پانی کا معیار',
+    forecasting: 'پیش گوئی',
+    gis: 'GIS نقشہ',
+    accountability: 'جوابدہی',
+    ticketing: 'مدد مرکز',
+    console: 'ڈیش بورڈ',
+    logout: 'سائن آؤٹ',
+  },
+  metrics: {
+    pumpStatus: 'پمپ کی حالت',
+    flowRate: 'بہاؤ کی رفتار',
+    pressure: 'دباؤ',
+    tankLevel: 'ٹینک سطح',
+    activeAlerts: 'فعال تنبیہات',
+    energyTracking: 'توانائی ٹریکنگ',
+    pumpTemperature: 'پمپ درجہ حرارت',
+    nextSupply: 'اگلی فراہمی',
+  },
+  gis: {
+    legend: 'علامات',
+    layers: 'سطحیں',
+    lastRefresh: 'آخری تازہ کاری',
+    healthScore: 'نیٹ ورک صحت',
+    alertFeed: 'تنبیہ فیڈ',
+    noFeature: 'تفصیل کیلئے نقشے کا جزو منتخب کریں.',
+  },
+  language: {
+    selectorLabel: 'زبان',
+    searchPlaceholder: 'زبان تلاش کریں…',
+  },
+  actions: {
+    viewFullMap: 'مکمل نقشہ',
+    refresh: 'ریفریش',
+  },
+};
+
+const sindhi = {
+  nav: {
+    overview: 'جائزو',
+    infrastructure: 'بنيادي ڍانچو',
+    dailyOps: 'روزانو ڪارروايون',
+    energy: 'توانائي',
+    quality: 'پاڻي جي معيار',
+    forecasting: 'پيش گوئي',
+    gis: 'GIS نقشو',
+    accountability: 'ذميواري',
+    ticketing: 'مدد مرڪز',
+    console: 'ڊيشبورڊ',
+    logout: 'سائن آئوٽ',
+  },
+  metrics: {
+    pumpStatus: 'پمپ جي حالت',
+    flowRate: 'وهڪرو شرح',
+    pressure: 'دٻاءُ',
+    tankLevel: 'ٽينڪ سطح',
+    activeAlerts: 'فعال خبرداريون',
+    energyTracking: 'توانائي ٽريڪنگ',
+    pumpTemperature: 'پمپ جو گرمي پد',
+    nextSupply: 'ايندڙ فراهمي',
+  },
+  gis: {
+    legend: 'ليجنڊ',
+    layers: 'پرتون',
+    lastRefresh: 'آخري تازه ڪاري',
+    healthScore: 'نيٽ ورڪ صحت',
+    alertFeed: 'خبرداري فيڊ',
+    noFeature: 'تفصيل لاءِ نقشو جزو چونڊيو.',
+  },
+  language: {
+    selectorLabel: 'ٻولي',
+    searchPlaceholder: 'ٻولي ڳوليو…',
+  },
+  actions: {
+    viewFullMap: 'مڪمل نقشو',
+    refresh: 'ريفريش',
+  },
+};
+
+const santali = {
+  language: {
+    selectorLabel: 'ᱪᱤᱛᱟᱹ',
+    searchPlaceholder: 'ᱪᱤᱛᱟᱹ ᱟᱡᱟᱣ…',
+  },
+};
+
+const manipuri = {
+  language: {
+    selectorLabel: 'ꯂꯣꯟ',
+    searchPlaceholder: 'ꯂꯣꯟ ꯑꯁꯤꯡ…',
+  },
+};
+
+const shareHindi = (codes) => {
+  codes.forEach((code) => assign(code, hindi));
+};
+
+assign('as', assamese);
+assign('bn', bengali);
+assign('hi', hindi);
+shareHindi(['brx', 'doi', 'gom', 'mai']);
+assign('gu', gujarati);
+assign('kn', kannada);
+assign('ks', kashmiri);
+assign('ml', malayalam);
+assign('mr', marathi);
+assign('ne', nepali);
+assign('or', odia);
+assign('pa', punjabi);
+assign('sa', sanskrit);
+assign('ta', tamil);
+assign('te', telugu);
+assign('ur', urdu);
+assign('sd', sindhi);
+assign('sat', santali);
+assign('mni', manipuri);
+
+export const translationResources = resources;
+
