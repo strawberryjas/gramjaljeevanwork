@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sensorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0F9FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BAE6FD;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Device body -->
+  <rect x="156" y="150" width="200" height="260" rx="20" fill="url(#sensorGrad)" stroke="#0284C7" stroke-width="4" filter="url(#shadow)"/>
+  
+  <!-- Display screen -->
+  <rect x="180" y="180" width="152" height="100" rx="8" fill="#0C4A6E" stroke="#0369A1" stroke-width="2"/>
+  
+  <!-- Display content -->
+  <text x="256" y="220" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#38BDF8" text-anchor="middle">25.4°C</text>
+  <text x="256" y="250" font-family="Arial, sans-serif" font-size="16" fill="#7DD3FC" text-anchor="middle">ONLINE</text>
+  
+  <!-- LED indicators -->
+  <circle cx="200" cy="320" r="8" fill="#22C55E"/>
+  <circle cx="230" cy="320" r="8" fill="#3B82F6"/>
+  <circle cx="260" cy="320" r="8" fill="#EAB308"/>
+  
+  <!-- Antenna -->
+  <rect x="246" y="100" width="20" height="50" rx="10" fill="#64748B"/>
+  <circle cx="256" cy="90" r="15" fill="#3B82F6" opacity="0.6"/>
+  <circle cx="256" cy="90" r="10" fill="#60A5FA"/>
+  
+  <!-- Buttons -->
+  <circle cx="200" cy="360" r="12" fill="#475569" stroke="#1E293B" stroke-width="2"/>
+  <circle cx="256" cy="360" r="12" fill="#475569" stroke="#1E293B" stroke-width="2"/>
+  <circle cx="312" cy="360" r="12" fill="#475569" stroke="#1E293B" stroke-width="2"/>
+  
+  <!-- Signal waves -->
+  <path d="M 276 95 Q 290 90 300 85" stroke="#3B82F6" stroke-width="2" fill="none" opacity="0.5"/>
+  <path d="M 236 95 Q 222 90 212 85" stroke="#3B82F6" stroke-width="2" fill="none" opacity="0.5"/>
+</svg>

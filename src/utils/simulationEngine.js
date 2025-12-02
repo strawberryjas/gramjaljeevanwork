@@ -26,12 +26,37 @@ let systemState = {
       turbidity: 1.2,
       pH: 7.3,
       chlorine: 0.8,
-      TDS: 320
+      TDS: 320,
+      hardness: 180,
+      EC: 450
     },
     temperature: 28.5,
     fillRate: 0,
     drainRate: 0,
-    isFilling: false
+    isFilling: false,
+    lastMaintenanceDate: Date.now() - (10 * 24 * 60 * 60 * 1000),
+    nextMaintenanceDate: Date.now() + (20 * 24 * 60 * 60 * 1000),
+    maintenanceIntervalDays: 30,
+    lastCleaningDate: Date.now() - (10 * 24 * 60 * 60 * 1000),
+    nextCleaningDate: Date.now() + (20 * 24 * 60 * 60 * 1000),
+    cleaningIntervalDays: 30,
+    lastInspectionDate: Date.now() - (5 * 24 * 60 * 60 * 1000),
+    maintenanceHistory: [
+      {
+        date: Date.now() - (10 * 24 * 60 * 60 * 1000),
+        type: "Tank Cleaning",
+        description: "Interior cleaning and sanitization",
+        technician: "Ravi Kumar",
+        notes: "No structural issues detected"
+      },
+      {
+        date: Date.now() - (40 * 24 * 60 * 60 * 1000),
+        type: "Valve Inspection",
+        description: "Inlet/outlet valve maintenance",
+        technician: "Amit Sharma",
+        notes: "Replaced inlet valve seals"
+      }
+    ]
   },
 
   controlUnit: {
@@ -72,15 +97,25 @@ let systemState = {
     vibrationLevel: 2.1,
     operatingVoltage: 415,
     operatingCurrent: 12.5,
-    powerFactor: 0.85
+    powerFactor: 0.85,
+    lastMaintenanceDate: Date.now() - (7 * 24 * 60 * 60 * 1000),
+    nextMaintenanceDate: Date.now() + (23 * 24 * 60 * 60 * 1000),
+    maintenanceIntervalDays: 30,
+    operationCycles: 342,
+    vibration: 3.2,
+    maintenanceHistory: [
+      { date: Date.now() - (7 * 24 * 60 * 60 * 1000), type: 'Routine Inspection', technician: 'John Doe', status: 'Completed' },
+      { date: Date.now() - (37 * 24 * 60 * 60 * 1000), type: 'Oil Change', technician: 'Jane Smith', status: 'Completed' }
+    ]
   },
 
   pipelines: [
-    createPipeline(1, "Main Distribution - Ward 1", 1250, 200, "OPEN", 85, 4.2, 82, 3.8, 5, 245),
-    createPipeline(2, "Secondary Line - Ward 2", 980, 150, "OPEN", 68, 4.0, 60, 3.2, 12, 189),
-    createPipeline(3, "Extension Line - Ward 3", 750, 100, "OPEN", 52, 3.9, 51, 3.7, 3, 156),
-    createPipeline(4, "Booster Line - Ward 4", 1100, 150, "CLOSED", 0, 0, 0, 0, 0, 0),
-    createPipeline(5, "Emergency Line - Ward 5", 650, 100, "OPEN", 48, 3.8, 35, 2.8, 45, 98)
+    // All pipelines modeled as 2-inch (~50.8 mm) diameter; only pipeline 2 set to leak noticeably
+    createPipeline(1, "Main Distribution - Ward 1", 1250, 50.8, "OPEN", 85, 4.2, 84, 3.9, 2, 245),
+    createPipeline(2, "Secondary Line - Ward 2", 980, 50.8, "OPEN", 68, 4.0, 60, 3.2, 25, 189),
+    createPipeline(3, "Extension Line - Ward 3", 750, 50.8, "OPEN", 52, 3.9, 51, 3.7, 2, 156),
+    createPipeline(4, "Booster Line - Ward 4", 1100, 50.8, "CLOSED", 0, 0, 0, 0, 0, 0),
+    createPipeline(5, "Emergency Line - Ward 5", 650, 50.8, "OPEN", 48, 3.8, 47, 3.6, 2, 98)
   ],
 
   systemMetrics: {
@@ -104,41 +139,116 @@ function createPipeline(id, name, length, diameter, valveStatus, inletFlow, inle
   const tankQuality = { turbidity: 1.2, pH: 7.3, chlorine: 0.8, TDS: 320 };
   const qualityDrift = leakageProb / 100;
   
+  // Calculate maintenance dates based on pipeline ID (stagger them)
+  const daysAgo = 15 + (id * 5);
+  const daysUntil = 45 - (id * 5);
+  
   return {
     pipelineId: id,
     pipelineName: name,
     pipelineLength: length,
     pipelineDiameter: diameter,
     valveStatus: valveStatus,
+    // Decay tracking for realistic valve closure physics (separate for inlet/outlet)
+    isDecaying: false,
+    decayStartTime: null,
+    decayStartInletFlow: 0,
+    decayStartInletPressure: 0,
+    decayStartOutletFlow: 0,
+    decayStartOutletPressure: 0,
     leakageProbability: leakageProb,
     qualityDeviation: leakageProb * 0.2,
     inlet: {
-      flowSensor: { value: inletFlow, unit: "L/min", status: "ACTIVE", sensorId: `FS-${id}A` },
-      pressureSensor: { value: inletPressure, unit: "bar", status: "ACTIVE", sensorId: `PS-${id}A` },
+      flowSensor: { 
+        value: inletFlow, 
+        unit: "L/min", 
+        status: "ACTIVE", 
+        sensorId: `FS-${id}A`,
+        lastCalibrationDate: Date.now() - (30 + id * 10) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (60 - id * 10) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
+      },
+      pressureSensor: { 
+        value: inletPressure, 
+        unit: "bar", 
+        status: "ACTIVE", 
+        sensorId: `PS-${id}A`,
+        lastCalibrationDate: Date.now() - (30 + id * 10) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (60 - id * 10) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
+      },
       qualitySensor: { 
         turbidity: tankQuality.turbidity + (Math.random() * 0.1), 
         pH: tankQuality.pH + (Math.random() * 0.1 - 0.05), 
         chlorine: tankQuality.chlorine - (Math.random() * 0.05), 
         TDS: tankQuality.TDS + (Math.random() * 5),
         status: "ACTIVE", 
-        sensorId: `QS-${id}A` 
+        sensorId: `QS-${id}A`,
+        lastCalibrationDate: Date.now() - (20 + id * 5) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (70 - id * 5) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
       }
     },
     outlet: {
-      flowSensor: { value: outletFlow, unit: "L/min", status: "ACTIVE", sensorId: `FS-${id}B` },
-      pressureSensor: { value: outletPressure, unit: "bar", status: "ACTIVE", sensorId: `PS-${id}B` },
+      flowSensor: { 
+        value: outletFlow, 
+        unit: "L/min", 
+        status: "ACTIVE", 
+        sensorId: `FS-${id}B`,
+        lastCalibrationDate: Date.now() - (30 + id * 10) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (60 - id * 10) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
+      },
+      pressureSensor: { 
+        value: outletPressure, 
+        unit: "bar", 
+        status: "ACTIVE", 
+        sensorId: `PS-${id}B`,
+        lastCalibrationDate: Date.now() - (30 + id * 10) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (60 - id * 10) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
+      },
       qualitySensor: { 
         turbidity: tankQuality.turbidity + qualityDrift * 0.5 + (Math.random() * 0.2), 
         pH: tankQuality.pH - qualityDrift * 0.3 + (Math.random() * 0.1 - 0.05), 
         chlorine: tankQuality.chlorine - qualityDrift * 0.15, 
         TDS: tankQuality.TDS + qualityDrift * 25,
         status: "ACTIVE", 
-        sensorId: `QS-${id}B` 
+        sensorId: `QS-${id}B`,
+        lastCalibrationDate: Date.now() - (20 + id * 5) * 24 * 60 * 60 * 1000,
+        nextCalibrationDate: Date.now() + (70 - id * 5) * 24 * 60 * 60 * 1000,
+        calibrationIntervalDays: 90
       }
     },
     estimatedLeakage: Math.round(inletFlow - outletFlow),
     flowLoss: Math.round(inletFlow - outletFlow),
-    householdsServed: households
+    householdsServed: households,
+    installationDate: Date.now() - (365 + id * 30) * 24 * 60 * 60 * 1000,
+    lastInspectionDate: Date.now() - daysAgo * 24 * 60 * 60 * 1000,
+    nextInspectionDate: Date.now() + daysUntil * 24 * 60 * 60 * 1000,
+    inspectionIntervalDays: 60,
+    lastLeakRepairDate: leakageProb > 10 ? Date.now() - (id * 20) * 24 * 60 * 60 * 1000 : null,
+    pipelineConditionScore: Math.max(60, 100 - (leakageProb * 2)),
+    valveOperationCycles: 1200 + (id * 150),
+    valveLastServiceDate: Date.now() - (25 + id * 5) * 24 * 60 * 60 * 1000,
+    valveNextServiceDate: Date.now() + (65 - id * 5) * 24 * 60 * 60 * 1000,
+    valveServiceIntervalDays: 90,
+    maintenanceHistory: [
+      {
+        date: Date.now() - daysAgo * 24 * 60 * 60 * 1000,
+        type: "Pipeline Inspection",
+        description: "Visual and pressure testing inspection",
+        technician: id % 2 === 0 ? "Suresh Reddy" : "Priya Patel",
+        notes: leakageProb > 10 ? "Minor leakage detected, scheduled repair" : "Pipeline in good condition"
+      },
+      {
+        date: Date.now() - (daysAgo + 60) * 24 * 60 * 60 * 1000,
+        type: "Valve Maintenance",
+        description: "Valve lubrication and operation test",
+        technician: "Vikram Singh",
+        notes: "Valve operating smoothly"
+      }
+    ]
   };
 }
 
@@ -162,13 +272,24 @@ function createInitialPumpSchedule(overrides = {}) {
 const SIMULATION_INTERVAL_MS = 1000; // 1 second updates
 const PUMP_BASE_PRESSURE = 4.5; // bar
 const PUMP_BASE_FLOW = 420; // L/min
+const MAX_FLOW_LPM = 200; // maximum allowable flow rate per pipeline (L/min)
+// 2-inch pipe physics constants
+const PIPE_DIAMETER_M = 0.0508; // 2 inch in meters
+const GRAVITY = 9.81; // m/s^2
+const DISCHARGE_COEFF = 0.6; // simplified coefficient for distribution
+// Empirical pressure drop coefficient: bar drop per (100 L/min)^2 per km
+const LOSS_COEFF_BAR_PER_Q2_PER_KM = 0.2; 
 const PUMP_POWER_KWH = 8.2;
+const MAX_PUMP_POWER_KWH = 10;
 const MIN_TANK_LEVEL = 15; // Auto-shutoff threshold
 const MAX_TANK_LEVEL = 100;
 const PRESSURE_DROP_PER_KM = 0.8; // bar per km
 const FLOW_NOISE = 0.05; // 5% random variation
 const MIN_TIMER_MINUTES = 1;
 const MAX_TIMER_MINUTES = 240;
+const MAX_PRESSURE_BAR = 6;
+const MIN_MOTOR_TEMPERATURE = 25;
+const MAX_MOTOR_TEMPERATURE = 70;
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -180,6 +301,10 @@ function randomVariation(base, variancePct = 0.05) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function boundedRandom(base, variancePct, min, max) {
+  return clamp(randomVariation(base, variancePct), min, max);
 }
 
 function deepClone(obj) {
@@ -241,15 +366,32 @@ function executeMCUCommand(command) {
         const pipelineId = command.params.pipelineId;
         const pipeline = systemState.pipelines.find(p => p.pipelineId === pipelineId);
         if (pipeline) {
+          // Check if tank outlet valve is open
+          if (tank.outletValveStatus === "CLOSED" && command.action === "OPEN") {
+            command.status = "REJECTED";
+            command.reason = "Cannot open pipeline valve when tank outlet valve is closed";
+            mcu.MCUCommandsFailed++;
+            logCommand(command);
+            return { success: false, reason: command.reason };
+          }
           pipeline.valveStatus = command.action;
           mcu.valveRelays[`pipeline${pipelineId}`] = command.action;
+        } else {
+          throw new Error(`Pipeline ${pipelineId} not found`);
         }
         break;
       case "TANK_INLET":
         tank.inletValveStatus = command.action;
         break;
       case "TANK_OUTLET":
-        tank.outletValveStatus = command.action;
+          tank.outletValveStatus = command.action;
+          // If main outlet valve is CLOSED, automatically close all pipeline valves
+          if (command.action === "CLOSED") {
+            systemState.pipelines.forEach(p => {
+              p.valveStatus = "CLOSED";
+              systemState.controlUnit.valveRelays[`pipeline${p.pipelineId}`] = "CLOSED";
+            });
+          }
         break;
       default:
         throw new Error(`Unknown device: ${command.device}`);
@@ -504,9 +646,9 @@ function updateTankLevel() {
   const openPipelines = systemState.pipelines.filter(p => p.valveStatus === "OPEN");
   const numOpen = openPipelines.length;
   
-  // Calculate total outflow from open pipelines
+  // Calculate total outflow from open pipelines (gravity or pump)
   let totalOutflow = 0;
-  if (pump.pumpStatus === "ON" && tank.outletValveStatus === "OPEN" && numOpen > 0) {
+  if (tank.outletValveStatus === "OPEN" && numOpen > 0) {
     systemState.pipelines.forEach(p => {
       if (p.valveStatus === "OPEN") {
         totalOutflow += p.inlet.flowSensor.value;
@@ -584,28 +726,47 @@ function calculateFlowAndPressure() {
   if (pump.pumpStatus === "ON") {
     // Pump is running - update pump metrics
     pump.pumpRunningHours += SIMULATION_INTERVAL_MS / (1000 * 60 * 60);
-    pump.motorTemperature = clamp(pump.motorTemperature + 0.05, 25, 65);
-    pump.powerConsumption = randomVariation(PUMP_POWER_KWH, FLOW_NOISE);
+    pump.motorTemperature = clamp(pump.motorTemperature + 0.05, MIN_MOTOR_TEMPERATURE, MAX_MOTOR_TEMPERATURE);
+    pump.powerConsumption = boundedRandom(PUMP_POWER_KWH, FLOW_NOISE, 0.2, MAX_PUMP_POWER_KWH);
     
     if (tank.outletValveStatus === "OPEN" && numOpen > 0) {
-      // Pump is distributing to pipelines
-      const baseFlowPerPipeline = PUMP_BASE_FLOW / numOpen;
-      pump.pumpFlowOutput = randomVariation(PUMP_BASE_FLOW, FLOW_NOISE);
-      pump.pumpPressureOutput = randomVariation(PUMP_BASE_PRESSURE - (numOpen * 0.1), FLOW_NOISE);
-      
-      // Update each pipeline with flow distribution
+      // Pump is distributing to pipelines using a simple 2-inch pipe model
+      // Compute theoretical total flow from pump pressure using Q = C * A * sqrt(2*g*H)
+      const area = Math.PI * Math.pow(PIPE_DIAMETER_M / 2, 2); // m^2
+      // Convert pressure (bar) to head (m of water): ~10 m per bar
+      const headMeters = pump.pumpPressureOutput * 10;
+      const q_m3s = DISCHARGE_COEFF * area * Math.sqrt(2 * GRAVITY * Math.max(headMeters, 0));
+      const q_lpm = q_m3s * 1000 * 60; // L/min
+      // Blend with base flow to avoid extreme spikes and add small variation
+      const theoreticalFlow = clamp(q_lpm, 0, PUMP_BASE_FLOW * 1.5);
+      pump.pumpFlowOutput = randomVariation(theoreticalFlow, FLOW_NOISE);
+      // Cap total pump output to prevent individual pipelines exceeding maximum
+      const cappedPumpFlow = Math.min(pump.pumpFlowOutput, MAX_FLOW_LPM * numOpen);
+      pump.pumpFlowOutput = cappedPumpFlow;
+      // Pressure reduces slightly with more outlets
+      const pressureBase = Math.max(0.5, PUMP_BASE_PRESSURE - (numOpen * 0.1));
+      pump.pumpPressureOutput = boundedRandom(pressureBase, FLOW_NOISE, 0.5, MAX_PRESSURE_BAR);
+
+      const baseFlowPerPipeline = pump.pumpFlowOutput / numOpen;
+
+      // Update each pipeline with flow distribution and frictional losses
       systemState.pipelines.forEach(pipeline => {
         if (pipeline.valveStatus === "OPEN") {
           // Calculate inlet values
-          const inletFlow = randomVariation(baseFlowPerPipeline, FLOW_NOISE);
-          const pressureDrop = (pipeline.pipelineLength / 1000) * PRESSURE_DROP_PER_KM;
-          const inletPressure = pump.pumpPressureOutput - randomVariation(0.2, FLOW_NOISE);
+          const inletFlow = clamp(randomVariation(baseFlowPerPipeline, FLOW_NOISE), 0, MAX_FLOW_LPM);
+          // Frictional/energy loss: scale with flow^2 and length
+          const lengthKm = pipeline.pipelineLength / 1000;
+          const q100 = inletFlow / 100; // normalize by 100 L/min
+          const frictionDropBar = LOSS_COEFF_BAR_PER_Q2_PER_KM * q100 * q100 * lengthKm;
+          // Minor losses at entry
+          const minorLossBar = 0.1;
+          const inletPressure = Math.max(0, pump.pumpPressureOutput - minorLossBar);
 
           // Apply leakage effects
           const leakageFactor = pipeline.leakageProbability / 100;
           const flowLoss = inletFlow * leakageFactor * randomVariation(1, 0.2);
-          const outletFlow = Math.max(0, inletFlow - flowLoss);
-          const outletPressure = Math.max(0, inletPressure - pressureDrop - (leakageFactor * 0.5));
+          const outletFlow = clamp(Math.max(0, inletFlow - flowLoss), 0, MAX_FLOW_LPM);
+          const outletPressure = Math.max(0, inletPressure - frictionDropBar - (leakageFactor * 0.5));
 
           // Update sensors
           pipeline.inlet.flowSensor.value = Math.round(inletFlow);
@@ -615,19 +776,55 @@ function calculateFlowAndPressure() {
           pipeline.estimatedLeakage = Math.round(flowLoss);
           pipeline.flowLoss = Math.round(flowLoss);
         } else {
-          // Valve closed - no flow
-          pipeline.inlet.flowSensor.value = 0;
-          pipeline.inlet.pressureSensor.value = 0;
-          pipeline.outlet.flowSensor.value = 0;
-          pipeline.outlet.pressureSensor.value = 0;
-          pipeline.leakageProbability = 0;
-          pipeline.estimatedLeakage = 0;
-          pipeline.flowLoss = 0;
+          // Valve closed - GRADUAL DECAY (realistic physics)
+          if (!pipeline.isDecaying) {
+            // Start decay process - capture BOTH inlet and outlet current values
+            pipeline.isDecaying = true;
+            pipeline.decayStartTime = Date.now();
+            pipeline.decayStartInletFlow = pipeline.inlet.flowSensor.value || 0;
+            pipeline.decayStartInletPressure = pipeline.inlet.pressureSensor.value || 0;
+            pipeline.decayStartOutletFlow = pipeline.outlet.flowSensor.value || 0;
+            pipeline.decayStartOutletPressure = pipeline.outlet.pressureSensor.value || 0;
+          }
+          
+          // Calculate decay over time (exponential decay)
+          const elapsedSeconds = (Date.now() - pipeline.decayStartTime) / 1000;
+          const DECAY_TIME_CONSTANT = 8; // seconds for ~95% decay (realistic pipe inertia)
+          const decayFactor = Math.exp(-elapsedSeconds / DECAY_TIME_CONSTANT);
+          
+          // Apply exponential decay separately to inlet and outlet (preserving the leak differential)
+          const currentInletFlow = pipeline.decayStartInletFlow * decayFactor;
+          const currentInletPressure = pipeline.decayStartInletPressure * decayFactor;
+          const currentOutletFlow = pipeline.decayStartOutletFlow * decayFactor;
+          const currentOutletPressure = pipeline.decayStartOutletPressure * decayFactor;
+          
+          pipeline.inlet.flowSensor.value = Math.round(currentInletFlow * 10) / 10;
+          pipeline.inlet.pressureSensor.value = Math.round(currentInletPressure * 100) / 100;
+          pipeline.outlet.flowSensor.value = Math.round(currentOutletFlow * 10) / 10;
+          pipeline.outlet.pressureSensor.value = Math.round(currentOutletPressure * 100) / 100;
+          
+          // Once nearly zero, stop decay tracking
+          if (currentInletFlow < 0.5 && currentInletPressure < 0.05 && currentOutletFlow < 0.5 && currentOutletPressure < 0.05) {
+            pipeline.inlet.flowSensor.value = 0;
+            pipeline.inlet.pressureSensor.value = 0;
+            pipeline.outlet.flowSensor.value = 0;
+            pipeline.outlet.pressureSensor.value = 0;
+            pipeline.isDecaying = false;
+          }
+          
+          pipeline.leakageProbability = pipeline.leakageProbability; // maintain leakage probability
+          pipeline.estimatedLeakage = Math.round((currentInletFlow - currentOutletFlow));
+          pipeline.flowLoss = pipeline.estimatedLeakage;
         }
       });
     } else {
       // Pump is ON but pipelines are closed - filling tank
-      pump.pumpFlowOutput = randomVariation(PUMP_BASE_FLOW, FLOW_NOISE);
+      // Use orifice equation toward tank inlet to keep consistency
+      const area = Math.PI * Math.pow(PIPE_DIAMETER_M / 2, 2);
+      const headMeters = PUMP_BASE_PRESSURE * 10;
+      const q_m3s = DISCHARGE_COEFF * area * Math.sqrt(2 * GRAVITY * headMeters);
+      const q_lpm = q_m3s * 1000 * 60;
+      pump.pumpFlowOutput = randomVariation(clamp(q_lpm, 0, PUMP_BASE_FLOW * 1.5), FLOW_NOISE);
       pump.pumpPressureOutput = randomVariation(PUMP_BASE_PRESSURE, FLOW_NOISE);
       
       // All pipelines show no flow but pressure builds up
@@ -639,18 +836,88 @@ function calculateFlowAndPressure() {
       });
     }
   } else {
-    // Pump is OFF or tank outlet closed - no flow
+    // Pump is OFF: allow gravity-driven distribution from tank when outlet and pipelines are open
     pump.pumpFlowOutput = 0;
     pump.pumpPressureOutput = 0;
     pump.powerConsumption = 0.2; // Standby power
     pump.motorTemperature = Math.max(25, pump.motorTemperature - 0.1);
 
-    systemState.pipelines.forEach(pipeline => {
-      pipeline.inlet.flowSensor.value = 0;
-      pipeline.inlet.pressureSensor.value = 0;
-      pipeline.outlet.flowSensor.value = 0;
-      pipeline.outlet.pressureSensor.value = 0;
-    });
+    const openPipelines = systemState.pipelines.filter(p => p.valveStatus === "OPEN");
+    const numOpen = openPipelines.length;
+    const tankHeadMeters = (systemState.overheadTank.tankLevel / 100) * 10; // ~10m head at 100%
+
+    if (systemState.overheadTank.outletValveStatus === "OPEN" && numOpen > 0 && tankHeadMeters > 0) {
+      const area = Math.PI * Math.pow(PIPE_DIAMETER_M / 2, 2);
+      const q_m3s = DISCHARGE_COEFF * area * Math.sqrt(2 * GRAVITY * Math.max(tankHeadMeters, 0));
+      let totalGravityFlowLpm = q_m3s * 1000 * 60;
+      totalGravityFlowLpm = Math.min(totalGravityFlowLpm, MAX_FLOW_LPM * numOpen);
+      const baseFlowPerPipeline = totalGravityFlowLpm / numOpen;
+
+      systemState.pipelines.forEach(pipeline => {
+        if (pipeline.valveStatus === "OPEN") {
+          // Reset decay state when valve opens
+          pipeline.isDecaying = false;
+          pipeline.decayStartTime = null;
+          
+          const inletFlow = clamp(randomVariation(baseFlowPerPipeline, FLOW_NOISE), 0, MAX_FLOW_LPM);
+          const lengthKm = pipeline.pipelineLength / 1000;
+          const q100 = inletFlow / 100;
+          const frictionDropBar = LOSS_COEFF_BAR_PER_Q2_PER_KM * q100 * q100 * lengthKm;
+          const inletPressure = Math.max(0, tankHeadMeters / 10); // convert head to bar
+
+          const leakageFactor = pipeline.leakageProbability / 100;
+          const flowLoss = inletFlow * leakageFactor * randomVariation(1, 0.2);
+          const outletFlow = clamp(Math.max(0, inletFlow - flowLoss), 0, MAX_FLOW_LPM);
+          const outletPressure = Math.max(0, inletPressure - frictionDropBar - (leakageFactor * 0.5));
+
+          pipeline.inlet.flowSensor.value = Math.round(inletFlow);
+          pipeline.inlet.pressureSensor.value = Math.round(inletPressure * 100) / 100;
+          pipeline.outlet.flowSensor.value = Math.round(outletFlow);
+          pipeline.outlet.pressureSensor.value = Math.round(outletPressure * 100) / 100;
+          pipeline.estimatedLeakage = Math.round(flowLoss);
+          pipeline.flowLoss = pipeline.estimatedLeakage;
+        } else {
+          // Valve closed during gravity flow - GRADUAL DECAY
+          if (!pipeline.isDecaying) {
+            pipeline.isDecaying = true;
+            pipeline.decayStartTime = Date.now();
+            pipeline.decayStartInletFlow = pipeline.inlet.flowSensor.value || 0;
+            pipeline.decayStartInletPressure = pipeline.inlet.pressureSensor.value || 0;
+            pipeline.decayStartOutletFlow = pipeline.outlet.flowSensor.value || 0;
+            pipeline.decayStartOutletPressure = pipeline.outlet.pressureSensor.value || 0;
+          }
+          
+          const elapsedSeconds = (Date.now() - pipeline.decayStartTime) / 1000;
+          const DECAY_TIME_CONSTANT = 8;
+          const decayFactor = Math.exp(-elapsedSeconds / DECAY_TIME_CONSTANT);
+          
+          const currentInletFlow = pipeline.decayStartInletFlow * decayFactor;
+          const currentInletPressure = pipeline.decayStartInletPressure * decayFactor;
+          const currentOutletFlow = pipeline.decayStartOutletFlow * decayFactor;
+          const currentOutletPressure = pipeline.decayStartOutletPressure * decayFactor;
+          
+          pipeline.inlet.flowSensor.value = Math.round(currentInletFlow * 10) / 10;
+          pipeline.inlet.pressureSensor.value = Math.round(currentInletPressure * 100) / 100;
+          pipeline.outlet.flowSensor.value = Math.round(currentOutletFlow * 10) / 10;
+          pipeline.outlet.pressureSensor.value = Math.round(currentOutletPressure * 100) / 100;
+          
+          if (currentFlow < 0.5 && currentPressure < 0.05) {
+            pipeline.inlet.flowSensor.value = 0;
+            pipeline.inlet.pressureSensor.value = 0;
+            pipeline.outlet.flowSensor.value = 0;
+            pipeline.outlet.pressureSensor.value = 0;
+            pipeline.isDecaying = false;
+          }
+        }
+      });
+    } else {
+      systemState.pipelines.forEach(pipeline => {
+        pipeline.inlet.flowSensor.value = 0;
+        pipeline.inlet.pressureSensor.value = 0;
+        pipeline.outlet.flowSensor.value = 0;
+        pipeline.outlet.pressureSensor.value = 0;
+      });
+    }
   }
 }
 
@@ -712,7 +979,9 @@ function simulateQualityChanges() {
   tankQuality.TDS = clamp(randomVariation(tankQuality.TDS, 0.01), 100, 500);
 
   systemState.pipelines.forEach(pipeline => {
-    if (pipeline.valveStatus === "OPEN" && systemState.pumpHouse.pumpStatus === "ON") {
+    // Apply quality changes whenever there is active flow (gravity or pump)
+    const hasActiveFlow = pipeline.valveStatus === "OPEN" && (pipeline.inlet?.flowSensor?.value || 0) > 0;
+    if (hasActiveFlow) {
       const leakageFactor = pipeline.leakageProbability / 100;
       
       // Inlet quality close to tank
@@ -798,10 +1067,25 @@ export function updateAllSensors() {
   updateTankLevel();
   simulateQualityChanges();
   
-  // Update leakage for each pipeline
+  // Update leakage: keep only one pipeline with significant leakage, others minimal
+  const leakingId = 2;
   systemState.pipelines.forEach(p => {
     if (p.valveStatus === "OPEN") {
-      simulateLeakage(p.pipelineId);
+      if (p.pipelineId === leakingId) {
+        simulateLeakage(p.pipelineId);
+      } else {
+        // For healthy pipes, constrain leakageProbability to low values
+        simulateLeakage(p.pipelineId);
+        p.leakageProbability = clamp(p.leakageProbability, 0, 8);
+        // Keep outlet close to inlet for healthy pipes
+        const inlet = p.inlet.flowSensor.value;
+        p.outlet.flowSensor.value = Math.max(0, Math.round(inlet * 0.98));
+        // Slight pressure drop due to friction only
+        const expectedDrop = (p.pipelineLength / 1000) * PRESSURE_DROP_PER_KM;
+        p.outlet.pressureSensor.value = Math.max(0, Math.round((p.inlet.pressureSensor.value - expectedDrop) * 100) / 100);
+        p.estimatedLeakage = Math.max(0, p.inlet.flowSensor.value - p.outlet.flowSensor.value);
+        p.flowLoss = p.estimatedLeakage;
+      }
     }
   });
 

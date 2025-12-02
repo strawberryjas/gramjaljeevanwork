@@ -484,10 +484,10 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
     <div className="relative w-full h-full bg-gray-100">
       {/* Loading Indicator */}
       {!mapLoaded && (
-        <div className="absolute inset-0 bg-white flex items-center justify-center z-[2000]">
+        <div className="absolute inset-0 flex items-center justify-center z-[2000]" style={{ backgroundColor: 'var(--bg-white)' }}>
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-3 mx-auto"></div>
-            <p className="text-sm font-bold text-black">Loading Map...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 mb-3 mx-auto" style={{ borderColor: 'var(--gray-border)', borderTopColor: 'var(--primary-blue)' }}></div>
+            <p className="text-sm font-bold" style={{ color: 'var(--gray-text-dark)' }}>Loading Map...</p>
           </div>
         </div>
       )}
@@ -501,19 +501,25 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
         <div className="flex gap-2">
           <button
             onClick={() => setMapView('satellite')}
-            className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all flex items-center gap-2 ${mapView === 'satellite'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-black shadow-md hover:shadow-lg'
-              }`}
+            className="px-3 py-2 font-semibold text-xs transition-all flex items-center gap-2"
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: mapView === 'satellite' ? 'var(--primary-blue)' : 'var(--bg-white)',
+              color: mapView === 'satellite' ? 'var(--bg-white)' : 'var(--gray-text-dark)',
+              boxShadow: mapView === 'satellite' ? 'var(--shadow-lg)' : 'var(--shadow-md)'
+            }}
           >
             <Satellite size={14} /> Satellite
           </button>
           <button
             onClick={() => setMapView('street')}
-            className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all flex items-center gap-2 ${mapView === 'street'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-black shadow-md hover:shadow-lg'
-              }`}
+            className="px-3 py-2 font-semibold text-xs transition-all flex items-center gap-2"
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: mapView === 'street' ? 'var(--primary-blue)' : 'var(--bg-white)',
+              color: mapView === 'street' ? 'var(--bg-white)' : 'var(--gray-text-dark)',
+              boxShadow: mapView === 'street' ? 'var(--shadow-lg)' : 'var(--shadow-md)'
+            }}
           >
             <MapPin size={14} /> Street
           </button>
@@ -547,8 +553,8 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="absolute top-20 right-4 bg-white rounded-lg shadow-xl z-[1000] w-64">
-          <div className="bg-blue-600 p-3 flex items-center justify-between rounded-t-lg">
+        <div className="absolute top-20 right-4 rounded-lg shadow-xl z-[1000] w-64" style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}>
+          <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--primary-blue)', borderTopLeftRadius: 'var(--radius-sm)', borderTopRightRadius: 'var(--radius-sm)' }}>
             <h4 className="font-bold text-white text-sm flex items-center gap-2">
               <Layers size={14} /> Map Layers
             </h4>
@@ -622,8 +628,8 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">Pipeline Status</div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-1.5 bg-blue-500 rounded"></div>
-                  <span className="text-black">Operational</span>
+                  <div className="w-6 h-1.5 rounded" style={{ backgroundColor: 'var(--primary-blue)' }}></div>
+                  <span style={{ color: 'var(--gray-text-dark)' }}>Operational</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-1.5 bg-amber-500 rounded"></div>
@@ -639,8 +645,8 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">Infrastructure</div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow"></div>
-                  <span className="text-black">Treatment Plant</span>
+                  <div className="w-3 h-3 rounded-full border-2 shadow" style={{ backgroundColor: 'var(--primary-blue)', borderColor: 'var(--bg-white)' }}></div>
+                  <span style={{ color: 'var(--gray-text-dark)' }}>Treatment Plant</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-600 border-2 border-white shadow"></div>
@@ -670,8 +676,8 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
       {/* Feature Details Panel */}
       {selectedFeature && (
-        <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-xl z-[1000] w-80 max-h-96 overflow-hidden">
-          <div className="bg-blue-600 p-3 flex items-center justify-between">
+        <div className="absolute bottom-4 right-4 rounded-lg shadow-xl z-[1000] w-80 max-h-96 overflow-hidden" style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}>
+          <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--primary-blue)' }}>
             <h4 className="font-bold text-white text-sm flex items-center gap-2">
               <MapPin size={14} />
               {selectedFeature.properties.name}

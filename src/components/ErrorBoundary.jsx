@@ -108,7 +108,15 @@ class ErrorBoundary extends React.Component {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={this.handleReload}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="flex items-center justify-center gap-2 px-6 py-3 transition-opacity"
+                style={{
+                  backgroundColor: 'var(--primary-blue)',
+                  color: 'var(--bg-white)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 <RefreshCw className="w-4 h-4" />
                 Reload Page
@@ -116,7 +124,15 @@ class ErrorBoundary extends React.Component {
               
               <button
                 onClick={this.handleGoHome}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                className="flex items-center justify-center gap-2 px-6 py-3 transition-colors"
+                style={{
+                  backgroundColor: 'var(--gray-light)',
+                  color: 'var(--gray-text-dark)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-border)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-light)'}  
               >
                 <Home className="w-4 h-4" />
                 Go Home

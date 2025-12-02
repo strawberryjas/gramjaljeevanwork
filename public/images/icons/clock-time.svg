@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="clockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E2E8F0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="4" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Clock face -->
+  <circle cx="256" cy="256" r="150" fill="url(#clockGrad)" stroke="#334155" stroke-width="8" filter="url(#shadow)"/>
+  
+  <!-- Hour markers -->
+  <rect x="246" y="126" width="20" height="30" rx="4" fill="#1E293B"/>
+  <rect x="246" y="356" width="20" height="30" rx="4" fill="#1E293B"/>
+  <rect x="126" y="246" width="30" height="20" ry="4" fill="#1E293B"/>
+  <rect x="356" y="246" width="30" height="20" ry="4" fill="#1E293B"/>
+  
+  <!-- 3, 6, 9 markers -->
+  <circle cx="356" cy="256" r="8" fill="#475569"/>
+  <circle cx="256" cy="356" r="8" fill="#475569"/>
+  <circle cx="156" cy="256" r="8" fill="#475569"/>
+  
+  <!-- Numbers -->
+  <text x="256" y="145" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1E293B" text-anchor="middle">12</text>
+  <text x="350" y="265" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1E293B" text-anchor="middle">3</text>
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1E293B" text-anchor="middle">6</text>
+  <text x="162" y="265" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#1E293B" text-anchor="middle">9</text>
+  
+  <!-- Hour hand (pointing to 10) -->
+  <line x1="256" y1="256" x2="220" y2="200" stroke="#1E293B" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Minute hand (pointing to 2) -->
+  <line x1="256" y1="256" x2="310" y2="190" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Second hand (pointing to 6) -->
+  <line x1="256" y1="256" x2="256" y2="340" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="12" fill="#1E293B"/>
+  <circle cx="256" cy="256" r="8" fill="#EF4444"/>
+</svg>

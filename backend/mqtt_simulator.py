@@ -106,8 +106,8 @@ NODES_CONFIG = {
             "iron": {"min": 0.05, "max": 0.25, "unit": "mg/L"},
             "fluoride": {"min": 0.4, "max": 1.2, "unit": "mg/L"},
             "nitrate": {"min": 5, "max": 35, "unit": "mg/L"},
-            "hardness": {"min": 150, "max": 450, "unit": "mg/L as CaCO3"},
-            "coliformPresent": {"values": [0, 0, 0, 0, 1], "unit": "binary"},
+            "hardness": {"min": 150, "max": 300, "unit": "mg/L as CaCO3"},
+            "EC": {"min": 300, "max": 750, "unit": "µS/cm"},
             
             # Measurement Metadata
             "qualityTestTime": {"min": 0, "max": 24, "unit": "hour"},
@@ -242,7 +242,8 @@ class DataSimulator:
                 lambda m: m.update({"ph": random.uniform(4.0, 6.0)}),  # Low pH
                 lambda m: m.update({"tds": random.uniform(1200, 1500)}),  # High TDS
                 lambda m: m.update({"freeChlorine": random.uniform(0.05, 0.2)}),  # Low chlorine
-                lambda m: m.update({"coliformPresent": 1}),  # Microbial contamination
+                lambda m: m.update({"hardness": random.uniform(350, 500)}),  # High hardness
+                lambda m: m.update({"EC": random.uniform(800, 1000)}),  # High EC
             ])
             anomaly(metrics)
         

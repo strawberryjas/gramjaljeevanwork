@@ -192,45 +192,7 @@ export const TechnicianDashboard = ({
         </div>
       </div>
 
-      {/* Sub-Dashboard Navigation */}
-      <div className="flex flex-wrap gap-2 bg-slate-100 p-1 rounded-lg mb-4">
-        <button
-          onClick={() => setActiveNetworkView('diagram')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${activeNetworkView === 'diagram'
-            ? 'bg-white text-blue-700 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-200'
-            }`}
-        >
-          <Map size={14} /> Network Map
-        </button>
-        <button
-          onClick={() => setActiveNetworkView('pump')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${activeNetworkView === 'pump'
-            ? 'bg-white text-blue-700 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-200'
-            }`}
-        >
-          <Zap size={14} /> Pump Station
-        </button>
-        <button
-          onClick={() => setActiveNetworkView('tank')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${activeNetworkView === 'tank'
-            ? 'bg-white text-blue-700 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-200'
-            }`}
-        >
-          <Droplet size={14} /> Water Tank
-        </button>
-        <button
-          onClick={() => setActiveNetworkView('pipelines')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${activeNetworkView === 'pipelines' || activeNetworkView === 'pipeline-details'
-            ? 'bg-white text-blue-700 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-200'
-            }`}
-        >
-          <List size={14} /> Pipelines & Valves
-        </button>
-      </div>
+      {/* Sub-Dashboard Navigation removed as requested */}
 
       <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading component...</div>}>
         {activeNetworkView === 'diagram' && (

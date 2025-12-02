@@ -1,25 +1,52 @@
 import React from 'react';
 
-export const QualityCard = ({ label, value, unit, safeMax, safeMin = 0, icon: Icon }) => {
+export const QualityCard = ({ label, value, unit, safeMax, safeMin = 0, icon: Icon, iconSrc }) => {
   const isSafe = value >= safeMin && value <= safeMax;
-  
+
   return (
-    <div className={`p-4 rounded-xl border ${isSafe ? 'bg-white border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+    <div 
+      className="p-4"
+      style={{
+        backgroundColor: isSafe ? 'var(--bg-white)' : '#FEE2E2',
+        border: isSafe ? '1px solid #86EFAC' : '1px solid #FCA5A5',
+        borderRadius: 'var(--radius-sm)'
+      }}
+    >
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded ${isSafe ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-            <Icon size={16} />
+          <div 
+            className="p-1.5"
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: isSafe ? '#D1FAE5' : '#FEE2E2',
+              color: isSafe ? '#059669' : '#DC2626'
+            }}
+          >
+            {iconSrc ? (
+              <img src={iconSrc} alt={label} className="w-4 h-4 object-contain" />
+            ) : Icon ? (
+              <Icon size={16} />
+            ) : null}
           </div>
-          <span className="font-medium text-gray-700">{label}</span>
+          <span style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--gray-text-dark)' }}>{label}</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-1 rounded ${isSafe ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+        <span 
+          className="px-2 py-1"
+          style={{
+            fontSize: 'var(--font-size-xs)',
+            fontWeight: 'var(--font-weight-bold)',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: isSafe ? '#D1FAE5' : '#FEE2E2',
+            color: isSafe ? '#059669' : '#DC2626'
+          }}
+        >
           {isSafe ? 'SAFE' : 'ALERT'}
         </span>
       </div>
-      <div className="text-2xl font-bold text-gray-900">
-        {value.toFixed(2)} <span className="text-sm text-gray-500 font-normal">{unit}</span>
+      <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+        {value.toFixed(2)} <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)', fontWeight: 'var(--font-weight-normal)' }}>{unit}</span>
       </div>
-      <div className="text-xs text-gray-400 mt-1">
+      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--gray-text)', marginTop: '4px' }}>
         Standard: {safeMin > 0 ? `${safeMin}-` : '<'}{safeMax} {unit}
       </div>
     </div>

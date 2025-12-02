@@ -142,11 +142,22 @@ export const AppContextProvider = ({ children }) => {
 
   // ============ LANGUAGE METHODS ============
   const changeLanguage = useCallback((newLanguage) => {
+    console.log('🌍 Language Change Requested:', newLanguage);
+    console.log('📍 Current language:', language);
+    console.log('✅ Is supported?', SUPPORTED_LANGUAGE_CODES.includes(newLanguage));
+    
     const nextLanguage = SUPPORTED_LANGUAGE_CODES.includes(newLanguage) ? newLanguage : 'en';
+    console.log('🎯 Changing to:', nextLanguage);
+    
     setLanguage(nextLanguage);
-    i18n.changeLanguage(nextLanguage);
-    addNotification(`Language changed to ${getLanguageLabel(nextLanguage)}`, 'info', 2000);
-  }, [setLanguage, addNotification]);
+    i18n.changeLanguage(nextLanguage).then(() => {
+      console.log('✨ i18n language updated to:', i18n.language);
+      console.log('🔄 Components using useTranslation() will now re-render');
+    });
+    
+    const langLabel = getLanguageLabel(nextLanguage);
+    addNotification(`🌍 Language changed to ${langLabel}`, 'success', 3000);
+  }, [setLanguage, addNotification, language]);
 
   // ============ THEME METHODS ============
   const toggleTheme = useCallback(() => {

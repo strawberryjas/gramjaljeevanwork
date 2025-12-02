@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSimulationData } from '../../hooks/useSimulationData';
-import { Activity, Droplet, Power, AlertTriangle, CheckCircle, Gauge, Settings, Radio, ArrowDown, ArrowRight } from 'lucide-react';
+import IconImage from '../IconImage';
 
 export const SystemContainer = ({ onNavigate }) => {
   const {
@@ -339,8 +339,7 @@ export const SystemContainer = ({ onNavigate }) => {
                   ))}
                 </div>
               </div>
-              <p className="text-center mt-3 text-sm font-bold text-slate-800 group-hover:text-blue-600">Overhead Tank</p>
-              <p className="text-center text-xs text-slate-600">Water Storage</p>
+              {/* Removed background tank labels for cleaner look */}
             </div>
           </div>
 
@@ -376,7 +375,7 @@ export const SystemContainer = ({ onNavigate }) => {
               title={`Tank Outlet Valve: ${tank.outletValveStatus || 'CLOSED'} - Click to toggle`}
             >
               <div className="absolute inset-0 flex items-center justify-center">
-                <Settings size={18} className="text-white" />
+                <IconImage name="settings" alt="Tank Outlet" size={20} />
               </div>
               {/* Valve Handle */}
               <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded transition-transform duration-300 ${tank.outletValveStatus === 'OPEN' ? 'rotate-45' : 'rotate-0'
@@ -410,7 +409,9 @@ export const SystemContainer = ({ onNavigate }) => {
 
                 {/* Flow Direction Indicator */}
                 {tank.outletValveStatus === 'OPEN' && (
-                  <ArrowRight size={16} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cyan-300 animate-pulse" />
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <IconImage name="arrow-right" alt="Flow Right" size={20} className="opacity-80" />
+                  </div>
                 )}
               </div>
             </div>
@@ -444,7 +445,7 @@ export const SystemContainer = ({ onNavigate }) => {
                       {/* Flow Sensor Device */}
                       <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-blue-600 rounded-full border-2 border-blue-900 shadow-lg flex items-center justify-center z-30"
                         style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.2)' }}>
-                        <Radio size={10} className="text-white" />
+                        <IconImage name="radio" alt="Flow Sensor" size={14} />
                       </div>
                     </div>
                   </div>
@@ -462,7 +463,7 @@ export const SystemContainer = ({ onNavigate }) => {
                     title={`Valve ${pipeline.pipelineId}: ${isOpen ? 'OPEN' : 'CLOSED'} - Click to toggle`}
                   >
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Settings size={16} className="text-white" />
+                      <IconImage name="settings" alt="Valve" size={18} />
                     </div>
                     {/* Valve Handle (Rotates when open) */}
                     <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded transition-transform duration-300 ${isOpen ? 'rotate-45' : 'rotate-0'
@@ -497,7 +498,7 @@ export const SystemContainer = ({ onNavigate }) => {
                       {/* Pressure Sensor Device */}
                       <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-emerald-600 rounded-full border-2 border-emerald-900 shadow-lg flex items-center justify-center z-30"
                         style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.2)' }}>
-                        <Gauge size={10} className="text-white" />
+                        <IconImage name="gauge" alt="Pressure Sensor" size={14} />
                       </div>
 
                       {/* Leakage Indicator with Drip Effect */}
@@ -588,7 +589,7 @@ export const SystemContainer = ({ onNavigate }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 mt-8 border-t border-slate-200 pt-6">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Activity className="text-blue-600" />
+            <IconImage name="activity" alt="Activity" size={24} />
             Junja Network Monitoring
           </h2>
           <p className="text-sm text-slate-500">Real-time pipeline status & control</p>
@@ -608,7 +609,7 @@ export const SystemContainer = ({ onNavigate }) => {
               : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
               }`}
           >
-            <Power size={16} />
+            <IconImage name="power" alt="Power" size={18} />
             Pump {isPumpOn ? 'ON' : 'OFF'}
           </button>
         </div>
@@ -619,7 +620,7 @@ export const SystemContainer = ({ onNavigate }) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg">
-              <Radio size={24} className="text-white" />
+              <IconImage name="radio" alt="IoT" size={26} />
             </div>
             <div>
               <p className="text-sm font-bold text-slate-800">IoT Sensors Network</p>

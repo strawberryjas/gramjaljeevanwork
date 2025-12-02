@@ -1,0 +1,697 @@
+import React, { useState, useMemo } from 'react';
+import { useSimulationData } from '../../hooks/useSimulationData';
+import { Power, Gauge, Zap, Thermometer, Activity, ArrowLeft, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import MaintenanceCard from '../shared/MaintenanceCard';
+
+const formatDuration = (ms = 0) => {
+  if (!ms || ms <= 0) return '0s';
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+  return `${seconds}s`;
+};
+
+const toLocalInputValue = (date) => {
+  if (!(date instanceof Date)) return '';
+  const pad = (num) => `${num}`.padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const formatStopLabel = (value) => {
+  if (!value) return '—';
+  const date = typeof value === 'number' ? new Date(value) : new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const RUN_HOURS_TIMELINE_OPTIONS = [
+  { id: 'day', label: 'Day', multiplier: 1, description: 'today' },
+  { id: 'week', label: 'Week', multiplier: 7, description: 'this week' },
+  { id: 'month', label: 'Month', multiplier: 30, description: 'this month' },
+];
+
+const POWER_CONSUMPTION_RANGE = {
+  min: 5,
+  max: 12,
+  nominal: 7.5,
+};
+
+export const PumpDetails = ({ onBack }) => {
+  const {
+    state,
+    togglePump,
+    isLive,
+    schedulePumpTimer,
+    schedulePumpStop,
+    cancelPumpSchedule
+  } = useSimulationData();
+
+  const pump = state?.pumpHouse || {};
+  const tank = state?.overheadTank || {};
+  const isPumpOn = pump.pumpStatus === 'ON';
+  const schedule = state?.pumpSchedule || {};
+  const isTimerActive = schedule.mode === 'TIMER';
+  const isStopScheduled = schedule.mode === 'SCHEDULED';
+  const countdownLabel = formatDuration(schedule.timerRemainingMs);
+  const stopLabel = formatStopLabel(schedule.timerEnd);
+  const waterLevel = tank.currentVolume || 0;
+  const tankCapacity = tank.tankCapacity || 10000;
+  const tankLevelPercent = tank.tankLevel || 0;
+
+  const [runningHoursTimeline, setRunningHoursTimeline] = useState(RUN_HOURS_TIMELINE_OPTIONS[0].id);
+  const rawPumpRunningHours = pump.pumpRunningHours || 0;
+  const displayRunningHours = rawPumpRunningHours.toFixed(1);
+  const pumpRunningDurationLabel = formatDuration(rawPumpRunningHours * 60 * 60 * 1000);
+  const timelineInfo = useMemo(() => {
+    const option = RUN_HOURS_TIMELINE_OPTIONS.find(opt => opt.id === runningHoursTimeline) || RUN_HOURS_TIMELINE_OPTIONS[0];
+    const estimated = Math.min(displayRunningHours, option.multiplier * 24);
+    return {
+      ...option,
+      estimatedHours: Number(estimated.toFixed(1)),
+    };
+  }, [runningHoursTimeline, displayRunningHours]);
+
+  const [timerMinutes, setTimerMinutes] = useState(15);
+  const [scheduledStop, setScheduledStop] = useState(() => toLocalInputValue(new Date(Date.now() + 30 * 60 * 1000)));
+
+  const handleTimerStart = () => {
+    const minutes = Math.max(1, Number(timerMinutes) || 0);
+    const result = schedulePumpTimer(minutes);
+    if (!result?.success) {
+      console.warn('Unable to start pump timer', result?.reason);
+    }
+  };
+
+  const handleScheduleStop = () => {
+    if (!scheduledStop) return;
+    const result = schedulePumpStop(scheduledStop);
+    if (!result?.success) {
+      console.warn('Unable to schedule pump stop', result?.reason);
+    }
+  };
+
+  const handleClearSchedule = () => {
+    cancelPumpSchedule('USER_CLEAR');
+  };
+
+  // Create history data for charts
+  const historyData = useMemo(() => {
+    return Array.from({ length: 20 }, (_, i) => ({
+      time: `${i * 5}m`,
+      pressure: (pump.pumpPressureOutput || 0) + Math.random() * 0.5,
+      flow: (pump.pumpFlowOutput || 0) + Math.random() * 10,
+      power: (pump.powerConsumption || 0) + Math.random() * 0.5,
+      efficiency: (pump.pumpEfficiency || 0) + Math.random() * 2,
+    }));
+  }, [pump.pumpPressureOutput, pump.pumpFlowOutput, pump.powerConsumption, pump.pumpEfficiency]);
+
+  const realisticPowerDraw = isPumpOn ? Math.max(
+    POWER_CONSUMPTION_RANGE.min,
+    Math.min(POWER_CONSUMPTION_RANGE.max, pump.powerConsumption || POWER_CONSUMPTION_RANGE.nominal)
+  ) : 0;
+  const powerChartData = useMemo(() => historyData.map((point, idx) => ({
+    label: `${idx + 1}h`,
+    power: isPumpOn ? Number(Math.min(POWER_CONSUMPTION_RANGE.max, Math.max(POWER_CONSUMPTION_RANGE.min, point.power)).toFixed(1)) : 0,
+  })), [historyData, isPumpOn]);
+  const dailyEnergyUsage = Number((realisticPowerDraw * 24).toFixed(1));
+
+  const pumpMetrics = [
+    {
+      label: 'Status',
+      value: pump.pumpStatus || 'OFF',
+      icon: Power,
+      color: isPumpOn ? 'green' : 'gray',
+      unit: ''
+    },
+    {
+      label: 'Flow Rate',
+      value: (pump.pumpFlowOutput || 0).toFixed(1),
+      icon: Activity,
+      color: 'blue',
+      unit: 'L/min'
+    },
+    {
+      label: 'Pressure',
+      value: (pump.pumpPressureOutput || 0).toFixed(2),
+      icon: Gauge,
+      color: 'emerald',
+      unit: 'Bar'
+    },
+    {
+      label: 'Power Consumption',
+      value: isPumpOn ? (pump.powerConsumption || 0).toFixed(2) : '0.00',
+      icon: Zap,
+      color: 'purple',
+      unit: 'kW'
+    },
+    {
+      label: 'Motor Temperature',
+      value: (pump.motorTemperature || 25).toFixed(1),
+      icon: Thermometer,
+      color: pump.motorTemperature > 65 ? 'red' : 'amber',
+      unit: '°C'
+    },
+    {
+      label: 'Efficiency',
+      value: (pump.pumpEfficiency || 0).toFixed(1),
+      icon: CheckCircle,
+      color: pump.pumpEfficiency > 70 ? 'green' : 'amber',
+      unit: '%'
+    }
+  ];
+
+  return (
+    <div className="space-y-6 pb-8">
+      {/* Simple Header */}
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-3xl shadow-2xl p-6">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all">
+            <ArrowLeft size={24} className="text-white" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-black text-white">🚰 Water Pump</h1>
+            <p className="text-blue-100 text-lg mt-1">Control your water motor</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Big ON/OFF Button Card */}
+      <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-gray-200">
+        <div className="text-center space-y-6">
+          {/* Status Display */}
+          <div className="space-y-3">
+            <div className={`inline-flex items-center gap-3 px-8 py-4 rounded-full ${isPumpOn ? 'bg-green-100 border-4 border-green-500' : 'bg-gray-100 border-4 border-gray-400'}`}>
+              <div className={`w-6 h-6 rounded-full ${isPumpOn ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span className={`text-3xl font-black ${isPumpOn ? 'text-green-700' : 'text-gray-600'}`}>
+                {isPumpOn ? 'चालू है (ON)' : 'बंद है (OFF)'}
+              </span>
+            </div>
+          </div>
+
+          {/* Giant Pump Icon */}
+          <div className="relative">
+            <div className={`inline-block p-12 rounded-full ${isPumpOn ? 'bg-gradient-to-br from-green-100 to-emerald-100 border-8 border-green-500' : 'bg-gray-100 border-8 border-gray-300'}`}>
+              <div className={isPumpOn ? 'animate-bounce' : ''}>
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={isPumpOn ? 'text-green-600' : 'text-gray-400'}>
+                  <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                  <path d="M12 6v12M6 12h12" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              </div>
+            </div>
+            {isPumpOn && (
+              <div className="absolute -top-2 -right-2">
+                <span className="flex h-8 w-8">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-8 w-8 bg-green-500"></span>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Big Control Button */}
+          <button
+            onClick={togglePump}
+            className={`w-full max-w-md mx-auto px-12 py-8 rounded-3xl font-black text-2xl transition-all shadow-2xl hover:shadow-3xl hover:scale-105 ${
+              isPumpOn
+                ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700'
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+            }`}
+          >
+            {isPumpOn ? '❌ बंद करें (STOP)' : '✅ चालू करें (START)'}
+          </button>
+          <div>
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <span className="text-xs uppercase tracking-[0.2em] text-slate-300">Timeline</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {RUN_HOURS_TIMELINE_OPTIONS.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setRunningHoursTimeline(option.id)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] transition-all font-bold ${runningHoursTimeline === option.id ? 'bg-blue-500 text-white shadow-lg scale-105' : 'bg-slate-800 text-slate-300 border border-slate-600 hover:border-slate-400 hover:bg-slate-700'}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-slate-300 mt-2">
+              Estimated {timelineInfo.estimatedHours} hrs {timelineInfo.description}
+            </p>
+          </div>
+        </div>
+
+        {/* Water Tank Status Card */}
+        <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded-2xl p-6 text-white shadow-2xl border border-blue-700">
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-blue-300">Overhead Tank Status</p>
+              <p className="text-2xl font-black mt-1">{waterLevel.toLocaleString()} L</p>
+              <p className="text-sm text-blue-300">Capacity: {tankCapacity.toLocaleString()} L</p>
+            </div>
+            
+            {/* Animated Water Tank */}
+            <div className="relative h-48 bg-slate-200 rounded-2xl overflow-hidden border-4 border-slate-300">
+              {/* Water Level */}
+              <div className="absolute inset-0 flex flex-col justify-end">
+                <div
+                  className={`w-full transition-all duration-1000 ${tank.isFilling
+                    ? 'bg-gradient-to-t from-blue-600 via-blue-400 to-cyan-300'
+                    : 'bg-gradient-to-t from-blue-500 via-blue-400 to-blue-300'
+                    }`}
+                  style={{ height: `${Math.max(0, Math.min(100, tankLevelPercent))}%` }}
+                >
+                  {/* Wave Animation when filling */}
+                  {tank.isFilling && (
+                    <div className="absolute top-0 left-0 right-0 h-4 overflow-hidden">
+                      <div className="animate-wave bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 h-full opacity-70"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Bubbles animation when filling */}
+              {tank.isFilling && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-2 h-2 bg-white/50 rounded-full animate-bubble"
+                      style={{
+                        left: `${15 + i * 15}%`,
+                        bottom: '10%',
+                        animationDelay: `${i * 0.3}s`,
+                        animationDuration: '2s'
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tank Info Overlay */}
+              <div className="absolute inset-0 flex flex-col justify-between p-4">
+                <div className="flex justify-between text-xs font-bold text-slate-500">
+                  <span>100%</span>
+                  <span className="text-white bg-black/30 px-2 py-0.5 rounded">
+                    {tank.isFilling ? '▲ Filling' : tank.inletValveStatus === 'OPEN' ? '▲ Filling' : '— Stable'}
+                  </span>
+                </div>
+                <div className="text-center text-white drop-shadow-lg">
+                  <p className="text-4xl font-black">{Math.max(0, Math.min(100, tankLevelPercent)).toFixed(1)}%</p>
+                  <p className="text-sm uppercase tracking-wide font-bold">
+                    {waterLevel.toLocaleString()} / {tankCapacity.toLocaleString()} L
+                  </p>
+                </div>
+                <div className="text-xs text-slate-500 font-bold">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pump Scheduler Card */}
+        <div className="lg:col-span-2 bg-gradient-to-br from-white to-slate-50 rounded-2xl border-2 border-blue-100 shadow-xl p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Pump Scheduler</p>
+              <p className="text-sm text-slate-500">Define runtime or schedule automatic shutdown</p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-bold">
+              <span className="px-3 py-1 rounded-full bg-slate-100 border border-slate-300 whitespace-nowrap">
+                Mode: {schedule.mode || 'MANUAL'}
+              </span>
+              {(schedule.timerRemainingMs > 0 || isStopScheduled) && (
+                <span className={`px-3 py-1 rounded-full border whitespace-nowrap ${isTimerActive ? 'border-emerald-400 bg-emerald-500/20 text-emerald-500' : 'border-blue-400 bg-blue-500/20 text-blue-500'}`}>
+                  {isTimerActive ? `Stops in ${countdownLabel}` : `Auto stop ${stopLabel}`}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Timer Control */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase text-slate-400 font-semibold">Run for (minutes)</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={240}
+                  value={timerMinutes}
+                  onChange={(e) => setTimerMinutes(e.target.value)}
+                  className="flex-1 bg-white border-2 border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 font-semibold focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+                />
+                <button
+                  onClick={handleTimerStart}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl shrink-0"
+                >
+                  Start
+                </button>
+              </div>
+            </div>
+            
+            {/* Schedule Stop */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase text-slate-400 font-semibold">Stop at (local time)</label>
+              <div className="flex gap-2">
+                <input
+                  type="datetime-local"
+                  value={scheduledStop || ''}
+                  onChange={(e) => setScheduledStop(e.target.value)}
+                  className="flex-1 bg-white border-2 border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all min-w-0"
+                />
+                <button
+                  onClick={handleScheduleStop}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl shrink-0"
+                >
+                  Schedule
+                </button>
+              </div>
+            </div>
+            
+            {/* Next Stop Info */}
+            <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-xl p-4 space-y-2 shadow-md">
+              <div>
+                <p className="text-[11px] uppercase text-slate-500 font-semibold">Next Auto Stop</p>
+                <p className="text-2xl font-black text-slate-900 truncate">{isTimerActive ? countdownLabel : stopLabel}</p>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                {schedule.lastEvent?.type ? `Last: ${schedule.lastEvent.type.replace(/_/g, ' ')}` : 'Awaiting instruction'}
+              </p>
+              <button
+                onClick={handleClearSchedule}
+                className="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors"
+              >
+                Clear schedule
+              </button>
+            </div>
+          </div>
+          
+          <p className="text-xs text-slate-500">
+            System failsafe will always cut the pump at 100% tank level, even if a timer is running.
+          </p>
+        </div>
+
+      </div>
+
+      {/* Power Consumption Card - Full Width */}
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 shadow-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2">
+              <Zap size={16} className="text-amber-600" />
+              Power Consumption
+            </p>
+            <p className="text-lg font-bold text-slate-800">Today's Energy Usage</p>
+          </div>
+          <div className="text-right">
+            <p className="text-4xl font-black text-amber-600">{dailyEnergyUsage} <span className="text-2xl">kWh</span></p>
+            <p className="text-xs text-slate-500">Current: {isPumpOn ? (pump.powerConsumption || 0).toFixed(1) : '0.00'} kW</p>
+          </div>
+        </div>
+        <div className="h-44">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={powerChartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="pumpPowerGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} interval={3} />
+              <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${value}k`} />
+              <Tooltip formatter={(value) => `${value} kW`} />
+              <Area type="monotone" dataKey="power" stroke="#f97316" strokeWidth={2} fill="url(#pumpPowerGradient)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {pumpMetrics.map((metric, idx) => {
+          const Icon = metric.icon;
+          const statusColor = metric.color === 'green' ? 'text-green-600' :
+            metric.color === 'red' ? 'text-red-600' :
+              metric.color === 'amber' ? 'text-amber-600' :
+                metric.color === 'blue' ? 'text-blue-600' :
+                  metric.color === 'emerald' ? 'text-emerald-600' :
+                    metric.color === 'purple' ? 'text-purple-600' :
+                      'text-gray-600';
+
+          return (
+            <div key={idx} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-6 border-l-[6px] border-slate-400 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+              <div className="flex items-center justify-between mb-3">
+                <Icon size={32} className={statusColor} />
+                {metric.color === 'red' && (
+                  <AlertTriangle size={20} className="text-red-600" />
+                )}
+              </div>
+              <p className="text-sm text-gray-600 font-semibold">{metric.label}</p>
+              <p className="text-3xl font-black text-black mt-2">
+                {metric.value} <span className="text-lg text-gray-500">{metric.unit}</span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Early Fault Detection for Pump */}
+      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl border-2 border-red-200 shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 p-5">
+          <h3 className="font-black text-white flex items-center gap-3 text-xl">
+            <AlertTriangle size={24} /> Pump Health & Early Fault Detection
+          </h3>
+          <p className="text-red-100 text-sm mt-1">Real-time diagnostics and anomaly detection</p>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          {/* Motor Temperature */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                <Thermometer size={16} /> Motor Temperature
+              </span>
+              <span className={`text-lg font-black ${pump.motorTemperature > 65 ? 'text-red-600' : 'text-green-600'}`}>
+                {(pump.motorTemperature || 45).toFixed(1)}°C
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3">
+              <div className={`h-3 rounded-full transition-all ${pump.motorTemperature > 65 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (pump.motorTemperature || 45) / 80 * 100)}%`}}></div>
+            </div>
+            <p className="text-xs text-slate-500">{pump.motorTemperature > 65 ? '⚠ Overheating detected - Check cooling system' : '✓ Normal operating temperature'}</p>
+          </div>
+
+          {/* Vibration Analysis */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                <Activity size={16} /> Vibration Level
+              </span>
+              <span className={`text-lg font-black ${(pump.vibration || 3) > 8 ? 'text-red-600' : 'text-green-600'}`}>
+                {(pump.vibration || 3).toFixed(1)} mm/s
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3">
+              <div className={`h-3 rounded-full transition-all ${(pump.vibration || 3) > 8 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (pump.vibration || 3) / 10 * 100)}%`}}></div>
+            </div>
+            <p className="text-xs text-slate-500">{(pump.vibration || 3) > 8 ? '⚠ High vibration - Bearing wear suspected' : '✓ Stable operation'}</p>
+          </div>
+
+          {/* Power Efficiency */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                <Zap size={16} /> Power Efficiency
+              </span>
+              <span className={`text-lg font-black ${pump.pumpEfficiency < 70 ? 'text-amber-600' : 'text-green-600'}`}>
+                {(pump.pumpEfficiency || 85).toFixed(0)}%
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3">
+              <div className={`h-3 rounded-full transition-all ${pump.pumpEfficiency < 70 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${pump.pumpEfficiency || 85}%`}}></div>
+            </div>
+            <p className="text-xs text-slate-500">{pump.pumpEfficiency < 70 ? '⚠ Efficiency drop detected - Check impeller' : '✓ Optimal performance'}</p>
+          </div>
+
+          {/* Pressure Monitoring */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                <Gauge size={16} /> Output Pressure
+              </span>
+              <span className={`text-lg font-black ${pump.pumpPressureOutput < 2.5 ? 'text-red-600' : 'text-green-600'}`}>
+                {(pump.pumpPressureOutput || 3.5).toFixed(2)} Bar
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-3">
+              <div className={`h-3 rounded-full transition-all ${pump.pumpPressureOutput < 2.5 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (pump.pumpPressureOutput || 3.5) / 5 * 100)}%`}}></div>
+            </div>
+            <p className="text-xs text-slate-500">{pump.pumpPressureOutput < 2.5 ? '⚠ Low pressure - Check for leaks or blockages' : '✓ Pressure within normal range'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pressure & Flow Chart */}
+        <div className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl shadow-2xl p-6 border-2 border-emerald-100">
+          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Gauge size={20} className="text-emerald-600" />
+            Pressure & Flow Rate
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={historyData}>
+              <defs>
+                <linearGradient id="colorPressure" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorFlow" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Area yAxisId="left" type="monotone" dataKey="pressure" stroke="#10b981" fillOpacity={1} fill="url(#colorPressure)" name="Pressure (Bar)" />
+              <Area yAxisId="right" type="monotone" dataKey="flow" stroke="#3b82f6" fillOpacity={1} fill="url(#colorFlow)" name="Flow (L/min)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Power & Efficiency Chart */}
+        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-2xl p-6 border-2 border-purple-100">
+          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Zap size={20} className="text-purple-600" />
+            Power & Efficiency
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={historyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Line yAxisId="left" type="monotone" dataKey="power" stroke="#8b5cf6" strokeWidth={2} name="Power (kW)" />
+              <Line yAxisId="right" type="monotone" dataKey="efficiency" stroke="#10b981" strokeWidth={2} name="Efficiency (%)" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-6 border-2 border-blue-100">
+        <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+          <Clock size={24} className="text-blue-600" />
+          Pump Information
+        </h3>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Basic Info */}
+          <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 border-2 border-slate-200 shadow-md">
+            <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+              Basic Details
+            </h4>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Pump ID</span>
+                <span className="text-base font-black text-slate-900">PUMP-001</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Voltage</span>
+                <span className="text-base font-black text-slate-900">{(pump.voltage || 220).toFixed(1)} V</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Power Factor</span>
+                <span className="text-base font-black text-slate-900">{(pump.powerFactor || 0.95).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Discharge Rate</span>
+                <span className="text-base font-black text-slate-900">{(pump.pumpDischargeRate || 0).toFixed(1)} L/min</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Running Hours */}
+          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-5 border-2 border-emerald-200 shadow-md">
+            <h4 className="text-xs uppercase tracking-widest text-emerald-700 font-bold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
+              Running Hours Analysis
+            </h4>
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg p-3 border border-emerald-100">
+                <span className="text-xs text-gray-500 uppercase">Total Runtime</span>
+                <p className="text-2xl font-black text-emerald-600 mt-1">{(pump.pumpRunningHours || 0).toFixed(1)} hrs</p>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
+                <span className="text-sm text-gray-600">Today</span>
+                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), 24).toFixed(1)} hrs</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
+                <span className="text-sm text-gray-600">This Week</span>
+                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), 168).toFixed(1)} hrs</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">This Month</span>
+                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), 720).toFixed(1)} hrs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Maintenance & Health */}
+          <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-5 border-2 border-amber-200 shadow-md">
+            <h4 className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
+              Maintenance & Health
+            </h4>
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg p-3 border border-amber-100">
+                <span className="text-xs text-gray-500 uppercase">Last Maintenance</span>
+                <p className="text-xl font-black text-amber-600 mt-1">7 days ago</p>
+              </div>
+              <div className="bg-white rounded-lg p-3 border border-amber-100">
+                <span className="text-xs text-gray-500 uppercase">Next Scheduled</span>
+                <p className="text-xl font-black text-slate-900 mt-1">23 days</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle size={16} className="text-green-600" />
+                  <span className="text-xs font-bold text-green-700 uppercase">System Healthy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Maintenance Management Section */}
+      <div className="mt-8">
+        <MaintenanceCard
+          title="Pump Station Maintenance Schedule"
+          lastMaintenanceDate={pump.lastMaintenanceDate}
+          nextMaintenanceDate={pump.nextMaintenanceDate}
+          maintenanceIntervalDays={pump.maintenanceIntervalDays}
+          maintenanceHistory={pump.maintenanceHistory}
+          type="pump"
+          additionalMetrics={[
+            { label: "Operation Cycles", value: pump.operationCycles?.toLocaleString() || "0", subtext: "Total on/off cycles" },
+            { label: "Running Hours", value: `${(pump.pumpRunningHours || 0).toFixed(1)} hrs`, subtext: "Lifetime runtime" },
+            { label: "Vibration Level", value: `${pump.vibration?.toFixed(1) || "0"} mm/s`, subtext: pump.vibration > 8 ? "⚠️ High" : "✓ Normal" },
+            { label: "Motor Temperature", value: `${pump.motorTemperature?.toFixed(1) || "0"}°C`, subtext: pump.motorTemperature > 65 ? "⚠️ Hot" : "✓ Normal" }
+          ]}
+        />
+      </div>
+    </div>
+  );
+};
+
+
+

@@ -239,7 +239,7 @@ def apply_rules(node: Node):
         fluoride = m.get("fluoride")
         nitrate = m.get("nitrate")
         hardness = m.get("hardness")
-        coliform = m.get("coliformPresent")
+        ec = m.get("EC")
         compliance = m.get("waterQualityCompliancePercent", 100)
 
         quality_issues = []

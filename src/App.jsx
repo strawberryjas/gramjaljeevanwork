@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState, useRef, useMemo } from 'react';
 import {
   Activity, Droplet, AlertTriangle, Wind, Zap, Clipboard,
   LogOut, MapPin, Clock, WifiOff,
@@ -8,9 +8,9 @@ import {
   Users, Star, FileCheck, LayoutDashboard, Table, FileText,
   Thermometer, Power, Map,
   Ticket, CheckSquare, Filter, PlusCircle, X, Languages,
-  Landmark, Navigation, Play, Square, Settings,
+  Landmark, Play, Square, Settings,
   Download, FileBarChart, Upload, Share2, Leaf, Sun, Gauge, BarChart3,
-  PieChart as PieChartIcon, Menu
+  PieChart as PieChartIcon, Menu, Search
 } from 'lucide-react';
 import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis,
@@ -19,7 +19,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 
-// Import our modular components
+// Import shared components
 import { LoginScreen } from './components/auth/LoginScreen';
 import { VoiceAssistant } from './components/VoiceAssistant';
 import { StatCard } from './components/shared/StatCard';
@@ -27,6 +27,15 @@ import { GaugeChart } from './components/shared/GaugeChart';
 import { QualityCard } from './components/shared/QualityCard';
 import { CountdownCard } from './components/shared/CountdownCard';
 import { PipelineMapViewer } from './components/PipelineMapViewer';
+import { Navigation } from './components/Navigation';
+import { AccessibilityPanel } from './components/AccessibilityPanel';
+import MaintenanceCard from './components/shared/MaintenanceCard';
+import { SidebarNavigation } from './components/SidebarNavigation';
+import IconImage from './components/IconImage';
+import { TabbedPanel, CardSection, MetricCard } from './components/CardLayout';
+import { NotificationContainer, ConfirmationDialog, RecentActionsLog, useNotifications, useActionLog } from './components/ActionFeedback';
+import { PumpToggle, ValveToggle, TankValveToggle, ToggleSwitch } from './components/ToggleSwitch';
+import { AnimatedButton, InteractiveCard, StatusBadge, AnimatedProgressBar } from './components/AnimatedInteractions';
 const GuestDashboard = lazy(() =>
   import('./components/dashboards/GuestDashboard').then(module => ({
     default: module.GuestDashboard,
@@ -40,6 +49,11 @@ const TechnicianDashboard = lazy(() =>
 const ResearcherDashboard = lazy(() =>
   import('./components/dashboards/ResearcherDashboard').then(module => ({
     default: module.ResearcherDashboard,
+  }))
+);
+const ServiceRequestDashboard = lazy(() =>
+  import('./components/dashboards/ServiceRequestDashboard').then(module => ({
+    default: module.ServiceRequestDashboard,
   }))
 );
 const PumpDetails = lazy(() =>
@@ -62,9 +76,16 @@ const PipelinesOverview = lazy(() =>
     default: module.PipelinesOverview,
   }))
 );
+const ValvesDashboard = lazy(() =>
+  import('./components/dashboards/ValvesDashboard').then(module => ({
+    default: module.ValvesDashboard,
+  }))
+);
 
-// Import constants and utilities
+// Import utilities and constants
 import { HAZARD_LOGS } from './constants/mockData';
+import { LANGUAGES } from './constants/translations';
+import { transformStateToData, toLocalInputString, formatMetric, formatDurationLabel } from './utils/appUtils';
 import { getNextDistributionTime } from './utils/helpers';
 import { samplePipelineData, sampleInfrastructureData } from './data/samplePipelineData';
 
@@ -76,40 +97,22 @@ import { LanguageSelector } from './components/LanguageSelector';
 
 const ministryLogoUrl = '/ministry-logo.svg';
 const jalsenseLogoUrl = '/jalsense-logo.svg';
-
-const formatMetric = (value, decimals = 2, fallback = 0) => {
-  const parsed = Number(value);
-  if (Number.isFinite(parsed)) {
-    return Number(parsed.toFixed(decimals));
-  }
-  const fb = Number(fallback);
-  return Number.isFinite(fb) ? Number(fb.toFixed(decimals)) : 0;
-};
-
-const formatDurationLabel = (ms = 0) => {
-  if (!ms || ms <= 0) return '0s';
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  if (minutes > 0) return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
-  return `${seconds}s`;
-};
-
-const toLocalInputString = (date) => {
-  if (!(date instanceof Date)) return '';
-  const pad = (num) => `${num}`.padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+const ALERT_TYPE_TO_TAB = {
+  LEAKAGE: 'pipeline',
+  PRESSURE: 'pipeline',
+  QUALITY: 'quality',
+  PUMP_TIMER: 'pump-station',
+  TANK_LOW: 'water-tank',
+  TANK_FULL: 'water-tank',
+  TANK_OVERFLOW: 'water-tank',
+  PUMP_OVERHEAT: 'pump-station'
 };
 
 /**
  * GRAM JAL JEEVAN - Rural Piped Water Supply O&M System
- * V18.0 - Public Transparency & Full Integration Edition
- * Features: Extended Public Dashboard (Energy, GIS, Help Desk, Voice AI)
+ * V18.1 - Refactored Architecture Edition
+ * Features: Modular dashboard components, separated concerns, optimized rendering
  */
-
-// --- DASHBOARDS ---
 
 const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onToggleValve, onSchedulePumpTimer, onSchedulePumpStop, onCancelPumpSchedule }) => {
   const [selectedPump, setSelectedPump] = useState('primary');
@@ -294,63 +297,7 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-black flex items-center gap-3">
-            <Server size={32} className="text-indigo-600" /> Infrastructure Command Center
-          </h2>
-          <p className="text-sm text-gray-500">Live view of pumps, pipelines, valves and sensors</p>
-        </div>
-        <div className="flex flex-wrap gap-2 text-xs font-bold">
-          <span className="px-3 py-1 rounded-full bg-green-100 text-green-700">
-            Specific Energy: {systemState?.pumpHouse?.pumpFlowOutput > 0 && systemState?.pumpHouse?.powerConsumption
-              ? (systemState.pumpHouse.powerConsumption / (systemState.pumpHouse.pumpFlowOutput * 0.06)).toFixed(2)
-              : 0} kWh/m³
-          </span>
-          <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700">
-            Total Flow: {systemState?.systemMetrics?.totalFlowRate
-              ? (systemState.systemMetrics.totalFlowRate * 60).toLocaleString()
-              : '0'} L/hr
-          </span>
-        </div>
-      </div>
-
-      {/* Pipeline Network Diagram */}
-      <div className="bg-white rounded-lg border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
-        <div className="p-4 border-b bg-indigo-50 flex items-center justify-between">
-          <h3 className="font-bold text-indigo-900 flex items-center gap-2">
-            <Layers size={18} /> Pipeline Network Overview
-          </h3>
-          <span className="text-xs font-semibold text-indigo-600">Pressure reference: Bar • Flow: L/min</span>
-        </div>
-        <div className="p-6">
-          <div className="flex flex-col lg:flex-row items-center gap-6">
-            {pipelineSegments.map((segment, idx) => (
-              <React.Fragment key={segment.id}>
-                <div className={`w-full max-w-xs p-4 rounded-xl border-2 ${segment.status === 'critical' ? 'border-red-300 bg-red-50' : segment.status === 'warning' ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50'}`}>
-                  <p className="text-xs uppercase text-gray-500 mb-1">{segment.label}</p>
-                  <p className="text-2xl font-black text-black">{segment.pressure.toFixed(1)} <span className="text-sm text-gray-500">Bar</span></p>
-                  <p className="text-xs text-gray-500 mt-1">Flow: {segment.flow} L/min</p>
-                  <div className="w-full bg-white rounded-full h-2 mt-3 overflow-hidden">
-                    <div className={`h-full ${segment.status === 'critical' ? 'bg-red-500' : segment.status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${(segment.pressure / 5) * 100}%` }}></div>
-                  </div>
-                </div>
-                {idx < pipelineSegments.length - 1 && (
-                  <div className="hidden lg:flex flex-col items-center text-gray-400">
-                    <div className="w-16 h-2 bg-gradient-to-r from-slate-300 to-slate-200 rounded-full"></div>
-                    <Navigation size={18} className="mt-1" />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Normal •
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span> Warning •
-            <span className="w-2 h-2 rounded-full bg-red-500"></span> Critical
-          </p>
-        </div>
-      </div>
+      {/* Removed Infrastructure Command Center and pipeline network overview */}
 
       {/* Pump Station + Tank */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -365,13 +312,112 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             </span>
           </div>
 
-          {/* Pump Visual */}
+          {/* Pump Visual - Realistic Industrial Design */}
           <div className={`relative p-6 rounded-2xl border-2 mb-4 transition-all duration-500 ${isPumpOn ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-50' : 'border-gray-200 bg-gray-50'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {/* Animated Pump Icon */}
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center ${isPumpOn ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}>
-                  <Power size={36} className={`text-white ${isPumpOn ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '3s' }} />
+                {/* Realistic Pump Motor Assembly */}
+                <div className="relative" style={{ width: '140px', height: '160px' }}>
+                  {/* Mounting Base */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-gradient-to-b from-stone-600 to-stone-800 rounded-sm border-2 border-stone-900"
+                    style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}>
+                    {/* Bolt Holes */}
+                    <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
+                    <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
+                  </div>
+
+                  {/* Motor Housing (Cylindrical Body) */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-28 rounded-lg overflow-hidden"
+                    style={{
+                      background: isPumpOn
+                        ? 'linear-gradient(90deg, #334155 0%, #475569 20%, #64748b 50%, #475569 80%, #334155 100%)'
+                        : 'linear-gradient(90deg, #1e293b 0%, #334155 20%, #475569 50%, #334155 80%, #1e293b 100%)',
+                      boxShadow: isPumpOn
+                        ? '0 8px 25px rgba(34, 197, 94, 0.3), inset -4px 0 8px rgba(0,0,0,0.3), inset 4px 0 8px rgba(255,255,255,0.1)'
+                        : '0 8px 25px rgba(0,0,0,0.5), inset -4px 0 8px rgba(0,0,0,0.4), inset 4px 0 8px rgba(255,255,255,0.05)',
+                      border: '3px solid #1e293b'
+                    }}>
+
+                    {/* Cooling Fins (Horizontal Lines) */}
+                    <div className="absolute inset-0">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="absolute left-0 right-0 h-0.5 bg-slate-900/40"
+                          style={{ top: `${12 + i * 10}%` }}></div>
+                      ))}
+                    </div>
+
+                    {/* Motor Name Plate */}
+                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-yellow-600 px-2 py-0.5 rounded-sm border border-yellow-800">
+                      <p className="text-[8px] font-bold text-slate-900">7.5HP MOTOR</p>
+                    </div>
+
+                    {/* Ventilation Grills */}
+                    <div className="absolute bottom-2 left-2 right-2 flex gap-1">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="flex-1 h-3 bg-slate-900/60 rounded-sm border border-slate-700"></div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pump Head (Front Casing) */}
+                  <div className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%)',
+                      boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
+                      border: '2px solid #0a3a5a'
+                    }}>
+
+                    {/* Impeller Housing (Circular) */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-4 border-sky-900/50"
+                      style={{
+                        background: 'radial-gradient(circle, #0369a1 0%, #075985 50%, #0c4a6e 100%)',
+                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.6)'
+                      }}>
+
+                      {/* Rotating Impeller */}
+                      <div className={`absolute inset-0 ${isPumpOn ? 'animate-spin' : ''}`}
+                        style={{ animationDuration: '1.5s' }}>
+                        {/* Impeller Blades */}
+                        {[...Array(6)].map((_, i) => (
+                          <div key={i} className="absolute top-1/2 left-1/2 w-1 h-5 bg-cyan-400/70 rounded"
+                            style={{
+                              transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-8px)`,
+                              transformOrigin: 'center'
+                            }}></div>
+                        ))}
+                        {/* Center Hub */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-600"></div>
+                      </div>
+                    </div>
+
+                    {/* Outlet Flange */}
+                    <div className="absolute top-0 right-0 w-6 h-8 bg-gradient-to-r from-sky-800 to-sky-900 border-2 border-sky-950 rounded-r"
+                      style={{ boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.5)' }}>
+                      {/* Bolt Holes on Flange */}
+                      <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
+                      <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
+                    </div>
+                  </div>
+
+                  {/* Status Indicator Light */}
+                  <div className={`absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-white ${isPumpOn
+                    ? 'bg-green-400 shadow-lg shadow-green-400/80 animate-pulse'
+                    : 'bg-red-500 shadow-lg shadow-red-500/50'
+                    }`}
+                    style={{
+                      boxShadow: isPumpOn
+                        ? '0 0 15px rgba(34, 197, 94, 0.8), inset 0 1px 2px rgba(255,255,255,0.5)'
+                        : '0 0 10px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(0,0,0,0.3)'
+                    }}>
+                  </div>
+
+                  {/* Vibration Effect when Running */}
+                  {isPumpOn && (
+                    <div className="absolute inset-0 animate-pulse opacity-30 pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)'
+                      }}></div>
+                  )}
                 </div>
                 <div>
                   <p className="text-2xl font-black text-black">{isPumpOn ? 'RUNNING' : 'STOPPED'}</p>
@@ -379,17 +425,19 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                 </div>
               </div>
 
-              {/* Flow Animation */}
-              {isPumpOn && (
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-24 bg-blue-100 rounded-full overflow-hidden relative">
-                      <div className="absolute bottom-0 left-0 right-0 bg-blue-500 animate-flow-up" style={{ height: '60%', animation: 'flowUp 1s infinite' }}></div>
-                    </div>
-                    <span className="text-xs text-blue-600 font-bold mt-1">Flow</span>
+              {/* Flow Animation: pipe from pump to tank */}
+              <div className="hidden xl:flex items-center gap-2">
+                <div className="flex items-center">
+                  <div className="w-40 h-6 bg-gray-300 rounded-full relative overflow-hidden border border-gray-400">
+                    {isPumpOn && (
+                      <div className="absolute inset-0">
+                        <div className="h-full bg-blue-500/70 animate-flow-right" style={{ width: '40%' }}></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+                <span className="text-xs text-blue-600 font-bold">Pump → Tank</span>
+              </div>
             </div>
 
             {/* Pump Metrics */}
@@ -841,7 +889,8 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
     (tankQuality.turbidity <= 5 ? 25 : 0) +
     (tankQuality.chlorine >= 0.2 && tankQuality.chlorine <= 1.0 ? 25 : 0) +
     (tankQuality.TDS <= 500 ? 15 : 0) +
-    (data.qualityTemperature <= 28 ? 10 : 0)
+    (data.qualityHardness <= 300 ? 10 : 0) +
+    (data.qualityEC <= 750 ? 10 : 0)
   );
 
   const avgPipelineDeviation = pipelineQualities.length
@@ -890,7 +939,8 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
     { id: 'LAB-241118A', date: '18 Nov 2024', parameter: 'pH', result: 7.4, status: 'Within Range' },
     { id: 'LAB-241118B', date: '18 Nov 2024', parameter: 'Turbidity', result: 2.1, status: 'Within Range' },
     { id: 'LAB-241118C', date: '18 Nov 2024', parameter: 'Chlorine', result: 0.15, status: 'Low - Dose' },
-    { id: 'LAB-241018D', date: '10 Oct 2024', parameter: 'Coliform', result: 0, status: 'Compliant' },
+    { id: 'LAB-241018D', date: '10 Oct 2024', parameter: 'Hardness', result: 180, status: 'Compliant' },
+    { id: 'LAB-241018E', date: '10 Oct 2024', parameter: 'EC', result: 450, status: 'Compliant' },
   ];
 
   const handleDocumentUpload = (e) => {
@@ -928,36 +978,190 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           <QualityCard label="Turbidity" value={data.qualityTurbidity} unit="NTU" safeMax={5} icon={Wind} />
           <QualityCard label="Chlorine" value={data.qualityChlorine} unit="mg/L" safeMin={0.2} safeMax={1.0} icon={Droplet} />
           <QualityCard label="TDS" value={data.qualityTDS} unit="ppm" safeMax={500} icon={Layers} />
-          <QualityCard label="Temperature" value={data.qualityTemperature || 24} unit="°C" safeMax={28} icon={Thermometer} />
-          <QualityCard label="Coliform" value={data.qualityColiform || 0} unit="CFU" safeMax={0} icon={Microscope} />
+          <QualityCard label="Hardness" value={data.qualityHardness || 180} unit="mg/L" safeMax={300} icon={Beaker} />
+          <QualityCard label="EC" value={data.qualityEC || 450} unit="µS/cm" safeMax={750} icon={Activity} />
         </div>
       </div>
 
+      {/* Pipeline Quality Breakdown - Moved to Top */}
       {pipelineQualities.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-            <p className="text-xs font-bold text-emerald-700 uppercase">Avg Pipeline Deviation</p>
-            <p className="text-3xl font-black text-emerald-600">{avgPipelineDeviation}%</p>
-            <p className="text-xs text-emerald-700">vs main tank quality</p>
+        <>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Avg Pipeline Deviation</p>
+                <TrendingUp size={20} className="text-emerald-600" />
+              </div>
+              <p className="text-4xl font-black text-emerald-700 mb-1">{avgPipelineDeviation}%</p>
+              <p className="text-xs text-emerald-600 font-semibold">vs main tank quality</p>
+            </div>
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">Highest Deviation</p>
+                <AlertCircle size={20} className="text-amber-600" />
+              </div>
+              <p className="text-2xl font-black text-amber-700 mb-1">
+                {highestDeviationPipeline?.shortName || 'All Stable'}
+              </p>
+              <p className="text-xs text-amber-600 font-semibold">
+                {highestDeviationPipeline ? `${highestDeviationPipeline.deviation}% variance detected` : 'No active alerts'}
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-red-700 uppercase tracking-wide">Needs Attention</p>
+                <AlertTriangle size={20} className="text-red-600" />
+              </div>
+              <p className="text-4xl font-black text-red-700 mb-1">{pipelinesNeedingAttention}</p>
+              <p className="text-xs text-red-600 font-semibold">Pipelines with &gt;10% deviation</p>
+            </div>
           </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-            <p className="text-xs font-bold text-amber-700 uppercase">Highest Deviation</p>
-            <p className="text-lg font-black text-amber-600">
-              {highestDeviationPipeline?.shortName || 'All Stable'}
-            </p>
-            <p className="text-xs text-amber-600">
-              {highestDeviationPipeline ? `${highestDeviationPipeline.deviation}% variance` : 'No active alerts'}
-            </p>
+
+          {/* Pipeline Quality Breakdown Table */}
+          <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-white flex items-center gap-3 text-xl">
+                  <Layers size={24} /> Pipeline Quality Breakdown
+                </h3>
+                <p className="text-indigo-100 text-sm mt-1">Detailed water quality parameters across distribution network</p>
+              </div>
+              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-bold border border-white/30">
+                {pipelineQualities.length} Active Pipelines
+              </span>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-slate-100 to-slate-50">
+                  <tr className="border-b-2 border-slate-200">
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">Pipeline</th>
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Droplet size={14} /> pH Level
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Wind size={14} /> Turbidity
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Beaker size={14} /> Chlorine
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Layers size={14} /> TDS
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-bold text-slate-700 text-sm">Status</th>
+                    <th className="p-4 text-center font-bold text-slate-700 text-sm">Deviation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {pipelineQualities.map((pq, idx) => {
+                    const isAlert = pq.deviation > 10;
+                    const isWarning = pq.deviation > 5 && pq.deviation <= 10;
+                    return (
+                      <tr key={pq.pipelineId} className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-sm ${
+                              isAlert ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`}>
+                              P{pq.pipelineId}
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-800 text-sm">{pq.pipelineName}</p>
+                              <p className="text-xs text-slate-500">{pq.shortName}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.pH)}</p>
+                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.pH)}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.turbidity)} <span className="text-xs text-slate-500">NTU</span></p>
+                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.turbidity)}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.chlorine)} <span className="text-xs text-slate-500">mg/L</span></p>
+                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.chlorine)}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="space-y-1">
+                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.TDS, 0)} <span className="text-xs text-slate-500">ppm</span></p>
+                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.TDS, 0)}</p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                            isAlert ? 'bg-red-100 text-red-700 border border-red-300' :
+                            isWarning ? 'bg-amber-100 text-amber-700 border border-amber-300' :
+                            'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                          }`}>
+                            {isAlert ? '⚠ Alert' : isWarning ? '⚡ Warning' : '✓ Good'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <span className={`text-2xl font-black ${
+                              isAlert ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'
+                            }`}>
+                              {pq.deviation}%
+                            </span>
+                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full ${
+                                  isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-600' : 'bg-emerald-600'
+                                }`}
+                                style={{ width: `${Math.min(100, pq.deviation * 5)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Legend */}
+            <div className="bg-slate-50 p-4 border-t-2 border-slate-200">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span className="text-xs font-semibold text-slate-600">Good (&lt;5%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span className="text-xs font-semibold text-slate-600">Warning (5-10%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-xs font-semibold text-slate-600">Alert (&gt;10%)</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 italic">Deviation calculated from main tank baseline quality</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <p className="text-xs font-bold text-red-700 uppercase">Pipelines Needing Attention</p>
-            <p className="text-3xl font-black text-red-600">{pipelinesNeedingAttention}</p>
-            <p className="text-xs text-red-600">Deviation &gt; 10% from tank</p>
-          </div>
-        </div>
+        </>
       )}
 
-      {/* Pipeline Comparisons */}
+      {/* Pipeline Comparison Charts */}
       {pipelineQualities.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
@@ -998,186 +1202,41 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           </div>
         </div>
       )}
-
-      {/* Alert Threshold Configuration */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-        <h3 className="font-bold text-black flex items-center gap-2">
-          <AlertCircle size={18} /> Alert Threshold Configuration
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          {[
-            { label: 'pH', min: 6.5, max: 8.5 },
-            { label: 'Turbidity', min: 0, max: 5 },
-            { label: 'Chlorine', min: 0.2, max: 1 },
-            { label: 'TDS', min: 0, max: 500 },
-          ].map(param => (
-            <div key={param.label} className="border rounded-xl p-3 bg-gray-50">
-              <p className="font-bold text-gray-700">{param.label}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <input type="number" defaultValue={param.min} className="w-full border rounded-lg px-2 py-1" />
-                <span>-</span>
-                <input type="number" defaultValue={param.max} className="w-full border rounded-lg px-2 py-1" />
-              </div>
-            </div>
-          ))}
-        </div>
-        <button className="w-full py-3 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">Save Thresholds</button>
-      </div>
-
-      {pipelineQualities.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-          <div className="p-4 border-b flex items-center justify-between bg-gray-50">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-              <Layers size={16} /> Pipeline Quality Breakdown
-            </h3>
-            <span className="text-xs text-gray-500">Values shown as Outlet (Inlet)</span>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-xs text-gray-600">
-              <tr>
-                <th className="p-3 text-left font-semibold">Pipeline</th>
-                <th className="p-3 text-left font-semibold">pH</th>
-                <th className="p-3 text-left font-semibold">Turbidity (NTU)</th>
-                <th className="p-3 text-left font-semibold">Chlorine (mg/L)</th>
-                <th className="p-3 text-left font-semibold">TDS (ppm)</th>
-                <th className="p-3 text-left font-semibold">Δ vs Tank</th>
-                <th className="p-3 text-left font-semibold">Deviation</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {pipelineQualities.map(pq => {
-                const turbidityDelta = formatDisplay((pq.outlet.turbidity ?? tankQuality.turbidity) - tankQuality.turbidity);
-                const chlorineDelta = formatDisplay((pq.outlet.chlorine ?? tankQuality.chlorine) - tankQuality.chlorine);
-                const phDelta = formatDisplay((pq.outlet.pH ?? tankQuality.pH) - tankQuality.pH);
-                const tdsDelta = formatDisplay((pq.outlet.TDS ?? tankQuality.TDS) - tankQuality.TDS, 0);
-                return (
-                  <tr key={pq.pipelineId}>
-                    <td className="p-3 font-semibold text-gray-800">{pq.pipelineName}</td>
-                    <td className="p-3 text-gray-700">{formatDisplay(pq.outlet.pH)} <span className="text-xs text-gray-500">({formatDisplay(pq.inlet.pH)})</span></td>
-                    <td className="p-3 text-gray-700">{formatDisplay(pq.outlet.turbidity)} <span className="text-xs text-gray-500">({formatDisplay(pq.inlet.turbidity)})</span></td>
-                    <td className="p-3 text-gray-700">{formatDisplay(pq.outlet.chlorine)} <span className="text-xs text-gray-500">({formatDisplay(pq.inlet.chlorine)})</span></td>
-                    <td className="p-3 text-gray-700">{formatDisplay(pq.outlet.TDS, 0)} <span className="text-xs text-gray-500">({formatDisplay(pq.inlet.TDS, 0)})</span></td>
-                    <td className="p-3 text-gray-700 text-xs">
-                      pH {phDelta}, Turb {turbidityDelta}, Cl {chlorineDelta}, TDS {tdsDelta}
-                    </td>
-                    <td className={`p-3 font-bold ${pq.deviation > 10 ? 'text-red-600' : 'text-emerald-600'}`}>
-                      {pq.deviation}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Schedule and Documents */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-4 border-b bg-indigo-50 flex items-center justify-between">
-            <h3 className="font-bold text-indigo-900 flex items-center gap-2">
-              <CalendarClock size={18} /> Quality Test Schedule
-            </h3>
-            <span className="text-xs text-indigo-600 font-semibold">Last Lab Test: {data.lastWaterTest || '18 Nov 2024'}</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500">
-                <tr>
-                  <th className="p-3 text-left font-semibold">Type</th>
-                  <th className="p-3 text-left font-semibold">Test</th>
-                  <th className="p-3 text-left font-semibold">Frequency</th>
-                  <th className="p-3 text-left font-semibold">Last</th>
-                  <th className="p-3 text-left font-semibold">Next</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {schedule.map(item => (
-                  <tr key={item.test}>
-                    <td className="p-3 font-bold text-black">{item.type}</td>
-                    <td className="p-3 text-black">{item.test}</td>
-                    <td className="p-3 text-gray-500">{item.frequency}</td>
-                    <td className="p-3 text-gray-500">{item.last}</td>
-                    <td className="p-3 text-black font-semibold">{item.next}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-          <h3 className="font-bold text-black flex items-center gap-2">
-            <Upload size={18} /> Quality Certifications
-          </h3>
-          <label className="block border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center text-sm text-gray-500 cursor-pointer hover:border-blue-300 transition-colors">
-            <input type="file" className="hidden" onChange={handleDocumentUpload} />
-            {selectedDoc ? (
-              <span className="font-semibold text-blue-600">{selectedDoc}</span>
-            ) : (
-              <>
-                <Upload size={24} className="mx-auto mb-2 text-gray-400" />
-                Upload lab certificate (PDF/JPG)
-              </>
-            )}
-          </label>
-          <div className="text-xs text-gray-500 flex flex-col gap-1">
-            <span>• Latest BIS Certification: <strong className="text-black">Valid till Mar 2025</strong></span>
-            <span>• Last NABL Lab Report: <strong className="text-black">#LAB-241118A</strong></span>
-          </div>
-        </div>
-      </div>
-
-      {/* Lab Results & Actions */}
-      <div className="bg-white rounded-lg border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
-        <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <h3 className="font-bold text-black flex items-center gap-2">
-            <Table size={18} /> Lab Test Results Database
-          </h3>
-          <div className="flex gap-2 text-xs">
-            <button className="px-3 py-1.5 rounded-lg border bg-gray-100 font-bold text-black flex items-center gap-1">
-              <Download size={12} /> Download CSV
-            </button>
-            <button className="px-3 py-1.5 rounded-lg border bg-blue-50 font-bold text-blue-600 flex items-center gap-1">
-              <Share2 size={12} /> Share with Authorities
-            </button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500">
-              <tr>
-                <th className="p-3 text-left font-semibold">Sample ID</th>
-                <th className="p-3 text-left font-semibold">Date</th>
-                <th className="p-3 text-left font-semibold">Parameter</th>
-                <th className="p-3 text-left font-semibold">Result</th>
-                <th className="p-3 text-left font-semibold">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {labResults.map(result => (
-                <tr key={result.id}>
-                  <td className="p-3 font-mono text-xs text-gray-500">{result.id}</td>
-                  <td className="p-3 text-gray-500">{result.date}</td>
-                  <td className="p-3 text-black font-semibold">{result.parameter}</td>
-                  <td className="p-3">{result.result}</td>
-                  <td className="p-3">
-                    <span className={`px-3 py-1 rounded-full text-2xs font-bold ${result.status.includes('Within') ? 'bg-emerald-50 text-emerald-700' : result.status.includes('Low') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-                      {result.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 };
 
-const ForecastingDashboard = ({ data, flow24h }) => {
+const ForecastingDashboard = ({ data, flow24h, systemState }) => {
   const pumpWearIndex = data.pumpEfficiency > 0 ? 100 - data.pumpEfficiency : 0;
   const leakProb = data.pumpFlowRate < 400 && data.pumpStatus === 'RUNNING' ? 85 : 5;
+  const pumpEfficiencyScore = Number.isFinite(data.pumpEfficiency) ? data.pumpEfficiency : 0;
+  const earlyDetectionScore = Math.max(0, Math.min(100, 100 - leakProb + 10));
+  const nextServiceLabel = data.nextPumpService
+    ? new Date(data.nextPumpService).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
+    : 'Schedule Soon';
+  const resilienceScore = Math.max(60, Math.min(100, pumpEfficiencyScore + (100 - leakProb) * 0.3));
+  const predictiveInsights = [
+    {
+      title: 'Pump Efficiency',
+      metric: `${pumpEfficiencyScore.toFixed(0)}%`,
+      detail: 'Optimized VFD tuning keeps energy per liter low',
+    },
+    {
+      title: 'Early Fault Detection',
+      metric: `${earlyDetectionScore.toFixed(0)}%`,
+      detail: 'Flow/pressure anomalies flagged before escalation',
+    },
+    {
+      title: 'Timely Maintenance',
+      metric: nextServiceLabel,
+      detail: 'Automated reminders keep crews on schedule',
+    },
+    {
+      title: 'System Resilience',
+      metric: `${resilienceScore.toFixed(0)}%`,
+      detail: 'Reducing system failures with predictive triggers',
+    },
+  ];
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -1197,7 +1256,12 @@ const ForecastingDashboard = ({ data, flow24h }) => {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={flow24h}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="hour" />
+                <XAxis
+                  dataKey="timeLabel"
+                  interval="preserveStartEnd"
+                  tick={{ fontSize: 10 }}
+                  label={{ value: 'Time of Day', position: 'insideBottom', dy: 10 }}
+                />
                 <YAxis label={{ value: 'Flow (L/m)', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
                 <Legend />
@@ -1239,11 +1303,259 @@ const ForecastingDashboard = ({ data, flow24h }) => {
           </div>
         </div>
       </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-fuchsia-50 p-4 border-b border-fuchsia-100">
+          <h3 className="font-bold text-fuchsia-800 flex items-center gap-2">
+            <TrendingUp size={18} /> Predictive Insights
+          </h3>
+          <p className="text-xs text-fuchsia-500 uppercase tracking-wide">Actions that protect uptime</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {predictiveInsights.map(insight => (
+            <div key={insight.title} className="p-4 rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition duration-200">
+              <p className="text-2xs text-gray-400 uppercase tracking-wider">{insight.title}</p>
+              <p className="text-3xl font-black text-black mt-2">{insight.metric}</p>
+              <p className="text-xs text-gray-500 mt-1">{insight.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Early Fault Detection System */}
+      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl border-2 border-red-200 shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 p-5">
+          <h3 className="font-black text-white flex items-center gap-3 text-xl">
+            <AlertTriangle size={24} /> Early Fault Detection System
+          </h3>
+          <p className="text-red-100 text-sm mt-1">Real-time anomaly detection across all system components</p>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* Pump Station Health */}
+          <div className="bg-white rounded-xl border-2 border-slate-200 shadow-lg overflow-hidden">
+            <div className="bg-slate-800 px-4 py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white flex items-center gap-2">
+                <Power size={18} /> Pump Station Diagnostics
+              </h4>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.pumpEfficiency > 75 ? 'bg-green-500 text-white' : data.pumpEfficiency > 50 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                {data.pumpEfficiency > 75 ? '✓ HEALTHY' : data.pumpEfficiency > 50 ? '⚠ MONITOR' : '✕ CRITICAL'}
+              </span>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Motor Temperature</span>
+                  <span className={`text-lg font-black ${data.motorTemp > 65 ? 'text-red-600' : 'text-green-600'}`}>
+                    {data.motorTemp || 45}°C
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.motorTemp > 65 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.motorTemp || 45) / 80 * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.motorTemp > 65 ? '⚠ Overheating detected' : '✓ Normal operating range'}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Vibration Level</span>
+                  <span className={`text-lg font-black ${data.vibration > 8 ? 'text-red-600' : 'text-green-600'}`}>
+                    {(data.vibration || 3).toFixed(1)} mm/s
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.vibration > 8 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.vibration || 3) / 10 * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.vibration > 8 ? '⚠ Bearing wear suspected' : '✓ Stable operation'}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Power Draw</span>
+                  <span className={`text-lg font-black ${data.powerConsumption > 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                    {(data.powerConsumption || 7.5).toFixed(1)} kW
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.powerConsumption > 10 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.powerConsumption || 7.5) / 12 * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.powerConsumption > 10 ? '⚠ Efficiency drop detected' : '✓ Optimal consumption'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Water Tank Monitoring */}
+          <div className="bg-white rounded-xl border-2 border-blue-200 shadow-lg overflow-hidden">
+            <div className="bg-blue-600 px-4 py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white flex items-center gap-2">
+                <Droplet size={18} /> Water Tank Health
+              </h4>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.tankLevel > 30 && data.tankLevel < 95 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+                {data.tankLevel > 30 && data.tankLevel < 95 ? '✓ OPTIMAL' : '⚠ ATTENTION'}
+              </span>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Water Level</span>
+                  <span className={`text-lg font-black ${data.tankLevel < 20 ? 'text-red-600' : data.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+                    {(data.tankLevel || 65).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.tankLevel < 20 ? 'bg-red-600' : data.tankLevel > 90 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${data.tankLevel || 65}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.tankLevel < 20 ? '⚠ Low water alert' : data.tankLevel > 90 ? '⚠ Near capacity' : '✓ Normal range'}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Flow Rate</span>
+                  <span className={`text-lg font-black ${data.pumpFlowRate < 300 ? 'text-red-600' : 'text-green-600'}`}>
+                    {(data.pumpFlowRate || 450).toFixed(0)} L/min
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.pumpFlowRate < 300 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.pumpFlowRate || 450) / 600 * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.pumpFlowRate < 300 ? '⚠ Possible blockage' : '✓ Normal flow'}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-600">Temperature</span>
+                  <span className={`text-lg font-black ${data.tankTemp > 30 ? 'text-amber-600' : 'text-green-600'}`}>
+                    {(data.tankTemp || 26).toFixed(1)}°C
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.tankTemp > 30 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.tankTemp || 26) / 40 * 100)}%`}}></div>
+                </div>
+                <p className="text-xs text-slate-500">{data.tankTemp > 30 ? '⚠ Elevated temperature' : '✓ Normal temperature'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Pressure Sensors Network */}
+          <div className="bg-white rounded-xl border-2 border-purple-200 shadow-lg overflow-hidden">
+            <div className="bg-purple-600 px-4 py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white flex items-center gap-2">
+                <Gauge size={18} /> Pressure Sensor Network
+              </h4>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
+                ✓ ALL ONLINE
+              </span>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { zone: 'Inlet', pressure: 2.8, threshold: 3.5 },
+                { zone: 'Pump Outlet', pressure: 4.2, threshold: 5.0 },
+                { zone: 'Distribution', pressure: 3.1, threshold: 4.0 },
+                { zone: 'Tank Inlet', pressure: 2.5, threshold: 3.0 }
+              ].map((sensor, idx) => (
+                <div key={idx} className="space-y-2 bg-purple-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-purple-700">{sensor.zone}</span>
+                    <span className={`text-sm font-black ${sensor.pressure < sensor.threshold * 0.6 ? 'text-red-600' : 'text-green-600'}`}>
+                      {sensor.pressure.toFixed(1)} Bar
+                    </span>
+                  </div>
+                  <div className="w-full bg-purple-200 rounded-full h-1.5">
+                    <div className={`h-1.5 rounded-full transition-all ${sensor.pressure < sensor.threshold * 0.6 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${(sensor.pressure / sensor.threshold) * 100}%`}}></div>
+                  </div>
+                  <p className="text-2xs text-purple-600">{sensor.pressure < sensor.threshold * 0.6 ? '⚠ Low pressure' : '✓ Normal'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Valve Status Matrix */}
+          <div className="bg-white rounded-xl border-2 border-emerald-200 shadow-lg overflow-hidden">
+            <div className="bg-emerald-600 px-4 py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white flex items-center gap-2">
+                <Settings size={18} /> Valve Control Matrix
+              </h4>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
+                6/6 OPERATIONAL
+              </span>
+            </div>
+            <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[
+                { name: 'Main Inlet', status: 'OPEN', cycles: 342 },
+                { name: 'Pump Bypass', status: 'CLOSED', cycles: 89 },
+                { name: 'Tank Inlet', status: 'OPEN', cycles: 521 },
+                { name: 'Tank Outlet', status: 'CLOSED', cycles: 467 },
+                { name: 'Distribution 1', status: 'OPEN', cycles: 234 },
+                { name: 'Distribution 2', status: 'OPEN', cycles: 198 }
+              ].map((valve, idx) => (
+                <div key={idx} className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xs font-bold text-emerald-700 uppercase">{valve.name}</span>
+                    <div className={`w-3 h-3 rounded-full ${valve.status === 'OPEN' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></div>
+                  </div>
+                  <p className="text-xs font-black text-slate-900">{valve.status}</p>
+                  <p className="text-2xs text-slate-500 mt-1">{valve.cycles} cycles</p>
+                  <p className="text-2xs text-emerald-600 mt-1">{valve.cycles > 500 ? '⚠ Service soon' : '✓ Good condition'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Water Quality Sensors */}
+          <div className="bg-white rounded-xl border-2 border-cyan-200 shadow-lg overflow-hidden">
+            <div className="bg-cyan-600 px-4 py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white flex items-center gap-2">
+                <FlaskConical size={18} /> Water Quality Monitoring
+              </h4>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+                {data.pH >= 6.5 && data.pH <= 8.5 ? '✓ SAFE' : '⚠ CHECK'}
+              </span>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
+                <span className="text-xs font-bold text-cyan-700">pH Level</span>
+                <p className="text-2xl font-black text-slate-900">{(data.pH || 7.2).toFixed(2)}</p>
+                <div className="w-full bg-cyan-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.pH || 7.2) / 14) * 100}%`}}></div>
+                </div>
+                <p className="text-2xs text-cyan-600">{data.pH >= 6.5 && data.pH <= 8.5 ? '✓ Within range' : '⚠ Out of range'}</p>
+              </div>
+              
+              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
+                <span className="text-xs font-bold text-cyan-700">Turbidity</span>
+                <p className="text-2xl font-black text-slate-900">{(data.turbidity || 1.2).toFixed(2)} NTU</p>
+                <div className="w-full bg-cyan-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.turbidity < 5 ? 'bg-green-600' : 'bg-red-600'}`} style={{width: `${Math.min(100, ((data.turbidity || 1.2) / 10) * 100)}%`}}></div>
+                </div>
+                <p className="text-2xs text-cyan-600">{data.turbidity < 5 ? '✓ Excellent' : '⚠ High'}</p>
+              </div>
+              
+              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
+                <span className="text-xs font-bold text-cyan-700">Chlorine</span>
+                <p className="text-2xl font-black text-slate-900">{(data.chlorine || 0.5).toFixed(2)} mg/L</p>
+                <div className="w-full bg-cyan-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.chlorine >= 0.2 && data.chlorine <= 1.0 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.chlorine || 0.5) / 2) * 100}%`}}></div>
+                </div>
+                <p className="text-2xs text-cyan-600">{data.chlorine >= 0.2 && data.chlorine <= 1.0 ? '✓ Safe level' : '⚠ Adjust dosage'}</p>
+              </div>
+              
+              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
+                <span className="text-xs font-bold text-cyan-700">TDS</span>
+                <p className="text-2xl font-black text-slate-900">{(data.TDS || 245).toFixed(0)} ppm</p>
+                <div className="w-full bg-cyan-200 rounded-full h-2">
+                  <div className={`h-2 rounded-full transition-all ${data.TDS < 500 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${Math.min(100, ((data.TDS || 245) / 1000) * 100)}%`}}></div>
+                </div>
+                <p className="text-2xs text-cyan-600">{data.TDS < 500 ? '✓ Good' : '⚠ High'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-const ReportsDashboard = ({ data, history, flow24h, alerts, tickets }) => {
+const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState }) => {
   const [selectedReport, setSelectedReport] = useState('daily');
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(() => {
@@ -1460,6 +1772,223 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets }) => {
           </div>
         </div>
       </div>
+
+      {/* Comprehensive Maintenance Schedule Overview */}
+      {systemState && (
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-8 shadow-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-3">
+              <CalendarClock size={28} className="text-indigo-600" />
+              System-Wide Maintenance Schedule
+            </h2>
+            <div className="px-4 py-2 rounded-full bg-white border-2 border-indigo-300">
+              <span className="text-sm font-bold text-indigo-700">Predictive Maintenance</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pump House Maintenance */}
+            {systemState.pumpHouse && (
+              <MaintenanceCard
+                title="Pump Station"
+                lastMaintenanceDate={systemState.pumpHouse.lastMaintenanceDate}
+                nextMaintenanceDate={systemState.pumpHouse.nextMaintenanceDate}
+                maintenanceIntervalDays={systemState.pumpHouse.maintenanceIntervalDays}
+                maintenanceHistory={systemState.pumpHouse.maintenanceHistory}
+                type="pump"
+                additionalMetrics={[
+                  { label: "Operation Cycles", value: systemState.pumpHouse.operationCycles?.toLocaleString() || "0" },
+                  { label: "Vibration", value: `${systemState.pumpHouse.vibration?.toFixed(1) || "0"} mm/s` },
+                  { label: "Motor Temp", value: `${systemState.pumpHouse.motorTemperature?.toFixed(1) || "0"}°C` },
+                  { label: "Efficiency", value: `${systemState.pumpHouse.pumpEfficiency?.toFixed(0) || "0"}%` }
+                ]}
+              />
+            )}
+
+            {/* Water Tank Maintenance */}
+            {systemState.overheadTank && (
+              <MaintenanceCard
+                title="Overhead Water Tank"
+                lastMaintenanceDate={systemState.overheadTank.lastMaintenanceDate}
+                nextMaintenanceDate={systemState.overheadTank.nextMaintenanceDate}
+                maintenanceIntervalDays={systemState.overheadTank.maintenanceIntervalDays}
+                maintenanceHistory={systemState.overheadTank.maintenanceHistory}
+                type="tank"
+                additionalMetrics={[
+                  { label: "Capacity", value: `${(systemState.overheadTank.tankCapacity / 1000).toFixed(0)} kL` },
+                  { label: "Current Level", value: `${systemState.overheadTank.tankLevel?.toFixed(1)}%` },
+                  { label: "Water Quality", value: systemState.overheadTank.waterQuality?.pH >= 6.5 && systemState.overheadTank.waterQuality?.pH <= 8.5 ? "Safe" : "Alert" },
+                  { label: "Temperature", value: `${systemState.overheadTank.temperature?.toFixed(1)}°C` }
+                ]}
+              />
+            )}
+          </div>
+
+          {/* Pipeline Maintenance Grid */}
+          {systemState.pipelines && systemState.pipelines.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
+                <Wrench size={22} className="text-indigo-600" />
+                Pipeline Network Maintenance
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                {systemState.pipelines.map((pipeline, idx) => (
+                  <MaintenanceCard
+                    key={idx}
+                    title={`Pipeline ${pipeline.pipelineId}: ${pipeline.pipelineName}`}
+                    lastMaintenanceDate={pipeline.lastInspectionDate}
+                    nextMaintenanceDate={pipeline.nextInspectionDate}
+                    maintenanceIntervalDays={pipeline.inspectionIntervalDays}
+                    maintenanceHistory={pipeline.maintenanceHistory}
+                    type="pipeline"
+                    additionalMetrics={[
+                      { label: "Length", value: `${pipeline.pipelineLength} m`, subtext: `${pipeline.pipelineDiameter} mm dia` },
+                      { label: "Condition Score", value: `${pipeline.pipelineConditionScore}%`, subtext: pipeline.pipelineConditionScore < 70 ? "⚠️ Fair" : "✓ Good" },
+                      { label: "Leakage Risk", value: `${pipeline.leakageProbability}%`, subtext: pipeline.leakageProbability > 10 ? "⚠️ High" : "✓ Low" },
+                      { label: "Valve Cycles", value: pipeline.valveOperationCycles?.toLocaleString(), subtext: "Operation count" }
+                    ]}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sensor Calibration Schedule */}
+          {systemState.pipelines && systemState.pipelines.length > 0 && (
+            <div className="mt-6 bg-white rounded-xl p-6 border-2 border-gray-200 shadow-md">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Activity size={22} className="text-blue-600" />
+                Sensor Calibration Schedule
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {systemState.pipelines.slice(0, 3).map((pipeline) => (
+                  <div key={pipeline.pipelineId} className="space-y-3">
+                    <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Pipeline {pipeline.pipelineId} Sensors</h4>
+                    
+                    {/* Flow Sensor */}
+                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-gray-600">Flow Sensor (Inlet)</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">
+                          {pipeline.inlet.flowSensor.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.flowSensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.flowSensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-blue-500 h-full rounded-full"
+                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.flowSensor.lastCalibrationDate) / (pipeline.inlet.flowSensor.nextCalibrationDate - pipeline.inlet.flowSensor.lastCalibrationDate) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pressure Sensor */}
+                    <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-gray-600">Pressure Sensor (Inlet)</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold">
+                          {pipeline.inlet.pressureSensor.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.pressureSensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.pressureSensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-purple-500 h-full rounded-full"
+                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.pressureSensor.lastCalibrationDate) / (pipeline.inlet.pressureSensor.nextCalibrationDate - pipeline.inlet.pressureSensor.lastCalibrationDate) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quality Sensor */}
+                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-gray-600">Quality Sensor (Inlet)</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">
+                          {pipeline.inlet.qualitySensor.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.qualitySensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.qualitySensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                      </p>
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-emerald-500 h-full rounded-full"
+                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.qualitySensor.lastCalibrationDate) / (pipeline.inlet.qualitySensor.nextCalibrationDate - pipeline.inlet.qualitySensor.lastCalibrationDate) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Maintenance Summary Stats */}
+          <div className="mt-6 bg-white rounded-xl p-6 border-2 border-gray-200 shadow-md">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <BarChart3 size={22} className="text-indigo-600" />
+              Maintenance Overview
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <p className="text-xs text-gray-600 uppercase mb-1">Total Components</p>
+                <p className="text-3xl font-black text-blue-700">
+                  {2 + (systemState.pipelines?.length || 0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Under monitoring</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <p className="text-xs text-gray-600 uppercase mb-1">Up to Date</p>
+                <p className="text-3xl font-black text-green-700">
+                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
+                    .filter(c => c.nextMaintenanceDate > Date.now() && (Date.now() - c.lastMaintenanceDate) / (24 * 60 * 60 * 1000) < (c.maintenanceIntervalDays || c.inspectionIntervalDays))
+                    .length}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Maintained recently</p>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
+                <p className="text-xs text-gray-600 uppercase mb-1">Due Soon</p>
+                <p className="text-3xl font-black text-yellow-700">
+                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
+                    .filter(c => {
+                      const daysUntil = Math.ceil((c.nextMaintenanceDate - Date.now()) / (24 * 60 * 60 * 1000));
+                      return daysUntil > 0 && daysUntil <= 14;
+                    }).length}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Within 14 days</p>
+              </div>
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
+                <p className="text-xs text-gray-600 uppercase mb-1">Overdue</p>
+                <p className="text-3xl font-black text-red-700">
+                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
+                    .filter(c => c.nextMaintenanceDate < Date.now())
+                    .length}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">Requires attention</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1947,27 +2476,66 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
 
 // --- MAIN PARENT ---
 
-const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggleValve, forceAnomaly, activeTab, setActiveTab, user, logInspection, logWaterTest, complaints, responseTimeData, tickets, resolveTicket, language, offlineMode, lastSync, systemState, onTogglePump, onToggleValve, onSchedulePumpTimer, onSchedulePumpStop, onCancelPumpSchedule }) => {
+const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggleValve, forceAnomaly, activeTab, setActiveTab, user, logInspection, logWaterTest, complaints, responseTimeData, tickets, resolveTicket, language, offlineMode, lastSync, systemState, onTogglePump, onToggleValve, onSchedulePumpTimer, onSchedulePumpStop, onCancelPumpSchedule, globalSearchQuery }) => {
   const { t } = useTranslation();
   const userRole = user?.role || 'technician';
 
   // --- TAB RENDERING ---
-  if (activeTab === 'infrastructure') return <InfrastructureDashboard
-    data={data}
-    history={history}
-    systemState={systemState}
-    onTogglePump={onTogglePump}
-    onToggleValve={onToggleValve}
-    onSchedulePumpTimer={onSchedulePumpTimer}
-    onSchedulePumpStop={onSchedulePumpStop}
-    onCancelPumpSchedule={onCancelPumpSchedule}
-  />;
+  // Infrastructure sub-pages with specific components
+  if (activeTab === 'pump-station') {
+    return <PumpDetails onBack={() => setActiveTab('infrastructure')} />;
+  }
+
+  if (activeTab === 'water-tank') {
+    return <WaterTankDetails onBack={() => setActiveTab('infrastructure')} />;
+  }
+
+  if (activeTab === 'pipeline') {
+    return <PipelinesOverview
+      onBack={() => setActiveTab('infrastructure')}
+      onNavigateToPipeline={(tab) => setActiveTab(tab)}
+    />;
+  }
+
+  if (activeTab === 'valves') {
+    return <ValvesDashboard onBack={() => setActiveTab('infrastructure')} />;
+  }
+
+  if (activeTab === 'network-map') {
+    return <InfrastructureDashboard
+      data={data}
+      history={history}
+      systemState={systemState}
+      onTogglePump={onTogglePump}
+      onToggleValve={onToggleValve}
+      onSchedulePumpTimer={onSchedulePumpTimer}
+      onSchedulePumpStop={onSchedulePumpStop}
+      onCancelPumpSchedule={onCancelPumpSchedule}
+      focusSection="network"
+    />;
+  }
+
+  // Infrastructure overview
+  if (activeTab === 'infrastructure') {
+    return <InfrastructureDashboard
+      data={data}
+      history={history}
+      systemState={systemState}
+      onTogglePump={onTogglePump}
+      onToggleValve={onToggleValve}
+      onSchedulePumpTimer={onSchedulePumpTimer}
+      onSchedulePumpStop={onSchedulePumpStop}
+      onCancelPumpSchedule={onCancelPumpSchedule}
+    />;
+  }
 
   if (activeTab === 'daily') return <DailyOperationDashboard data={data} user={user} logInspection={logInspection} history={history} systemState={systemState} />;
   if (activeTab === 'quality') return <WaterQualityDashboard data={data} logWaterTest={logWaterTest} systemState={systemState} />;
+  if (activeTab === 'service-requests') return <ServiceRequestDashboard userRole={userRole} globalSearchQuery={globalSearchQuery} />;
   if (activeTab === 'forecasting') return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
-  if (activeTab === 'reports') return <ReportsDashboard data={data} history={history} flow24h={flow24h} alerts={alerts} tickets={tickets} systemState={systemState} />;
+  if (activeTab === 'reports' && userRole === 'researcher') return <ReportsDashboard data={data} history={history} flow24h={flow24h} alerts={alerts} tickets={tickets} systemState={systemState} />;
   if (activeTab === 'accountability') return <AccountabilityDashboard data={data} logs={logs} alerts={alerts} complaints={complaints} responseTimeData={responseTimeData} systemState={systemState} />;
+  if (activeTab === 'analytics') return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
 
   if (activeTab === 'gis') {
     return <GISDashboard systemState={systemState} />;
@@ -2063,7 +2631,7 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-6 space-y-6">
           <div className="flex justify-between items-center mb-2">
             <h3 className="font-bold text-gray-700 flex items-center gap-2">
-              <Activity size={20} /> {t('nav.overview')} - Real-time
+              <IconImage name="activity.svg" className="h-7 w-7" aria-hidden="true" /> Real-time
             </h3>
             <div className="flex gap-3 text-xs font-bold">
               <span className="text-amber-600 flex items-center gap-1"><Zap size={12} /> {data.pumpPower.toFixed(1)} kW</span>
@@ -2119,28 +2687,50 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
   );
 };
 
-// --- APP SHELL ---
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="text-center text-gray-500 py-20">
+    <div className="animate-spin inline-block w-8 h-8 border-4 border-gray-300 border-t-green-600 rounded-full"></div>
+    <p className="mt-4">Loading dashboard...</p>
+  </div>
+);
 
+/**
+ * Main Application Component
+ * Refactored for modularity and performance
+ */
 const App = () => {
-  // Get auth and language from context
+  // ===== AUTH & CONTEXT =====
   const { user, login, logout } = useAuth();
   const { language, changeLanguage } = useLanguage();
   const { offlineMode, lastSync } = useOffline();
   const { t } = useTranslation();
 
-  // Local component states
+  // ===== MAIN APP STATE =====
+  // Default to Infrastructure → Overview (id 'overview')
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Accessibility States
-  const [darkMode, setDarkMode] = useState(false);
-  const [textSize, setTextSize] = useState('normal'); // 'small', 'normal', 'large', 'xlarge'
-  const [highContrast, setHighContrast] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccessibility, setShowAccessibility] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  // ===== ACTION FEEDBACK STATE =====
+  const { notifications, removeNotification, success } = useNotifications();
+  const { actions, addAction, clearActions } = useActionLog();
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+  const [showActionsLog, setShowActionsLog] = useState(false);
+
+  // ===== ACCESSIBILITY STATE =====
+  const [darkMode, setDarkMode] = useState(false);
+  const [textSize, setTextSize] = useState(1); // Default 1.0 = 100%
+  const [highContrast, setHighContrast] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
 
+  // ===== THEME MANAGEMENT =====
   useEffect(() => {
     if (typeof document === 'undefined') return;
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
@@ -2148,179 +2738,84 @@ const App = () => {
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    document.documentElement.dataset.contrast = highContrast ? 'high' : 'normal';
-  }, [highContrast]);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    document.documentElement.dataset.motion = reducedMotion ? 'reduced' : 'normal';
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    document.documentElement.dataset.textSize = textSize;
+    document.documentElement.style.fontSize = `${textSize * 16}px`;
   }, [textSize]);
 
-  // Use Live Simulation Data - appears as real IoT data
-  const simulation = useSimulationData(true); // Auto-start enabled
+  // ===== SEARCH SYSTEM =====
+  const searchableItems = [
+    { keyword: 'overview', title: 'System Overview', tab: 'overview', icon: '📊' },
+    { keyword: 'pump', title: 'Pump Station', tab: 'pump-station', icon: '⚙️' },
+    { keyword: 'motor', title: 'Pump Station', tab: 'pump-station', icon: '⚙️' },
+    { keyword: 'tank', title: 'Water Tank', tab: 'water-tank', icon: '💧' },
+    { keyword: 'water level', title: 'Water Tank', tab: 'water-tank', icon: '💧' },
+    { keyword: 'pipeline', title: 'Pipeline Network', tab: 'pipeline', icon: '🔧' },
+    { keyword: 'valve', title: 'Valves Control', tab: 'valves', icon: '🚰' },
+    { keyword: 'quality', title: 'Water Quality', tab: 'quality', icon: '🧪' },
+    { keyword: 'ph', title: 'Water Quality - pH', tab: 'quality', icon: '🧪' },
+    { keyword: 'turbidity', title: 'Water Quality - Turbidity', tab: 'quality', icon: '🧪' },
+    { keyword: 'chlorine', title: 'Water Quality - Chlorine', tab: 'quality', icon: '🧪' },
+    { keyword: 'service request', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
+    { keyword: 'complaint', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
+    { keyword: 'request', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
+    { keyword: 'ward', title: 'Service Requests by Ward', tab: 'service-requests', icon: '🏘️' },
+    { keyword: 'accountability', title: 'Accountability Dashboard', tab: 'accountability', icon: '✅' },
+    { keyword: 'energy', title: 'Energy Monitoring', tab: 'energy', icon: '⚡' },
+    { keyword: 'power', title: 'Energy Monitoring', tab: 'energy', icon: '⚡' },
+    { keyword: 'analytics', title: 'Analytics & Forecasting', tab: 'analytics', icon: '📈' },
+    { keyword: 'forecast', title: 'Analytics & Forecasting', tab: 'analytics', icon: '📈' },
+    { keyword: 'gis', title: 'GIS Mapping', tab: 'gis', icon: '🗺️' },
+    { keyword: 'map', title: 'GIS Mapping', tab: 'gis', icon: '🗺️' },
+    { keyword: 'reports', title: 'Reports', tab: 'reports', icon: '📄' },
+  ];
 
-  // Transform simulation state to match existing data structure
-  const transformStateToData = (state) => {
-    const defaultData = {
-      pumpStatus: 'OFF',
-      pumpFlowRate: 0,
-      pipePressure: 0,
-      tankLevel: 0,
-      pumpPower: 0,
-      pumpMotorTemp: 25,
-      pumpRunningHours: 0,
-      pumpEfficiency: 85,
-      powerFactor: 0.95,
-      qualityTDS: 0,
-      qualityPH: 7,
-      qualityTurbidity: 0,
-      qualityChlorine: 0,
-      qualityTemperature: 26,
-      qualityColiform: 0,
-      lastInspectionDate: '--',
-      lastInspectionOperator: 'TECH-OPS-01',
-      lastWaterTest: '--',
-      dailyEnergyKWh: 0,
-      dailyWaterDistributed: 0,
-      predFlowDropPercent: 5,
-      predEnergySpikePercent: 5,
-      nextPumpService: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      nextValveService: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      flowRate: 0,
-      pressure: 0,
-      powerConsumption: 0,
-      turbidity: 0,
-      chlorine: 0,
-      pH: 7,
-      efficiency: 0,
-      leakage: 0,
-      communityFeedbackScore: 4.2,
-      dailySupplyHours: 4.5,
-      pipelineQualities: [],
-      pumpSchedule: {
-        mode: 'MANUAL',
-        timerRemainingMs: 0,
-        timerEnd: null
-      },
-      pumpScheduleMode: 'MANUAL',
-      pumpScheduleRemainingMs: 0,
-      pumpScheduleStopsAt: null,
-    };
+  // Search functionality
+  useEffect(() => {
+    if (globalSearchQuery.trim() === '') {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
 
-    if (!state) return defaultData;
-
-    const tank = state.overheadTank || {};
-    const pump = state.pumpHouse || {};
-    const metrics = state.systemMetrics || {};
-    const quality = tank.waterQuality || {};
-    const pipelines = state.pipelines || [];
-    const pumpSchedule = state.pumpSchedule || {};
-
-    const runtimeHours = pump.pumpStatus === 'ON' ? 10 : 6;
-    const avgFlow = metrics.totalFlowRate || pump.pumpFlowOutput || 0;
-    const pumpLoad = pump.powerConsumption || 0;
-
-    const dailyEnergyKWh = formatMetric(pumpLoad * runtimeHours, 1, 0);
-    const dailyWaterDistributed = Math.max(5000, Math.round(avgFlow * 60 * runtimeHours));
-    const predFlowDropPercent = Math.min(95, Math.max(5, (metrics.totalLeakage || 0) * 2));
-    const predEnergySpikePercent = Math.min(
-      95,
-      Math.max(5, pump.motorTemperature ? (pump.motorTemperature - 25) * 2 : 15)
+    const query = globalSearchQuery.toLowerCase();
+    const matches = searchableItems.filter(item => 
+      item.keyword.toLowerCase().includes(query) || 
+      item.title.toLowerCase().includes(query)
     );
 
-    const formatDate = (date) =>
-      new Intl.DateTimeFormat('en-IN', {
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(date);
+    // Remove duplicates based on tab
+    const uniqueMatches = matches.reduce((acc, current) => {
+      const exists = acc.find(item => item.tab === current.tab);
+      if (!exists) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
 
-    const pipelineQualities = pipelines.map(pipeline => {
-      const inletQuality = pipeline.inlet?.qualitySensor || {};
-      const outletQuality = pipeline.outlet?.qualitySensor || {};
-      const shortName = pipeline.pipelineName?.split(' - ').pop() || `Pipeline ${pipeline.pipelineId}`;
+    setSearchResults(uniqueMatches.slice(0, 6)); // Show max 6 results
+    setShowSearchResults(true);
+  }, [globalSearchQuery]);
 
-      return {
-        pipelineId: pipeline.pipelineId,
-        pipelineName: pipeline.pipelineName || `Pipeline ${pipeline.pipelineId}`,
-        shortName,
-        valveStatus: pipeline.valveStatus,
-        deviation: formatMetric(pipeline.qualityDeviation ?? 0, 1, 0),
-        inlet: {
-          turbidity: formatMetric(inletQuality.turbidity ?? quality.turbidity, 2, quality.turbidity),
-          pH: formatMetric(inletQuality.pH ?? quality.pH, 2, quality.pH),
-          chlorine: formatMetric(inletQuality.chlorine ?? quality.chlorine, 2, quality.chlorine),
-          TDS: formatMetric(inletQuality.TDS ?? quality.TDS, 0, quality.TDS),
-        },
-        outlet: {
-          turbidity: formatMetric(outletQuality.turbidity ?? inletQuality.turbidity ?? quality.turbidity, 2, quality.turbidity),
-          pH: formatMetric(outletQuality.pH ?? inletQuality.pH ?? quality.pH, 2, quality.pH),
-          chlorine: formatMetric(outletQuality.chlorine ?? inletQuality.chlorine ?? quality.chlorine, 2, quality.chlorine),
-          TDS: formatMetric(outletQuality.TDS ?? inletQuality.TDS ?? quality.TDS, 0, quality.TDS),
-        },
-      };
-    });
-
-    return {
-      ...defaultData,
-      pumpStatus: pump.pumpStatus || 'OFF',
-      pumpFlowRate: pump.pumpFlowOutput || 0,
-      pipePressure: pump.pumpPressureOutput || 0,
-      tankLevel: tank.tankLevel || 0,
-      pumpPower: pumpLoad,
-      pumpMotorTemp: pump.motorTemperature || 25,
-      pumpRunningHours: pump.pumpRunningHours || 0,
-      pumpEfficiency: pump.pumpEfficiency ?? 85,
-      powerFactor: pump.powerFactor ?? 0.95,
-      qualityTDS: quality.TDS || 0,
-      qualityPH: quality.pH || 7,
-      qualityTurbidity: quality.turbidity || 0,
-      qualityChlorine: quality.chlorine || 0,
-      qualityTemperature: tank.temperature ?? 26,
-      qualityColiform: quality.coliform ?? 0,
-      lastInspectionDate: formatDate(new Date()),
-      lastInspectionOperator: 'TECH-OPS-01',
-      lastWaterTest: formatDate(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)),
-      dailyEnergyKWh,
-      dailyWaterDistributed,
-      predFlowDropPercent,
-      predEnergySpikePercent,
-      nextPumpService: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      nextValveService: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      pipelineQualities,
-      // Additional fields for compatibility
-      flowRate: avgFlow,
-      pressure: pump.pumpPressureOutput || 0,
-      powerConsumption: pumpLoad,
-      turbidity: quality.turbidity || 0,
-      chlorine: quality.chlorine || 0,
-      pH: quality.pH || 7,
-      efficiency: metrics.systemEfficiency || 0,
-      leakage: metrics.totalLeakage || 0,
-      pumpSchedule,
-      pumpScheduleMode: pumpSchedule.mode || 'MANUAL',
-      pumpScheduleRemainingMs: pumpSchedule.timerRemainingMs || 0,
-      pumpScheduleStopsAt: pumpSchedule.timerEnd ? new Date(pumpSchedule.timerEnd).toISOString() : null,
-    };
+  const handleSearchResultClick = (tab) => {
+    setActiveTab(tab);
+    setGlobalSearchQuery('');
+    setShowSearchResults(false);
   };
 
+  // ===== SIMULATION DATA =====
+  const simulation = useSimulationData();
   const data = transformStateToData(simulation.state);
 
-  // Create history data from simulation
+  // ===== HISTORY TRACKING =====
   const [history, setHistory] = useState([]);
   useEffect(() => {
     if (simulation.state) {
       const pump = simulation.state.pumpHouse || {};
       const tank = simulation.state.overheadTank || {};
+      const nowTimestamp = new Date();
 
       const newHistoryPoint = {
-        time: new Date().toLocaleTimeString(),
+        time: nowTimestamp.toLocaleTimeString(),
+        timestamp: nowTimestamp.toISOString(),
         pipePressure: pump.pumpPressureOutput || 0,
         flowRate: pump.pumpFlowOutput || 0,
         tankLevel: tank.tankLevel || 0,
@@ -2334,24 +2829,105 @@ const App = () => {
   }, [simulation.state?.lastUpdated]);
 
   // Flow 24h data
-  const flow24h = history.map((h, i) => ({
-    hour: i,
-    flow: h.flowRate || 0,
-  }));
+  const flow24h = useMemo(() => {
+    const hourlyBuckets = Array.from({ length: 24 }, () => []);
+    history.forEach(point => {
+      if (!point.timestamp) return;
+      const timestamp = new Date(point.timestamp);
+      if (Number.isNaN(timestamp.getTime())) return;
+      hourlyBuckets[timestamp.getHours()].push(point.flowRate || 0);
+    });
+
+    const pumpIsActive = data.pumpStatus === 'ON' || data.pumpStatus === 'RUNNING';
+    const baseFlow = Math.max(0, data.pumpFlowRate || 0);
+    const fallbackFlow = pumpIsActive ? Math.max(60, baseFlow) : Math.max(0, baseFlow * 0.2);
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const computed = hourlyBuckets.map((bucket, hour) => {
+      const hourLabelDate = new Date(startOfDay);
+      hourLabelDate.setHours(hour);
+      const bucketAvg = bucket.length
+        ? bucket.reduce((sum, value) => sum + value, 0) / bucket.length
+        : null;
+      const value = bucketAvg ?? fallbackFlow;
+      return {
+        timeLabel: hourLabelDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        flow: Math.round(value),
+      };
+    });
+
+    const totalFlow = computed.reduce((sum, entry) => sum + entry.flow, 0);
+    const avgFlow = computed.length ? totalFlow / computed.length : 0;
+    const avgRounded = Math.round(avgFlow);
+
+    return computed.map(entry => ({ ...entry, avg: avgRounded }));
+  }, [history, data.pumpFlowRate, data.pumpStatus]);
 
   // Alerts from simulation
   const alerts = simulation.alerts || [];
+  const activeAlerts = alerts.filter(alert => !alert.acknowledged);
+  // Only show critical/red alerts in the top banner
+  const criticalAlerts = activeAlerts.filter(alert => alert.severity === 'CRITICAL' || alert.severity === 'HIGH');
+  const alertTargetIds = Array.from(new Set(activeAlerts.map(alert => ALERT_TYPE_TO_TAB[alert.type] || 'overview')));
+  const alertTargetsSet = new Set(alertTargetIds);
+  const primaryAlert = criticalAlerts[0] || null;
+  const primaryAlertTarget = primaryAlert ? ALERT_TYPE_TO_TAB[primaryAlert.type] || 'overview' : null;
 
   // Logs (empty for now, can be enhanced)
   const logs = [];
 
   // Control functions from simulation
   const handleTogglePump = () => {
-    simulation.togglePump();
+    const currentState = simulation.state?.pumpHouse?.pumpStatus || 'STOPPED';
+    const willStop = currentState === 'RUNNING';
+
+    // Show confirmation dialog
+    setConfirmDialog({
+      isOpen: true,
+      title: willStop ? '⏹ Stop Pump?' : '▶ Start Pump?',
+      message: willStop
+        ? 'Are you sure you want to STOP the main pump? This will halt water supply to all connected pipelines.'
+        : 'Are you sure you want to START the main pump? The system will begin pumping water according to the current schedule.',
+      isDangerous: willStop,
+      action: () => {
+        simulation.togglePump();
+        addAction(
+          `Pump ${willStop ? 'Stopped' : 'Started'}`,
+          `Main pump ${willStop ? 'stopped' : 'started'} successfully`,
+          'success'
+        );
+        success(`Pump ${willStop ? 'stopped' : 'started'} successfully`);
+        setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+      }
+    });
   };
 
   const handleToggleValve = (pipelineId) => {
-    simulation.toggleValve(pipelineId);
+    const pipeline = simulation.state?.pipelines?.find(p => p.pipelineId === pipelineId);
+    const currentState = pipeline?.valveStatus || 'CLOSED';
+    const willClose = currentState === 'OPEN';
+
+    // Show confirmation dialog for critical valve operations
+    setConfirmDialog({
+      isOpen: true,
+      title: willClose ? '🔒 Close Valve?' : '🔓 Open Valve?',
+      message: willClose
+        ? `Are you sure you want to CLOSE valve on Pipeline ${pipelineId}? This will stop water flow to this pipeline.`
+        : `Are you sure you want to OPEN valve on Pipeline ${pipelineId}? Water will flow if the pump is running.`,
+      isDangerous: willClose,
+      action: () => {
+        simulation.toggleValve(pipelineId);
+        addAction(
+          `Pipeline ${pipelineId} Valve ${willClose ? 'Closed' : 'Opened'}`,
+          `Valve on pipeline ${pipelineId} ${willClose ? 'closed' : 'opened'} successfully`,
+          'success'
+        );
+        success(`Valve on pipeline ${pipelineId} ${willClose ? 'closed' : 'opened'}`);
+        setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+      }
+    });
   };
 
   // Keep old functions for compatibility
@@ -2382,444 +2958,315 @@ const App = () => {
   }
 
   const renderContent = () => (
-    <MainDashboard
-      data={data}
-      history={history}
-      flow24h={flow24h}
-      alerts={alerts}
-      logs={logs}
-      togglePump={togglePump}
-      toggleValve={toggleValve}
-      forceAnomaly={forceAnomaly}
-      activeTab={activeTab}
-      activeView={activeTab}
-      setActiveTab={setActiveTab}
-      user={user}
-      logInspection={logInspection}
-      logWaterTest={logWaterTest}
-      complaints={complaints}
-      responseTimeData={responseTimeData}
-      tickets={tickets}
-      resolveTicket={resolveTicket}
-      language={language}
-      offlineMode={offlineMode}
-      lastSync={lastSync}
-      systemState={simulation.state}
-      onTogglePump={simulation.togglePump}
-      onToggleValve={simulation.toggleValve}
-      onSchedulePumpTimer={simulation.schedulePumpTimer}
-      onSchedulePumpStop={simulation.schedulePumpStop}
-      onCancelPumpSchedule={simulation.cancelPumpSchedule}
-    />
+    <div className="w-full max-w-full overflow-hidden">
+      <MainDashboard
+        data={data}
+        history={history}
+        flow24h={flow24h}
+        alerts={alerts}
+        logs={logs}
+        togglePump={togglePump}
+        toggleValve={toggleValve}
+        forceAnomaly={forceAnomaly}
+        activeTab={activeTab}
+        activeView={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        logInspection={logInspection}
+        logWaterTest={logWaterTest}
+        complaints={complaints}
+        responseTimeData={responseTimeData}
+        tickets={tickets}
+        resolveTicket={resolveTicket}
+        language={language}
+        offlineMode={offlineMode}
+        lastSync={lastSync}
+        systemState={simulation.state}
+        onTogglePump={simulation.togglePump}
+        onToggleValve={simulation.toggleValve}
+        onSchedulePumpTimer={simulation.schedulePumpTimer}
+        onSchedulePumpStop={simulation.schedulePumpStop}
+        onCancelPumpSchedule={simulation.cancelPumpSchedule}
+        globalSearchQuery={globalSearchQuery}
+      />
+    </div>
   );
+
+  // Language Selector Component
+  const LanguageSelectorDropdown = () => {
+    const currentLang = useMemo(() => 
+      LANGUAGES.find(lang => lang.code === language) || LANGUAGES[0], 
+      [language]
+    );
+    const languageMenuRef = useRef(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (languageMenuRef.current && !languageMenuRef.current.contains(event.target)) {
+          setShowLanguageMenu(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleLanguageChange = (langCode) => {
+      if (langCode === language) {
+        setShowLanguageMenu(false);
+        return;
+      }
+      changeLanguage(langCode);
+      setShowLanguageMenu(false);
+    };
+
+    return (
+      <div ref={languageMenuRef} className="relative">
+        <button
+          onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 ${
+            showLanguageMenu 
+              ? 'bg-white shadow-lg border-2 border-blue-500' 
+              : 'bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-blue-300'
+          }`}
+        >
+          <Languages size={18} className="text-blue-600" />
+          <div className="text-left min-w-[60px]">
+            <div className="text-xs font-bold text-gray-800 leading-tight">{currentLang.nativeName}</div>
+          </div>
+        </button>
+
+        {showLanguageMenu && (
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2">
+              <h3 className="text-white font-bold text-xs flex items-center gap-2">
+                <Languages size={14} />
+                Select Language
+              </h3>
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`w-full px-3 py-2 text-left hover:bg-blue-50 transition-all border-b border-gray-100 last:border-0 ${
+                    language === lang.code ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-gray-800">{lang.nativeName}</div>
+                      <div className="text-[10px] text-gray-500">{lang.name}</div>
+                    </div>
+                    {language === lang.code && (
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 ${highContrast ? 'contrast-150' : ''
+      className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 ${highContrast ? 'contrast-150' : ''
         } ${reducedMotion ? '[&_*]:transition-none [&_*]:animate-none' : ''
         }`}
     >
-      {/* Top Navbar - Matching Login Page Design */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-blue-900 via-blue-950 to-slate-900 shadow-2xl border-b-4 border-amber-500">
-        {/* Main Navigation Bar */}
-        <div className="max-w-full mx-auto px-4 lg:px-8 py-4">
-          <div className="flex items-center justify-between gap-6">
+      {/* Floating Mobile Menu Button */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-30 lg:hidden p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all"
+          aria-label="Open menu"
+        >
+          <Menu size={24} />
+        </button>
+      )}
 
-            {/* Left Section: Logos & Branding */}
-            <div className="flex items-center gap-4 flex-shrink-0">
-              {/* Jalsense Logo */}
-              <div className="bg-white rounded-xl shadow-xl p-3 border-4 border-amber-500 transform hover:scale-110 transition-all duration-300">
-                <img
-                  src={jalsenseLogoUrl}
-                  alt="Jalsense Logo"
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
+      {/* NEW: Sidebar Navigation - Collapsible */}
+      <SidebarNavigation
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+        offlineMode={offlineMode}
+        lastSync={lastSync}
+        alertBlinkTargets={alertTargetsSet}
+        onAccessibility={() => setShowAccessibility(true)}
+        onLogout={handleLogout}
+      />
 
-              {/* Panchayat Info */}
-              <div className="hidden xl:flex flex-col bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border-l-4 border-amber-500 shadow-lg">
-                <div className="flex items-center gap-2">
-                  <Landmark size={14} className="text-amber-400" />
-                  <div className="text-[10px] font-black text-amber-400 uppercase tracking-widest" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    Gram Panchayat
-                  </div>
-                </div>
-                <div className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>Shivpur</div>
-              </div>
-            </div>
-
-            {/* Center Section: Primary Navigation (Desktop) */}
-            <nav className="hidden lg:flex items-center gap-2 flex-1 justify-center max-w-4xl">
-              {user.role === 'public' ? (
-                <>
-                  <button
-                    onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'overview'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <Activity size={16} />
-                    <span>{t('nav.overview')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('energy'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'energy'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <Zap size={16} />
-                    <span>{t('nav.energy')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('ticketing'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'ticketing'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <Ticket size={16} />
-                    <span>{t('nav.ticketing')}</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'overview'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <Activity size={16} />
-                    <span className="hidden xl:inline">{t('nav.overview')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('quality'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'quality'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <FlaskConical size={16} />
-                    <span className="hidden xl:inline">{t('nav.quality')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('analytics'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'analytics'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <TrendingUp size={16} />
-                    <span className="hidden xl:inline">{t('nav.analytics')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setActiveTab('gis'); setMobileMenuOpen(false); }}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-black text-xs transition-all duration-300 uppercase tracking-widest transform hover:scale-105 shadow-lg ${activeTab === 'gis'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-2xl'
-                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-2 border-white/20'
-                      }`}
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
-                  >
-                    <Map size={16} />
-                    <span className="hidden xl:inline">{t('nav.gis')}</span>
-                  </button>
-                </>
+      {/* Main Content Area - Government Design */}
+      <div className="flex-1 flex flex-col min-h-screen" style={{ background: 'linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end))' }}>
+        {/* Floating Search Bar with Language Selector */}
+        <div className="sticky top-4 z-50 px-2 sm:px-4 lg:px-6">
+          <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-4">
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <div className={`relative transition-all duration-300 ${globalSearchQuery ? 'bg-white shadow-lg' : 'bg-white/60 backdrop-blur-md shadow-sm'}`} style={{ borderRadius: '12px' }}>
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={globalSearchQuery}
+                onChange={(e) => {
+                  setGlobalSearchQuery(e.target.value);
+                }}
+                onBlur={() => {
+                  // Delay hiding results to allow click
+                  setTimeout(() => setShowSearchResults(false), 200);
+                }}
+                onFocus={() => {
+                  if (globalSearchQuery && searchResults.length > 0) {
+                    setShowSearchResults(true);
+                  }
+                }}
+                className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2 sm:py-3 rounded-xl focus:outline-none text-sm transition-all duration-300 ${
+                  globalSearchQuery 
+                    ? 'bg-white' 
+                    : 'bg-transparent placeholder-gray-500'
+                }`}
+                style={{ 
+                  border: globalSearchQuery ? '2px solid #3b82f6' : '1px solid rgba(209, 213, 219, 0.5)'
+                }}
+              />
+              {globalSearchQuery && (
+                <button
+                  onClick={() => {
+                    setGlobalSearchQuery('');
+                    setShowSearchResults(false);
+                  }}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               )}
-            </nav>
-
-            {/* Right Section: Mobile Menu Toggle Only */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2.5 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 border-2 border-white/30 transition-all duration-300 text-white transform hover:scale-110 shadow-lg"
-                aria-label="Toggle Menu"
-              >
-                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
             </div>
+
+            {/* Search Results Dropdown */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                <div className="p-2 bg-gray-50 border-b border-gray-200">
+                  <p className="text-xs font-semibold text-gray-600 px-3">Search Results</p>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {searchResults.map((result, index) => (
+                    <button
+                      key={`${result.tab}-${index}`}
+                      onClick={() => handleSearchResultClick(result.tab)}
+                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-blue-50 transition-colors text-left group"
+                    >
+                      <span className="text-2xl">{result.icon}</span>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {result.title}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {result.keyword}
+                        </p>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+                {searchResults.length === 0 && globalSearchQuery && (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-sm text-gray-500">No results found for "{globalSearchQuery}"</p>
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
+
+            {/* Language Selector */}
+            <LanguageSelectorDropdown />
           </div>
+        </div>
+
+        {primaryAlert && (
+          <div className="mx-4 mt-4 mb-2 px-4 py-3 rounded-2xl border-l-4 border-red-500 bg-red-50 shadow-sm flex items-center gap-4 animate-blink">
+            <AlertTriangle size={18} className="text-red-600" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-red-700">{primaryAlert.message}</p>
+              <p className="text-xs uppercase tracking-wider text-red-500">
+                {primaryAlert.severity} · {criticalAlerts.length} critical alert{criticalAlerts.length > 1 ? 's' : ''} · {primaryAlert.type}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (primaryAlertTarget) {
+                  setActiveTab(primaryAlertTarget);
+                }
+                setSidebarOpen(true);
+              }}
+              className="text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full border border-red-500 bg-white text-red-600 hover:bg-red-100 transition-colors"
+            >
+              View Alert
+            </button>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto px-2 sm:px-4 lg:px-6">
+          <Suspense fallback={<div className="p-4 sm:p-8 text-center">{t('common.loading')}</div>}>
+            {renderContent()}
+          </Suspense>
         </div>
       </div>
 
-      {/* Fixed User Menu Button - Bottom Left */}
-      <button
-        onClick={() => setShowUserMenu(!showUserMenu)}
-        className="fixed bottom-6 left-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-2xl border-4 border-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95"
-        title="User Menu"
-      >
-        <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-green-700 font-black text-lg shadow-lg">
-            {user.name.charAt(0)}
-          </div>
-          {offlineMode && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center">
-              <WifiOff size={10} className="text-white" />
-            </div>
-          )}
-        </div>
-      </button>
+      {/* ACTION FEEDBACK COMPONENTS */}
+      {/* Notification Container */}
+      <NotificationContainer 
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
 
-      {/* User Menu Popup */}
-      {showUserMenu && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            onClick={() => setShowUserMenu(false)}
-          />
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        actionLabel="Confirm"
+        onConfirm={() => {
+          if (confirmDialog.action) {
+            confirmDialog.action();
+          }
+        }}
+        onCancel={() => {
+          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+        }}
+        isDangerous={confirmDialog.isDangerous}
+      />
 
-          {/* Menu Panel */}
-          <div className="fixed bottom-24 left-6 z-50 w-80 bg-white rounded-2xl shadow-2xl border-4 border-green-600 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-900 via-blue-950 to-slate-900 p-6 border-b-4 border-amber-500">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-black text-2xl shadow-xl border-4 border-white">
-                  {user.name.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <p className="text-lg font-black text-white uppercase tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>{user.name}</p>
-                  <p className="text-sm capitalize text-amber-400 font-bold">{user.role}</p>
-                </div>
-                <button
-                  onClick={() => setShowUserMenu(false)}
-                  className="text-white/60 hover:text-white transition-all"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
+      {/* Recent Actions Log Panel */}
+      <RecentActionsLog
+        actions={actions}
+        isOpen={showActionsLog}
+        onClose={() => setShowActionsLog(false)}
+      />
 
-            {/* Menu Items */}
-            <div className="p-4 space-y-2">
-              {/* Language Selector */}
-              <div className="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
-                <label className="block text-xs font-black text-blue-950 uppercase mb-2 tracking-widest flex items-center gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  <Languages size={14} /> {t('language.selectorLabel')}
-                </label>
-                <LanguageSelector size="sm" hideLabel={false} />
-              </div>
+      {/* Accessibility Panel Modal */}
+      <AccessibilityPanel
+        isOpen={showAccessibility}
+        onClose={() => setShowAccessibility(false)}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        textSize={textSize}
+        setTextSize={setTextSize}
+        highContrast={highContrast}
+        setHighContrast={setHighContrast}
+        reducedMotion={reducedMotion}
+        setReducedMotion={setReducedMotion}
+      />
 
-              {/* Accessibility Button */}
-              <button
-                onClick={() => {
-                  setShowAccessibility(!showAccessibility);
-                  setShowUserMenu(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all duration-300 transform hover:scale-105"
-              >
-                <Settings size={20} className="text-amber-600" />
-                <span className="text-sm font-bold text-amber-900 uppercase tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  {t('accessibility.button')}
-                </span>
-              </button>
-
-              {/* Offline Status */}
-              {offlineMode && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500 text-white">
-                  <WifiOff size={20} />
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-wide">{t('offline.mode')}</p>
-                    <p className="text-xs opacity-90">Last sync: {lastSync}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black uppercase tracking-widest transition-all duration-300 transform hover:scale-105 shadow-xl"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                <LogOut size={20} />
-                {t('nav.logout')}
-              </button>
-            </div>
-          </div>
-        </>
-      )}   {/* Mobile Navigation Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white">
-          <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
-            <button onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Activity size={18} /> {t('nav.overview')}
-            </button>
-            <button onClick={() => { setActiveTab('infrastructure'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'infrastructure' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Server size={18} /> {t('nav.infrastructure')}
-            </button>
-            <button onClick={() => { setActiveTab('operations'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'operations' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <ClipboardList size={18} /> {t('nav.operations')}
-            </button>
-            <button onClick={() => { setActiveTab('maintenance'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'maintenance' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Wrench size={18} /> {t('nav.maintenance')}
-            </button>
-            <button onClick={() => { setActiveTab('finance'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'finance' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <DollarSign size={18} /> {t('nav.finance')}
-            </button>
-            <button onClick={() => { setActiveTab('quality'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'quality' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <FlaskConical size={18} /> {t('nav.quality')}
-            </button>
-            <button onClick={() => { setActiveTab('analytics'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'analytics' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <TrendingUp size={18} /> {t('nav.analytics')}
-            </button>
-            <button onClick={() => { setActiveTab('calendar'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'calendar' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Calendar size={18} /> {t('nav.calendar')}
-            </button>
-            <button onClick={() => { setActiveTab('help-desk'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'help-desk' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Ticket size={18} /> {t('nav.helpDesk')}
-            </button>
-            <button onClick={() => { setActiveTab('gis'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'gis' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Map size={18} /> {t('nav.gis')}
-            </button>
-            <button onClick={() => { setActiveTab('energy'); setMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'energy' ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Zap size={18} /> {t('nav.energy')}
-            </button>
-
-            {/* Mobile: Logout Button */}
-            <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all mt-4">
-              <LogOut size={18} /> {t('nav.logout')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content - Full Width */}
-      <div className="flex-1 p-6 bg-gray-50">
-        <Suspense fallback={<div className="text-center text-gray-500 py-20">Loading dashboard...</div>}>
-          {renderContent()}
-        </Suspense>
-      </div>
-
-      {/* Accessibility Panel */}
-      {showAccessibility && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border-4 border-green-600 animate-in slide-in-from-bottom-4 duration-300">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-950 to-slate-900 p-6 border-b-4 border-amber-500 flex items-center justify-between">
-              <h2 className="text-2xl font-black text-white uppercase tracking-wide flex items-center gap-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                <Settings size={28} className="text-amber-400" /> Accessibility Settings
-              </h2>
-              <button
-                onClick={() => setShowAccessibility(false)}
-                className="text-white hover:text-amber-400 transition-all duration-300 transform hover:scale-110 hover:rotate-90"
-              >
-                <X size={28} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Text Size Slider */}
-              <div className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <label className="block text-sm font-black text-gray-900 uppercase tracking-widest" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {t('accessibility.textSize')}
-                  </label>
-                  <span className="text-sm font-bold text-gray-700">{(textSize * 100).toFixed(0)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.75"
-                  max="1.5"
-                  step="0.05"
-                  value={textSize}
-                  onChange={(e) => setTextSize(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-green-600"
-                />
-                <div className="flex justify-between mt-2 text-xs text-gray-500 font-bold">
-                  <span>A-</span>
-                  <span>A+</span>
-                </div>
-              </div>
-
-              {/* Dark Mode */}
-              <div className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200 flex items-center justify-between">
-                <div>
-                  <label className="block text-sm font-black text-gray-900 uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {t('accessibility.darkMode')}
-                  </label>
-                  <p className="text-xs text-black">{t('accessibility.darkModeHint')}</p>
-                </div>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`w-16 h-8 rounded-full transition-all duration-300 relative ${darkMode ? 'bg-green-600' : 'bg-gray-300'
-                    }`}
-                >
-                  <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 ${darkMode ? 'transform translate-x-8' : ''
-                    }`}></div>
-                </button>
-              </div>
-
-              {/* High Contrast */}
-              <div className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200 flex items-center justify-between">
-                <div>
-                  <label className="block text-sm font-black text-gray-900 uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {t('accessibility.highContrast')}
-                  </label>
-                  <p className="text-xs text-black">{t('accessibility.highContrastHint')}</p>
-                </div>
-                <button
-                  onClick={() => setHighContrast(!highContrast)}
-                  className={`w-16 h-8 rounded-full transition-all duration-300 relative ${highContrast ? 'bg-green-600' : 'bg-gray-300'
-                    }`}
-                >
-                  <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 ${highContrast ? 'transform translate-x-8' : ''
-                    }`}></div>
-                </button>
-              </div>
-
-              {/* Reduced Motion */}
-              <div className="bg-gray-50 rounded-lg p-5 border-2 border-gray-200 flex items-center justify-between">
-                <div>
-                  <label className="block text-sm font-black text-gray-900 uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {t('accessibility.reducedMotion')}
-                  </label>
-                  <p className="text-xs text-black">{t('accessibility.reducedMotionHint')}</p>
-                </div>
-                <button
-                  onClick={() => setReducedMotion(!reducedMotion)}
-                  className={`w-16 h-8 rounded-full transition-all duration-300 relative ${reducedMotion ? 'bg-green-600' : 'bg-gray-300'
-                    }`}
-                >
-                  <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 ${reducedMotion ? 'transform translate-x-8' : ''
-                    }`}></div>
-                </button>
-              </div>
-
-              {/* Info */}
-              <div className="bg-blue-50 rounded-lg p-5 border-l-4 border-blue-600">
-                <p className="text-sm text-blue-900 font-semibold">
-                  ℹ️ These settings help make the platform more accessible for users with visual impairments or motion sensitivity.
-                </p>
-              </div>
-
-              {/* Reset Button */}
-              <button
-                onClick={() => {
-                  setTextSize('normal');
-                  setDarkMode(false);
-                  setHighContrast(false);
-                  setReducedMotion(false);
-                }}
-                className="w-full py-3 rounded-full bg-gray-600 text-white font-black uppercase tracking-widest hover:bg-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                Reset to Defaults
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Voice Assistant */}
       <VoiceAssistant data={data} alerts={alerts} />
     </div>
   );
