@@ -380,10 +380,10 @@ function executeMCUCommand(command) {
           throw new Error(`Pipeline ${pipelineId} not found`);
         }
         break;
+      }
       case "TANK_INLET":
         tank.inletValveStatus = command.action;
         break;
-      }
       case "TANK_OUTLET":
           tank.outletValveStatus = command.action;
           // If main outlet valve is CLOSED, automatically close all pipeline valves
