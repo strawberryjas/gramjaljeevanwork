@@ -43,7 +43,7 @@ export const useIoTSimulation = (active, user) => {
 
         let targetFlow = 0;
         let targetPressure = 0.5; 
-        let voltage = 220 + noise(5); 
+        const voltage = 220 + noise(5); 
 
         if (isRunning) {
           if (isOpen) {
@@ -56,7 +56,7 @@ export const useIoTSimulation = (active, user) => {
         }
 
         const flowDropFactor = Math.random() > 0.98 ? 0.8 : 1.0; 
-        let currentFlow = targetFlow * flowDropFactor + noise(10);
+        const currentFlow = targetFlow * flowDropFactor + noise(10);
         const powerConsumption = isRunning ? (currentFlow * targetPressure) / 300 : 0; 
         const efficiency = isRunning ? Math.min(95, (currentFlow / 450) * 90 + noise(2)) : 0;
         const timeStepHours = 2 / 60; 

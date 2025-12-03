@@ -795,11 +795,11 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-black">
-                Are you sure you want to {pumpStates[confirmPump] ? 'stop' : 'start'} the <strong>{confirmPump} pump</strong>? This will update the live infrastructure status and may affect current supply schedule.
+                Are you sure you want to {data.pumpStatus === 'RUNNING' ? 'stop' : 'start'} the <strong>{confirmPump} pump</strong>? This will update the live infrastructure status and may affect current supply schedule.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmPump(null)} className="flex-1 py-2 rounded-xl border text-black font-bold">Cancel</button>
-                <button onClick={confirmPumpToggle} className={`flex-1 py-2 rounded-xl font-bold text-white ${pumpStates[confirmPump] ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
+                <button onClick={confirmPumpToggle} className={`flex-1 py-2 rounded-xl font-bold text-white ${data.pumpStatus === 'RUNNING' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
                   Confirm
                 </button>
               </div>
@@ -3195,7 +3195,7 @@ const App = () => {
                       </div>
                       {searchResults.length === 0 && globalSearchQuery && (
                         <div className="px-4 py-8 text-center">
-                          <p className="text-sm text-gray-500">No results found for "{globalSearchQuery}"</p>
+                          <p className="text-sm text-gray-500">No results found for &ldquo;{globalSearchQuery}&rdquo;</p>
                         </div>
                       )}
                     </div>

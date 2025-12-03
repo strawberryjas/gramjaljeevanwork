@@ -15,6 +15,11 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
   // Ensure we have a valid pipeline ID
   const actualPipelineId = pipeline?.pipelineId || pipelineId;
   
+  // Stabilize hasLeakage - once a pipe has leakage, it persists regardless of valve state
+  const hasLeakage = useMemo(() => {
+    return pipeline ? pipeline.leakageProbability > 30 : false;
+  }, [pipeline?.leakageProbability]);
+  
   // Safe toggle function
   const handleToggleValve = () => {
     if (actualPipelineId) {
@@ -41,10 +46,6 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
   }
 
   const isOpen = pipeline.valveStatus === 'OPEN';
-  // Stabilize hasLeakage - once a pipe has leakage, it persists regardless of valve state
-  const hasLeakage = useMemo(() => {
-    return pipeline.leakageProbability > 30;
-  }, [pipeline.leakageProbability]);
   const inletFlow = pipeline.inlet?.flowSensor?.value || 0;
   const outletFlow = pipeline.outlet?.flowSensor?.value || 0;
   const inletPressure = pipeline.inlet?.pressureSensor?.value || 0;

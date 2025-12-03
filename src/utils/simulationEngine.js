@@ -9,7 +9,7 @@
 // GLOBAL STATE - Single Source of Truth
 // ============================================================================
 
-let systemState = {
+const systemState = {
   systemId: "GJJ-RWS-001",
   systemName: "Gram Jal Jeevan - Rural Water Supply System",
   lastUpdated: new Date().toISOString(),
@@ -362,7 +362,7 @@ function executeMCUCommand(command) {
         mcu.pumpRelayStatus = command.action;
         clearPumpSchedule(command.action === "ON" ? "MANUAL_ON" : "MANUAL_OFF");
         break;
-      case "VALVE":
+      case "VALVE": {
         const pipelineId = command.params.pipelineId;
         const pipeline = systemState.pipelines.find(p => p.pipelineId === pipelineId);
         if (pipeline) {
@@ -383,6 +383,7 @@ function executeMCUCommand(command) {
       case "TANK_INLET":
         tank.inletValveStatus = command.action;
         break;
+      }
       case "TANK_OUTLET":
           tank.outletValveStatus = command.action;
           // If main outlet valve is CLOSED, automatically close all pipeline valves
@@ -812,7 +813,7 @@ function calculateFlowAndPressure() {
             pipeline.isDecaying = false;
           }
           
-          pipeline.leakageProbability = pipeline.leakageProbability; // maintain leakage probability
+          // Maintain leakage probability (no change needed)
           pipeline.estimatedLeakage = Math.round((currentInletFlow - currentOutletFlow));
           pipeline.flowLoss = pipeline.estimatedLeakage;
         }
@@ -901,7 +902,7 @@ function calculateFlowAndPressure() {
           pipeline.outlet.flowSensor.value = Math.round(currentOutletFlow * 10) / 10;
           pipeline.outlet.pressureSensor.value = Math.round(currentOutletPressure * 100) / 100;
           
-          if (currentFlow < 0.5 && currentPressure < 0.05) {
+          if (currentInletFlow < 0.5 && currentInletPressure < 0.05) {
             pipeline.inlet.flowSensor.value = 0;
             pipeline.inlet.pressureSensor.value = 0;
             pipeline.outlet.flowSensor.value = 0;
