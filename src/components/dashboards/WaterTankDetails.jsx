@@ -23,6 +23,7 @@ export const WaterTankDetails = ({ onBack }) => {
     { parameter: 'Turbidity', value: (quality.turbidity || 0).toFixed(2), min: 0, max: 5, status: (quality.turbidity || 0) <= 5 ? 'Excellent' : 'High', unit: 'NTU' },
     { parameter: 'Chlorine', value: (quality.chlorine || 0).toFixed(2), min: 0.2, max: 1.0, status: (quality.chlorine || 0) >= 0.2 && (quality.chlorine || 0) <= 1 ? 'Good' : 'Adjust', unit: 'mg/L' },
     { parameter: 'TDS', value: (quality.TDS || 0).toFixed(0), min: 0, max: 500, status: (quality.TDS || 0) <= 500 ? 'Good' : 'High', unit: 'ppm' },
+    { parameter: 'Temperature', value: (tank.temperature || 26).toFixed(1), min: 15, max: 35, status: (tank.temperature || 26) >= 15 && (tank.temperature || 26) <= 35 ? 'Good' : 'Alert', unit: '°C' },
     { parameter: 'Hardness', value: (quality.hardness || 180).toFixed(0), min: 0, max: 300, status: (quality.hardness || 180) <= 300 ? 'Good' : 'High', unit: 'mg/L' },
     { parameter: 'EC', value: (quality.EC || 450).toFixed(0), min: 0, max: 750, status: (quality.EC || 450) <= 750 ? 'Good' : 'High', unit: 'µS/cm' },
   ];
@@ -104,26 +105,26 @@ export const WaterTankDetails = ({ onBack }) => {
       </div>
 
       {/* Realistic Rural India Overhead Tank */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-200">
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-0">
           {/* Left: 3D Tank Visualization */}
-          <div className="xl:col-span-3 bg-gradient-to-br from-slate-900 to-slate-950 p-8 relative overflow-hidden">
+          <div className="xl:col-span-3 bg-gradient-to-br from-slate-50 to-white p-8 relative overflow-hidden">
             {/* Sky Background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-slate-900 to-slate-950 opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-slate-50 to-white opacity-50"></div>
             
             <div className="relative z-10">
               {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${tank.isFilling ? 'bg-blue-500 animate-pulse' : 'bg-gray-500'}`}></span>
+              <div className="flex items-center justify-between gap-6 mb-6">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold text-black flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${tank.isFilling ? 'bg-blue-500 animate-pulse' : 'bg-slate-400'}`}></span>
                     Overhead Water Tank - Elevated Structure
                   </h3>
-                  <p className="text-xs text-gray-400 mt-1">Capacity: {(tank.tankCapacity || 10000).toLocaleString()} Liters • Height: 15m</p>
+                  <p className="text-xs text-slate-600">Capacity: {(tank.tankCapacity || 10000).toLocaleString()} Liters • Height: 15m</p>
                 </div>
-                <div className={`px-3 py-1.5 rounded-lg font-bold text-xs ${tank.isFilling
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                  : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                <div className={`px-3 py-1.5 rounded-lg font-bold text-xs flex-shrink-0 ${tank.isFilling
+                  ? 'bg-blue-500/20 text-blue-600 border border-blue-500/30' 
+                  : 'bg-slate-100 text-slate-700 border border-slate-300'}`}>
                   {tank.isFilling ? '● FILLING' : tank.tankLevel > 80 ? '● FULL' : tank.tankLevel > 30 ? '● NORMAL' : '● LOW'}
                 </div>
               </div>
@@ -285,17 +286,28 @@ export const WaterTankDetails = ({ onBack }) => {
                             fill="#fff" 
                             textAnchor="middle" 
                             fontWeight="bold"
-                            opacity="0.9"
+                            opacity="1"
+                            style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}
                           >
                             {(tank.tankLevel || 0).toFixed(0)}%
                           </text>
+                          {/* Background for better text visibility */}
+                          <rect
+                            x="330"
+                            y={Math.max(123, 238 - (tank.tankLevel / 100 * 135))}
+                            width="140"
+                            height="22"
+                            fill="rgba(0,0,0,0.3)"
+                            rx="4"
+                          />
                           <text 
                             x="400" 
-                            y={Math.max(120, 235 - (tank.tankLevel / 100 * 135))} 
-                            fontSize="14" 
+                            y={Math.max(138, 253 - (tank.tankLevel / 100 * 135))} 
+                            fontSize="16" 
                             fill="#fff" 
                             textAnchor="middle"
-                            opacity="0.8"
+                            fontWeight="600"
+                            opacity="1"
                           >
                             {(tank.currentVolume || 0).toLocaleString()} L
                           </text>
@@ -387,65 +399,52 @@ export const WaterTankDetails = ({ onBack }) => {
                 </svg>
               </div>
 
-              {/* Tank Stats */}
-              <div className="grid grid-cols-3 gap-3 mt-6">
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Water Level</p>
-                  <p className="text-lg font-bold text-white">{(tank.tankLevel || 0).toFixed(1)}%</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Current Volume</p>
-                  <p className="text-lg font-bold text-white">{(tank.currentVolume || 0).toLocaleString()} L</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Available</p>
-                  <p className="text-lg font-bold text-white">{((tank.tankCapacity || 10000) - (tank.currentVolume || 0)).toLocaleString()} L</p>
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Right: Control Panel */}
-          <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-gray-950 p-8 border-l border-gray-700/50">
+          <div className="xl:col-span-2 bg-gradient-to-br from-white to-slate-50 p-8 border-l-2 border-slate-200">
             <div className="space-y-6">
               {/* Status Display */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 block">
                   Tank Status
                 </label>
-                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700/50">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                <div className="bg-white rounded-xl p-3 md:p-6 border border-slate-200 shadow-lg">
+                  <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-3 md:mb-4">
+                    <div className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 ${
                       tank.isFilling
-                        ? 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg shadow-blue-500/30' 
+                        ? 'bg-gradient-to-br from-slate-600 to-slate-700 shadow-lg shadow-slate-500/30' 
                         : tank.tankLevel > 80
                         ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30'
                         : tank.tankLevel > 30
                         ? 'bg-gradient-to-br from-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30'
                         : 'bg-gradient-to-br from-red-500 to-orange-600 shadow-lg shadow-red-500/30'
                     }`}>
-                      <Droplet size={36} className="text-white" />
+                      <Droplet size={28} className="text-white md:w-9 md:h-9" />
                       {tank.isFilling && (
-                        <div className="absolute inset-0 rounded-2xl bg-blue-400 animate-ping opacity-20"></div>
+                        <div className="absolute inset-0 rounded-xl md:rounded-2xl bg-slate-400 animate-ping opacity-20"></div>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-3xl font-black text-white mb-1">
+                    <div className="flex-1 text-center md:text-left">
+                      <p className="text-xl md:text-3xl font-black text-black mb-0.5 md:mb-1">
                         {tank.isFilling ? 'FILLING' : tank.tankLevel > 80 ? 'FULL' : tank.tankLevel > 30 ? 'NORMAL' : 'LOW'}
                       </p>
-                      <p className="text-sm text-gray-400 flex items-center gap-2">
+                      <p className="text-xs md:text-sm text-gray-600 flex items-center justify-center md:justify-start gap-2">
                         {tank.isFilling ? (
                           <>
                             <span className="flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-slate-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-600"></span>
                             </span>
-                            Water Filling Active
+                            <span className="hidden md:inline">Water Filling Active</span>
+                            <span className="md:hidden">Filling</span>
                           </>
                         ) : (
                           <>
-                            <span className="w-2 h-2 rounded-full bg-gray-500"></span>
-                            {tank.tankLevel > 80 ? 'At Capacity' : tank.tankLevel > 30 ? 'Operational' : 'Refill Required'}
+                            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                            <span className="hidden md:inline">{tank.tankLevel > 80 ? 'At Capacity' : tank.tankLevel > 30 ? 'Operational' : 'Refill Required'}</span>
+                            <span className="md:hidden">{tank.tankLevel > 80 ? 'Full' : tank.tankLevel > 30 ? 'OK' : 'Low'}</span>
                           </>
                         )}
                       </p>
@@ -453,9 +452,9 @@ export const WaterTankDetails = ({ onBack }) => {
                   </div>
                   
                   {/* Level Indicator */}
-                  <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-slate-200 rounded-full h-2 md:h-3 overflow-hidden">
                     <div 
-                      className={`h-3 rounded-full transition-all duration-500 ${
+                      className={`h-2 md:h-3 rounded-full transition-all duration-500 ${
                         tank.tankLevel > 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
                         tank.tankLevel > 30 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
                         'bg-gradient-to-r from-red-500 to-orange-500'
@@ -468,59 +467,39 @@ export const WaterTankDetails = ({ onBack }) => {
 
               {/* Valve Controls */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 block">
                   Valve Controls
                 </label>
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <button
                     onClick={toggleTankInlet}
-                    className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                    className={`w-full px-3 py-3 md:px-6 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
                       tank.inletValveStatus === 'OPEN'
                         ? 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white shadow-red-500/30'
                         : 'bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white shadow-green-500/30'
                     }`}
                   >
-                    <span className="flex items-center justify-center gap-3">
-                      <Settings size={24} />
-                      Inlet Valve: {tank.inletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}
+                    <span className="flex items-center justify-center gap-2 md:gap-3">
+                      <Settings size={18} className="md:w-6 md:h-6" />
+                      <span className="hidden md:inline">Inlet Valve: {tank.inletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}</span>
+                      <span className="md:hidden">Inlet: {tank.inletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}</span>
                     </span>
                   </button>
                   
                   <button
                     onClick={toggleTankOutlet}
-                    className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                    className={`w-full px-3 py-3 md:px-6 md:py-4 rounded-lg md:rounded-xl font-bold text-sm md:text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
                       tank.outletValveStatus === 'OPEN'
                         ? 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white shadow-red-500/30'
                         : 'bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white shadow-green-500/30'
                     }`}
                   >
-                    <span className="flex items-center justify-center gap-3">
-                      <Settings size={24} />
-                      Outlet Valve: {tank.outletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}
+                    <span className="flex items-center justify-center gap-2 md:gap-3">
+                      <Settings size={18} className="md:w-6 md:h-6" />
+                      <span className="hidden md:inline">Outlet Valve: {tank.outletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}</span>
+                      <span className="md:hidden">Outlet: {tank.outletValveStatus === 'OPEN' ? 'CLOSE' : 'OPEN'}</span>
                     </span>
                   </button>
-                </div>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Capacity</p>
-                    <p className="text-white font-bold">{(tank.tankCapacity || 10000).toLocaleString()} L</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Temperature</p>
-                    <p className="text-white font-bold">{(tank.temperature || 26).toFixed(1)}°C</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Inlet Flow</p>
-                    <p className="text-white font-bold">{(tank.inletFlowRate || 450).toFixed(0)} L/min</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Outlet Flow</p>
-                    <p className="text-white font-bold">{(tank.outletFlowRate || 120).toFixed(0)} L/min</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -542,7 +521,7 @@ export const WaterTankDetails = ({ onBack }) => {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
         {tankMetrics.map((metric, idx) => {
           const Icon = metric.icon;
           const statusColor = metric.color === 'green' ? 'text-green-600' :
@@ -552,16 +531,16 @@ export const WaterTankDetails = ({ onBack }) => {
                             'text-emerald-600';
           
           return (
-            <div key={idx} className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-slate-300">
-              <div className="flex items-center justify-between mb-3">
-                <Icon size={32} className={statusColor} />
+            <div key={idx} className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6 border-l-4 border-slate-300">
+              <div className="flex items-center justify-between mb-1 md:mb-3">
+                <Icon size={16} className={`${statusColor} md:w-8 md:h-8`} />
                 {metric.color === 'red' && (
-                  <AlertTriangle size={20} className="text-red-600" />
+                  <AlertTriangle size={14} className="text-red-600 md:w-5 md:h-5" />
                 )}
               </div>
-              <p className="text-sm text-gray-600 font-semibold">{metric.label}</p>
-              <p className="text-3xl font-black text-black mt-2">
-                {metric.value} <span className="text-lg text-gray-500">{metric.unit}</span>
+              <p className="text-[10px] md:text-lg text-gray-600 font-semibold">{metric.label}</p>
+              <p className="text-xs md:text-3xl font-black text-black mt-1 md:mt-2">
+                {metric.value} <span className="text-[10px] md:text-2xl text-gray-500">{metric.unit}</span>
               </p>
             </div>
           );
@@ -569,22 +548,22 @@ export const WaterTankDetails = ({ onBack }) => {
       </div>
 
       {/* Early Fault Detection for Water Tank */}
-      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200 shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-5">
+      <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-700 to-slate-600 p-5">
           <h3 className="font-black text-white flex items-center gap-3 text-xl">
             <AlertTriangle size={24} /> Tank Health & Early Fault Detection
           </h3>
-          <p className="text-blue-100 text-sm mt-1">Real-time monitoring and quality analysis</p>
+          <p className="text-slate-200 text-sm mt-1">Real-time monitoring and quality analysis</p>
         </div>
         
         <div className="p-6 space-y-4">
           {/* Water Level Monitoring */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                <Droplet size={16} /> Water Level Status
+              <span className="text-sm md:text-base font-semibold text-slate-600 flex items-center gap-2">
+                <Droplet size={16} className="md:w-5 md:h-5" /> Water Level Status
               </span>
-              <span className={`text-lg font-black ${tank.tankLevel < 20 ? 'text-red-600' : tank.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+              <span className={`text-lg md:text-3xl font-black ${tank.tankLevel < 20 ? 'text-red-600' : tank.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
                 {(tank.tankLevel || 65).toFixed(1)}%
               </span>
             </div>
@@ -597,10 +576,10 @@ export const WaterTankDetails = ({ onBack }) => {
           {/* Flow Rate Analysis */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                <Activity size={16} /> Inlet Flow Rate
+              <span className="text-sm md:text-base font-semibold text-slate-600 flex items-center gap-2">
+                <Activity size={16} className="md:w-5 md:h-5" /> Inlet Flow Rate
               </span>
-              <span className={`text-lg font-black ${(tank.inletFlowRate || 450) < 300 ? 'text-red-600' : 'text-green-600'}`}>
+              <span className={`text-lg md:text-3xl font-black ${(tank.inletFlowRate || 450) < 300 ? 'text-red-600' : 'text-green-600'}`}>
                 {(tank.inletFlowRate || 450).toFixed(0)} L/min
               </span>
             </div>
@@ -613,10 +592,10 @@ export const WaterTankDetails = ({ onBack }) => {
           {/* Temperature Monitoring */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                <Thermometer size={16} /> Water Temperature
+              <span className="text-sm md:text-base font-semibold text-slate-600 flex items-center gap-2">
+                <Thermometer size={16} className="md:w-5 md:h-5" /> Water Temperature
               </span>
-              <span className="text-lg font-black text-blue-600">
+              <span className="text-lg md:text-3xl font-black text-blue-600">
                 {(tank.temperature || 26).toFixed(1)}°C
               </span>
             </div>
@@ -649,57 +628,6 @@ export const WaterTankDetails = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tank Level & Volume Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Activity size={20} className="text-blue-600" />
-            Tank Level & Volume Trend
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={historyData}>
-              <defs>
-                <linearGradient id="colorLevel" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Area yAxisId="left" type="monotone" dataKey="level" stroke="#3b82f6" fillOpacity={1} fill="url(#colorLevel)" name="Level (%)" />
-              <Area yAxisId="right" type="monotone" dataKey="volume" stroke="#10b981" fillOpacity={1} fill="url(#colorVolume)" name="Volume (L)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Temperature & pH Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Thermometer size={20} className="text-red-600" />
-            Temperature & pH
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={historyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Line yAxisId="left" type="monotone" dataKey="temperature" stroke="#ef4444" strokeWidth={2} name="Temperature (°C)" />
-              <Line yAxisId="right" type="monotone" dataKey="pH" stroke="#8b5cf6" strokeWidth={2} name="pH" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
       {/* Water Quality Early Detection */}
       <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-2xl border-2 border-cyan-200 shadow-xl overflow-hidden">
         <div className="bg-gradient-to-r from-cyan-600 to-teal-600 p-5 flex items-center justify-between">
@@ -714,7 +642,7 @@ export const WaterTankDetails = ({ onBack }) => {
           </span>
         </div>
         
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
           {qualityData.map((param, idx) => {
             const isGood = param.status === 'Good' || param.status === 'Excellent';
             const percentage = ((param.value - param.min) / (param.max - param.min)) * 100;
@@ -769,7 +697,7 @@ export const WaterTankDetails = ({ onBack }) => {
               </p>
               <p className={`text-sm ${isWaterSafe ? 'text-green-700' : 'text-red-700'}`}>
                 {isWaterSafe 
-                  ? 'All parameters are within safe limits as per BIS standards.'
+                  ? 'All parameters are within safe limits as per Bureau of Indian Standards.'
                   : 'One or more parameters need adjustment. Please review and take corrective action.'}
               </p>
             </div>
@@ -823,23 +751,6 @@ export const WaterTankDetails = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Maintenance Management Section */}
-      <div className="mt-8">
-        <MaintenanceCard
-          title="Water Tank Maintenance Schedule"
-          lastMaintenanceDate={tank.lastMaintenanceDate}
-          nextMaintenanceDate={tank.nextMaintenanceDate}
-          maintenanceIntervalDays={tank.maintenanceIntervalDays}
-          maintenanceHistory={tank.maintenanceHistory}
-          type="tank"
-          additionalMetrics={[
-            { label: "Last Cleaning", value: new Date(tank.lastCleaningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }), subtext: `${Math.ceil((Date.now() - tank.lastCleaningDate) / (24 * 60 * 60 * 1000))} days ago` },
-            { label: "Tank Capacity", value: `${(tank.tankCapacity / 1000).toFixed(0)} kL`, subtext: "Maximum volume" },
-            { label: "Current Level", value: `${tank.tankLevel?.toFixed(1) || 0}%`, subtext: tank.tankLevel < 20 ? "⚠️ Low" : "✓ Good" },
-            { label: "Water Quality", value: quality.pH >= 6.5 && quality.pH <= 8.5 ? "Safe" : "Alert", subtext: `pH ${quality.pH?.toFixed(1)}` }
-          ]}
-        />
-      </div>
     </div>
   );
 };

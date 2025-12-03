@@ -74,43 +74,43 @@ export const ValvesDashboard = ({ onBack }) => {
       </div>
 
       {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6" style={{ backgroundColor: 'var(--bg-white)', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
-          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)', marginBottom: '8px' }}>Total Valves</p>
-          <p style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+      <div className="grid grid-cols-3 gap-2 md:gap-6">
+        <div className="p-2 md:p-6" style={{ backgroundColor: 'var(--bg-white)', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="text-[10px] md:text-lg" style={{ color: 'var(--gray-text)', marginBottom: '4px' }}>Total Valves</p>
+          <p className="text-sm md:text-3xl font-black" style={{ color: 'var(--gray-text-dark)' }}>
             {totalCount}
           </p>
         </div>
-        <div className="p-6" style={{ backgroundColor: '#D1FAE5', border: '1px solid #86EFAC', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
-          <p style={{ fontSize: 'var(--font-size-sm)', color: '#059669', marginBottom: '8px' }}>Open Valves</p>
-          <p style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 'var(--font-weight-bold)', color: '#059669' }}>
+        <div className="p-2 md:p-6" style={{ backgroundColor: '#D1FAE5', border: '1px solid #86EFAC', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="text-[10px] md:text-lg" style={{ color: '#059669', marginBottom: '4px' }}>Open Valves</p>
+          <p className="text-sm md:text-3xl font-black" style={{ color: '#059669' }}>
             {openCount}
           </p>
         </div>
-        <div className="p-6" style={{ backgroundColor: '#F3F4F6', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
-          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)', marginBottom: '8px' }}>Closed Valves</p>
-          <p style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+        <div className="p-2 md:p-6" style={{ backgroundColor: '#F3F4F6', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="text-[10px] md:text-lg" style={{ color: 'var(--gray-text)', marginBottom: '4px' }}>Closed Valves</p>
+          <p className="text-sm md:text-3xl font-black" style={{ color: 'var(--gray-text-dark)' }}>
             {totalCount - openCount}
           </p>
         </div>
       </div>
 
       {/* Valve Control Grid */}
-      <div className="p-6" style={{ backgroundColor: 'var(--bg-white)', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+      <div className="p-3 md:p-6" style={{ backgroundColor: 'var(--bg-white)', border: '1px solid var(--gray-border)', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="flex items-center justify-between mb-3 md:mb-6">
+          <h3 className="text-sm md:text-2xl font-bold" style={{ color: 'var(--gray-text-dark)' }}>
             Valve Control Matrix
           </h3>
-          <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', color: '#059669' }}>
+          <span className="text-[10px] md:text-base font-semibold" style={{ color: '#059669' }}>
             {openCount} OPEN / {totalCount} TOTAL
           </span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
           {valves.map(valve => (
             <div 
               key={valve.id} 
-              className="p-4"
+              className="p-2 md:p-4"
               style={{ 
                 border: `2px solid ${valve.state === 'OPEN' ? '#86EFAC' : 'var(--gray-border)'}`,
                 backgroundColor: valve.state === 'OPEN' ? '#D1FAE5' : 'var(--bg-white)',
@@ -118,15 +118,13 @@ export const ValvesDashboard = ({ onBack }) => {
                 transition: 'all 0.3s'
               }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <p style={{ fontSize: 'var(--font-size-md)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+              <div className="flex items-center justify-between mb-1 md:mb-3">
+                <p className="text-xs md:text-xl font-bold" style={{ color: 'var(--gray-text-dark)' }}>
                   {valve.id}
                 </p>
                 <span 
-                  className="px-3 py-1"
+                  className="px-2 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-bold"
                   style={{
-                    fontSize: 'var(--font-size-xs)',
-                    fontWeight: 'var(--font-weight-bold)',
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: valve.state === 'OPEN' ? '#059669' : '#6B7280',
                     color: 'var(--bg-white)'
@@ -136,29 +134,29 @@ export const ValvesDashboard = ({ onBack }) => {
                 </span>
               </div>
               
-              <p style={{ fontSize: 'var(--font-size-base)', color: 'var(--gray-text)', marginBottom: '12px' }}>
+              <p className="text-[10px] md:text-base mb-2 md:mb-3" style={{ color: 'var(--gray-text)' }}>
                 {valve.location}
               </p>
 
               {/* Metrics */}
               {valve.state === 'OPEN' && (
-                <div className="space-y-2 mb-3">
+                <div className="space-y-1 mb-2 md:mb-3">
                   <div className="flex justify-between items-center">
-                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)' }}>Flow:</span>
-                    <span style={{ fontSize: 'var(--font-size-base)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary-blue)' }}>
+                    <span className="text-[9px] md:text-base" style={{ color: 'var(--gray-text)' }}>Flow:</span>
+                    <span className="text-[10px] md:text-xl font-semibold" style={{ color: 'var(--primary-blue)' }}>
                       {valve.flow.toFixed(0)} L/min
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)' }}>Pressure:</span>
-                    <span style={{ fontSize: 'var(--font-size-base)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--primary-blue)' }}>
+                    <span className="text-[9px] md:text-base" style={{ color: 'var(--gray-text)' }}>Pressure:</span>
+                    <span className="text-[10px] md:text-xl font-semibold" style={{ color: 'var(--primary-blue)' }}>
                       {valve.pressure.toFixed(2)} bar
                     </span>
                   </div>
                   {valve.leakageProbability > 20 && (
-                    <div className="flex items-center gap-2 mt-2 p-2" style={{ backgroundColor: '#FEF3C7', borderRadius: 'var(--radius-sm)' }}>
-                      <AlertTriangle size={14} style={{ color: '#D97706' }} />
-                      <span style={{ fontSize: 'var(--font-size-xs)', color: '#78350F' }}>
+                    <div className="flex items-center gap-1 mt-1 p-1 md:p-2" style={{ backgroundColor: '#FEF3C7', borderRadius: 'var(--radius-sm)' }}>
+                      <AlertTriangle size={12} className="md:w-4 md:h-4" style={{ color: '#D97706' }} />
+                      <span className="text-[8px] md:text-sm" style={{ color: '#78350F' }}>
                         Leakage Risk: {valve.leakageProbability.toFixed(0)}%
                       </span>
                     </div>
@@ -166,12 +164,12 @@ export const ValvesDashboard = ({ onBack }) => {
                 </div>
               )}
 
-              <div className="space-y-2 text-xs mb-4" style={{ color: 'var(--gray-text)' }}>
-                <div className="flex items-center gap-2">
+              <div className="space-y-1 text-[9px] md:text-sm mb-2 md:mb-4" style={{ color: 'var(--gray-text)' }}>
+                <div className="flex items-center gap-1">
                   <span>Mode: {valve.automation}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={12} />
+                <div className="flex items-center gap-1">
+                  <Clock size={10} className="md:w-4 md:h-4" />
                   <span>Last action: {valve.lastAction}</span>
                 </div>
               </div>
@@ -179,9 +177,8 @@ export const ValvesDashboard = ({ onBack }) => {
               {/* Control Button */}
               <button
                 onClick={() => handleValveToggle(valve)}
-                className="w-full py-3 font-bold transition-opacity"
+                className="w-full py-1.5 md:py-3 text-[10px] md:text-base font-bold transition-opacity"
                 style={{
-                  fontSize: 'var(--font-size-base)',
                   borderRadius: 'var(--radius-sm)',
                   backgroundColor: valve.state === 'OPEN' ? '#DC2626' : '#059669',
                   color: 'var(--bg-white)'

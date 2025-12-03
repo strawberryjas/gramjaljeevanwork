@@ -277,30 +277,30 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
     <div className="space-y-6">
       {/* Header with Search */}
       <div className="border-b border-gray-200 pb-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-black">Service Requests & Complaints</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-lg md:text-2xl font-bold text-black">Service Requests & Complaints</h2>
+            <p className="text-[10px] md:text-sm text-gray-600 mt-0.5 md:mt-1">
               Manage water service complaints and requests from all wards
             </p>
           </div>
           
           {/* Search Bar */}
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="text"
               placeholder="Search by ID, name, location, type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              className="w-full pl-8 md:pl-10 pr-8 md:pr-4 py-1.5 md:py-2.5 border md:border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-[11px] md:text-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <XCircle size={18} />
+                <XCircle size={14} className="md:w-[18px] md:h-[18px]" />
               </button>
             )}
           </div>
@@ -308,22 +308,22 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       </div>
 
       {/* Village Distribution Cards */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-5">
-        <h3 className="text-lg font-bold text-black mb-3 flex items-center gap-2">
-          <MapPin size={20} className="text-blue-600" />
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-2 md:p-5">
+        <h3 className="text-sm md:text-lg font-bold text-black mb-2 md:mb-3 flex items-center gap-1 md:gap-2">
+          <MapPin size={14} className="text-blue-600 md:w-5 md:h-5" />
           Ward-wise Distribution (5 Pipeline Areas)
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4">
           {villageStats.map((stat) => (
             <div
               key={stat.village}
               onClick={() => setActiveVillage(stat.village)}
-              className={`bg-white rounded-lg border-2 p-4 cursor-pointer transition-all hover:shadow-md ${
+              className={`bg-white rounded-lg border md:border-2 p-2 md:p-4 cursor-pointer transition-all hover:shadow-md ${
                 activeVillage === stat.village ? 'border-blue-500 shadow-md' : 'border-gray-200'
               }`}
             >
-              <h4 className="font-bold text-black mb-2">{stat.village}</h4>
-              <div className="space-y-1 text-sm">
+              <h4 className="font-bold text-black text-[10px] md:text-base mb-1 md:mb-2">{stat.village}</h4>
+              <div className="space-y-0.5 md:space-y-1 text-[9px] md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total:</span>
                   <span className="font-bold text-black">{stat.total}</span>
@@ -347,7 +347,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
         {activeVillage !== 'all' && (
           <button
             onClick={() => setActiveVillage('all')}
-            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="mt-2 md:mt-4 px-3 md:px-4 py-1.5 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] md:text-sm font-medium transition-colors"
           >
             Show All Wards
           </button>
@@ -355,31 +355,31 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       </div>
 
       {/* System Status Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-black">{stats.total}</div>
-          <div className="text-xs text-gray-600 mt-1">
+      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
+          <div className="text-base md:text-2xl font-bold text-black">{stats.total}</div>
+          <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
             {activeVillage === 'all' ? 'Total Requests' : `${activeVillage}`}
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
-          <div className="text-xs text-gray-600 mt-1">Pending</div>
+        <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
+          <div className="text-base md:text-2xl font-bold text-amber-600">{stats.pending}</div>
+          <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Pending</div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
+          <div className="text-base md:text-2xl font-bold text-blue-600">{stats.inProgress}</div>
+          <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">In Progress</div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
+          <div className="text-base md:text-2xl font-bold text-green-600">{stats.resolved}</div>
+          <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Resolved</div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
+          <div className="text-base md:text-2xl font-bold text-blue-600">{stats.avgResponseTime}</div>
+          <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Avg Response</div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
-          <div className="text-xs text-gray-600 mt-1">In Progress</div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
-          <div className="text-xs text-gray-600 mt-1">Resolved</div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-blue-600">{stats.avgResponseTime}</div>
-          <div className="text-xs text-gray-600 mt-1">Avg Response</div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-2xl font-bold text-green-600">{stats.satisfaction}</div>
+          <div className="text-2xl md:text-3xl font-bold text-green-600">{stats.satisfaction}</div>
           <div className="text-xs text-gray-600 mt-1">Satisfaction</div>
         </div>
       </div>
@@ -442,34 +442,34 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
             return (
               <div
                 key={request.id}
-                className={`bg-white rounded-lg border-2 p-5 transition-all hover:shadow-md ${
+                className={`bg-white rounded-lg border md:border-2 p-2 md:p-5 transition-all hover:shadow-md ${
                   request.priority === 'high' ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
                 }`}
               >
                 {/* Header Row */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className={`p-3 rounded-lg ${getPriorityColor(request.priority)}`}>
-                      <Icon size={24} />
+                <div className="flex items-start justify-between mb-2 md:mb-3">
+                  <div className="flex items-start gap-2 md:gap-3 flex-1">
+                    <div className={`p-1.5 md:p-3 rounded-lg ${getPriorityColor(request.priority)}`}>
+                      <Icon size={16} className="md:w-6 md:h-6" />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-lg text-black">{request.type}</h3>
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getPriorityColor(request.priority)}`}>
+                      <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1 flex-wrap">
+                        <h3 className="font-bold text-[11px] md:text-lg text-black">{request.type}</h3>
+                        <span className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getPriorityColor(request.priority)}`}>
                           {request.urgency}
                         </span>
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(request.status)}`}>
+                        <span className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getStatusColor(request.status)}`}>
                           {request.status.replace('-', ' ').toUpperCase()}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 md:gap-4 text-[9px] md:text-sm text-gray-600 flex-wrap">
                         <span className="font-medium text-black">{request.id}</span>
-                        <span className="flex items-center gap-1">
-                          <Clock size={14} />
+                        <span className="flex items-center gap-0.5 md:gap-1">
+                          <Clock size={10} className="md:w-3.5 md:h-3.5" />
                           {formatTimeAgo(request.submittedAt)}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin size={14} />
+                        <span className="flex items-center gap-0.5 md:gap-1">
+                          <MapPin size={10} className="md:w-3.5 md:h-3.5" />
                           {request.distance}
                         </span>
                       </div>
@@ -478,28 +478,28 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 </div>
 
                 {/* Customer Info */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                  <div className="grid md:grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2">
-                      <User size={16} className="text-gray-500" />
-                      <span className="text-sm">
+                <div className="bg-gray-50 rounded-lg p-2 md:p-3 mb-2 md:mb-3">
+                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-3">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <User size={12} className="text-gray-500 md:w-4 md:h-4" />
+                      <span className="text-[9px] md:text-sm">
                         <span className="font-medium text-gray-700">Customer:</span>{' '}
                         <span className="text-black">{request.customerName}</span>
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Phone size={16} className="text-gray-500" />
-                      <span className="text-sm">
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <Phone size={12} className="text-gray-500 md:w-4 md:h-4" />
+                      <span className="text-[9px] md:text-sm">
                         <span className="font-medium text-gray-700">Phone:</span>{' '}
                         <span className="text-black">{request.phone}</span>
                       </span>
                     </div>
-                    <div className="flex items-start gap-2 md:col-span-2">
-                      <MapPin size={16} className="text-gray-500 mt-0.5" />
-                      <span className="text-sm">
+                    <div className="flex items-start gap-1 md:gap-2 md:col-span-2">
+                      <MapPin size={12} className="text-gray-500 mt-0.5 md:w-4 md:h-4" />
+                      <span className="text-[9px] md:text-sm">
                         <span className="font-medium text-gray-700">Ward:</span>{' '}
                         <span className="font-bold text-blue-600">{request.village}</span>
-                        <span className="text-gray-400 mx-2">•</span>
+                        <span className="text-gray-400 mx-1 md:mx-2">•</span>
                         <span className="text-black">{request.location}</span>
                       </span>
                     </div>
@@ -507,8 +507,8 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 </div>
 
                 {/* Description */}
-                <div className="mb-4">
-                  <p className="text-sm text-gray-700">
+                <div className="mb-2 md:mb-4">
+                  <p className="text-[9px] md:text-sm text-gray-700">
                     <span className="font-medium text-black">Description:</span> {request.description}
                   </p>
                 </div>
@@ -518,52 +518,52 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAcceptRequest(request.id)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-1.5 md:py-2.5 rounded-lg font-medium text-[10px] md:text-sm transition-colors flex items-center justify-center gap-1 md:gap-2"
                     >
-                      <CheckCircle size={18} />
+                      <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                       Accept Request
                     </button>
                   </div>
                 )}
 
                 {request.status === 'in-progress' && (
-                  <div className="space-y-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <User size={16} className="text-blue-600" />
+                  <div className="space-y-2 md:space-y-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 md:p-3">
+                      <div className="flex items-center gap-1 md:gap-2 text-[9px] md:text-sm flex-wrap">
+                        <User size={12} className="text-blue-600 md:w-4 md:h-4" />
                         <span className="font-medium text-gray-700">Assigned to:</span>
                         <span className="text-black">{request.assignedTo}</span>
                         {request.eta && (
                           <>
                             <span className="text-gray-400">•</span>
-                            <Clock size={16} className="text-blue-600" />
+                            <Clock size={12} className="text-blue-600 md:w-4 md:h-4" />
                             <span className="text-black">ETA: {request.eta}</span>
                           </>
                         )}
                       </div>
                     </div>
                     {userRole === 'technician' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 md:gap-2">
                         <button
                           onClick={() => handleCallCustomer(request.phone)}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white px-2 md:px-4 py-1.5 md:py-2.5 rounded-lg font-medium text-[10px] md:text-sm transition-colors flex items-center justify-center gap-1 md:gap-2"
                         >
-                          <Phone size={18} />
-                          Call Customer
+                          <Phone size={14} className="md:w-[18px] md:h-[18px]" />
+                          <span className="hidden md:inline">Call Customer</span>
                         </button>
                         <button
                           onClick={() => handleNavigate(request.location)}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 md:px-4 py-1.5 md:py-2.5 rounded-lg font-medium text-[10px] md:text-sm transition-colors flex items-center justify-center gap-1 md:gap-2"
                         >
-                          <MapPin size={18} />
-                          Navigate
+                          <MapPin size={14} className="md:w-[18px] md:h-[18px]" />
+                          <span className="hidden md:inline">Navigate</span>
                         </button>
                         <button
                           onClick={() => handleMarkComplete(request.id)}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-2 md:px-4 py-1.5 md:py-2.5 rounded-lg font-medium text-[10px] md:text-sm transition-colors flex items-center justify-center gap-1 md:gap-2"
                         >
-                          <CheckCircle size={18} />
-                          Mark Complete
+                          <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
+                          <span className="hidden md:inline">Mark Complete</span>
                         </button>
                       </div>
                     )}
@@ -571,11 +571,11 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 )}
 
                 {request.status === 'resolved' && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-2 text-green-700">
-                          <CheckCircle size={16} />
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-2 md:p-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 md:gap-4 text-[9px] md:text-sm flex-wrap">
+                        <span className="flex items-center gap-1 md:gap-2 text-green-700">
+                          <CheckCircle size={12} className="md:w-4 md:h-4" />
                           <span className="font-medium">Resolved by {request.resolvedBy}</span>
                         </span>
                         <span className="text-gray-600">

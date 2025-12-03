@@ -14,6 +14,7 @@ const baseCommon = {
     dailyOps: 'Daily Operations',
     energy: 'Energy',
     quality: 'Water Quality',
+    maintenance: 'Maintenance',
     serviceRequests: 'Service Requests',
     reports: 'Reports',
     accountability: 'Accountability',

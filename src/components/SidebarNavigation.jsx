@@ -92,6 +92,7 @@ export const SidebarNavigation = ({
           icon: 'settings-gear.svg',
           items: [
             { id: 'quality', label: t('nav.quality'), icon: 'beaker-flask.png' },
+            { id: 'maintenance', label: t('nav.maintenance'), icon: 'wrench.svg' },
             { id: 'service-requests', label: t('nav.serviceRequests'), icon: 'check-success.svg' },
             ...(isResearcher ? [{ id: 'reports', label: t('nav.reports'), icon: 'check-success.svg' }] : []),
           ],
@@ -143,7 +144,7 @@ export const SidebarNavigation = ({
 
       {/* Sidebar - Government Design System */}
       <div
-        className={`fixed lg:sticky top-0 left-0 h-screen z-40 lg:z-10 flex flex-col justify-between transition-all duration-300 ease-in-out ${
+        className={`fixed lg:sticky top-0 left-0 h-screen z-50 lg:z-10 flex flex-col justify-between transition-all duration-300 ease-in-out ${
           isOpen ? 'w-72' : 'w-0 lg:w-20'
         } overflow-hidden lg:overflow-visible`}
         style={{ 
@@ -172,24 +173,26 @@ export const SidebarNavigation = ({
                 }}
               />
             </div>
-            {/* Toggle Button */}
-              <button
+            {/* Mobile Close Button */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden p-2 bg-white/60 backdrop-blur-md border border-gray-200 hover:border-blue-300 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 ml-2"
+              title="Close menu"
+              aria-label="Close sidebar"
+            >
+              <IconImage name="close-x.svg" className="h-5 w-5 text-blue-600" aria-hidden="true" />
+            </button>
+            {/* Desktop Toggle Button */}
+            <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 transition-colors ml-2"
-              style={{ 
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'transparent',
-                color: 'var(--primary-blue)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-light)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              className="hidden lg:block p-2 bg-white/60 backdrop-blur-md border border-gray-200 hover:border-blue-300 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 ml-2"
               title={isOpen ? 'Collapse' : 'Expand'}
               aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             >
               {isOpen ? (
-                <IconImage name="close-x.svg" className="h-9 w-9" aria-hidden="true" />
+                <IconImage name="close-x.svg" className="h-5 w-5 text-blue-600" aria-hidden="true" />
               ) : (
-                <IconImage name="menu-bars.svg" className="h-9 w-9" aria-hidden="true" />
+                <IconImage name="menu-bars.svg" className="h-5 w-5 text-blue-600" aria-hidden="true" />
               )}
             </button>
           </div>

@@ -56,6 +56,11 @@ const ServiceRequestDashboard = lazy(() =>
     default: module.ServiceRequestDashboard,
   }))
 );
+const MaintenanceDashboard = lazy(() =>
+  import('./components/dashboards/MaintenanceDashboard').then(module => ({
+    default: module.default,
+  }))
+);
 const PumpDetails = lazy(() =>
   import('./components/dashboards/PumpDetails').then(module => ({
     default: module.PumpDetails,
@@ -362,7 +367,7 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                   {/* Pump Head (Front Casing) */}
                   <div className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
                     style={{
-                      background: 'linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%)',
+                      background: 'linear-gradient(135deg, #ffffffff 0%, #000000ff 50%, #ffffffff 100%)',
                       boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
                       border: '2px solid #0a3a5a'
                     }}>
@@ -973,11 +978,12 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           </h3>
           <button onClick={() => logWaterTest('Manual Sample Collected')} className="text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-xl">Record Field Test</button>
         </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-2 md:p-6 grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
           <QualityCard label="pH Level" value={data.qualityPH} unit="pH" safeMin={6.5} safeMax={8.5} icon={Beaker} />
           <QualityCard label="Turbidity" value={data.qualityTurbidity} unit="NTU" safeMax={5} icon={Wind} />
           <QualityCard label="Chlorine" value={data.qualityChlorine} unit="mg/L" safeMin={0.2} safeMax={1.0} icon={Droplet} />
           <QualityCard label="TDS" value={data.qualityTDS} unit="ppm" safeMax={500} icon={Layers} />
+          <QualityCard label="Temperature" value={data.qualityTemperature || 25} unit="°C" safeMin={10} safeMax={30} icon={Thermometer} />
           <QualityCard label="Hardness" value={data.qualityHardness || 180} unit="mg/L" safeMax={300} icon={Beaker} />
           <QualityCard label="EC" value={data.qualityEC || 450} unit="µS/cm" safeMax={750} icon={Activity} />
         </div>
@@ -987,47 +993,47 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
       {pipelineQualities.length > 0 && (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Avg Pipeline Deviation</p>
-                <TrendingUp size={20} className="text-emerald-600" />
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-4">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border md:border-2 border-emerald-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
+                <p className="text-[7px] md:text-xs font-bold text-emerald-700 uppercase tracking-tight md:tracking-wide leading-tight">Avg Deviation</p>
+                <TrendingUp size={10} className="text-emerald-600 hidden md:block md:w-5 md:h-5" />
               </div>
-              <p className="text-4xl font-black text-emerald-700 mb-1">{avgPipelineDeviation}%</p>
-              <p className="text-xs text-emerald-600 font-semibold">vs main tank quality</p>
+              <p className="text-base md:text-4xl font-black text-emerald-700 mb-0 md:mb-1">{avgPipelineDeviation}%</p>
+              <p className="text-[6px] md:text-xs text-emerald-600 font-semibold leading-tight">vs tank</p>
             </div>
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">Highest Deviation</p>
-                <AlertCircle size={20} className="text-amber-600" />
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border md:border-2 border-amber-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
+                <p className="text-[7px] md:text-xs font-bold text-amber-700 uppercase tracking-tight md:tracking-wide leading-tight">Highest</p>
+                <AlertCircle size={10} className="text-amber-600 hidden md:block md:w-5 md:h-5" />
               </div>
-              <p className="text-2xl font-black text-amber-700 mb-1">
+              <p className="text-[10px] md:text-2xl font-black text-amber-700 mb-0 md:mb-1">
                 {highestDeviationPipeline?.shortName || 'All Stable'}
               </p>
-              <p className="text-xs text-amber-600 font-semibold">
-                {highestDeviationPipeline ? `${highestDeviationPipeline.deviation}% variance detected` : 'No active alerts'}
+              <p className="text-[6px] md:text-xs text-amber-600 font-semibold leading-tight">
+                {highestDeviationPipeline ? `${highestDeviationPipeline.deviation}%` : 'No alerts'}
               </p>
             </div>
-            <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-red-700 uppercase tracking-wide">Needs Attention</p>
-                <AlertTriangle size={20} className="text-red-600" />
+            <div className="bg-gradient-to-br from-red-50 to-red-100 border md:border-2 border-red-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
+                <p className="text-[7px] md:text-xs font-bold text-red-700 uppercase tracking-tight md:tracking-wide leading-tight">Attention</p>
+                <AlertTriangle size={10} className="text-red-600 hidden md:block md:w-5 md:h-5" />
               </div>
-              <p className="text-4xl font-black text-red-700 mb-1">{pipelinesNeedingAttention}</p>
-              <p className="text-xs text-red-600 font-semibold">Pipelines with &gt;10% deviation</p>
+              <p className="text-base md:text-4xl font-black text-red-700 mb-0 md:mb-1">{pipelinesNeedingAttention}</p>
+              <p className="text-[6px] md:text-xs text-red-600 font-semibold leading-tight">&gt;10% dev</p>
             </div>
           </div>
 
           {/* Pipeline Quality Breakdown Table */}
-          <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex items-center justify-between">
+          <div className="bg-white rounded-lg md:rounded-2xl border md:border-2 border-indigo-200 shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 md:p-5 flex items-center justify-between">
               <div>
-                <h3 className="font-black text-white flex items-center gap-3 text-xl">
-                  <Layers size={24} /> Pipeline Quality Breakdown
+                <h3 className="font-black text-white flex items-center gap-1 md:gap-3 text-sm md:text-xl">
+                  <Layers size={16} className="md:w-6 md:h-6" /> Pipeline Quality Breakdown
                 </h3>
-                <p className="text-indigo-100 text-sm mt-1">Detailed water quality parameters across distribution network</p>
+                <p className="text-indigo-100 text-[9px] md:text-sm mt-0.5 md:mt-1">Detailed water quality parameters across distribution network</p>
               </div>
-              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-bold border border-white/30">
+              <span className="px-2 py-1 md:px-4 md:py-2 bg-white/20 backdrop-blur-sm rounded-full text-[8px] md:text-xs text-white font-bold border border-white/30">
                 {pipelineQualities.length} Active Pipelines
               </span>
             </div>
@@ -1035,30 +1041,25 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-slate-100 to-slate-50">
-                  <tr className="border-b-2 border-slate-200">
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">Pipeline</th>
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Droplet size={14} /> pH Level
+                  <tr className="border-b md:border-b-2 border-slate-200">
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">Pipeline</th>
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
+                      <div className="flex items-center gap-0.5 md:gap-2">
+                        <Droplet size={10} className="md:w-3.5 md:h-3.5" /> pH
                       </div>
                     </th>
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Wind size={14} /> Turbidity
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
+                      <div className="flex items-center gap-0.5 md:gap-2">
+                        <Wind size={10} className="md:w-3.5 md:h-3.5" /> Turb
                       </div>
                     </th>
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Beaker size={14} /> Chlorine
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
+                      <div className="flex items-center gap-0.5 md:gap-2">
+                        <Layers size={10} className="md:w-3.5 md:h-3.5" /> TDS
                       </div>
                     </th>
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Layers size={14} /> TDS
-                      </div>
-                    </th>
-                    <th className="p-4 text-left font-bold text-slate-700 text-sm">Status</th>
-                    <th className="p-4 text-center font-bold text-slate-700 text-sm">Deviation</th>
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">Status</th>
+                    <th className="p-1 md:p-4 text-center font-bold text-slate-700 text-[9px] md:text-sm">Dev</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1067,60 +1068,54 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                     const isWarning = pq.deviation > 5 && pq.deviation <= 10;
                     return (
                       <tr key={pq.pipelineId} className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-sm ${
+                        <td className="p-1 md:p-4">
+                          <div className="flex items-center gap-1 md:gap-3">
+                            <div className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-white text-[8px] md:text-sm ${
                               isAlert ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
                             }`}>
                               P{pq.pipelineId}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800 text-sm">{pq.pipelineName}</p>
-                              <p className="text-xs text-slate-500">{pq.shortName}</p>
+                              <p className="font-bold text-slate-800 text-[9px] md:text-sm">{pq.pipelineName}</p>
+                              <p className="text-[7px] md:text-xs text-slate-500">{pq.shortName}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.pH)}</p>
-                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.pH)}</p>
+                        <td className="p-1 md:p-4">
+                          <div className="space-y-0 md:space-y-1">
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.pH)}</p>
+                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.pH)}</p>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.turbidity)} <span className="text-xs text-slate-500">NTU</span></p>
-                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.turbidity)}</p>
+                        <td className="p-1 md:p-4">
+                          <div className="space-y-0 md:space-y-1">
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.turbidity)} <span className="text-[7px] md:text-xs text-slate-500">NTU</span></p>
+                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.turbidity)}</p>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.chlorine)} <span className="text-xs text-slate-500">mg/L</span></p>
-                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.chlorine)}</p>
+                        <td className="p-1 md:p-4">
+                          <div className="space-y-0 md:space-y-1">
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.TDS, 0)} <span className="text-[7px] md:text-xs text-slate-500">ppm</span></p>
+                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.TDS, 0)}</p>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <p className="font-bold text-slate-800">{formatDisplay(pq.outlet.TDS, 0)} <span className="text-xs text-slate-500">ppm</span></p>
-                            <p className="text-xs text-slate-500">Inlet: {formatDisplay(pq.inlet.TDS, 0)}</p>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                        <td className="p-1 md:p-4">
+                          <span className={`inline-flex items-center gap-0.5 md:gap-1 px-1 py-0.5 md:px-3 md:py-1 rounded-full text-[7px] md:text-xs font-bold ${
                             isAlert ? 'bg-red-100 text-red-700 border border-red-300' :
                             isWarning ? 'bg-amber-100 text-amber-700 border border-amber-300' :
                             'bg-emerald-100 text-emerald-700 border border-emerald-300'
                           }`}>
-                            {isAlert ? '⚠ Alert' : isWarning ? '⚡ Warning' : '✓ Good'}
+                            {isAlert ? '⚠' : isWarning ? '⚡' : '✓'} <span className="hidden md:inline">{isAlert ? 'Alert' : isWarning ? 'Warning' : 'Good'}</span>
                           </span>
                         </td>
-                        <td className="p-4 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <span className={`text-2xl font-black ${
+                        <td className="p-1 md:p-4 text-center">
+                          <div className="flex flex-col items-center gap-0.5 md:gap-2">
+                            <span className={`text-sm md:text-2xl font-black ${
                               isAlert ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'
                             }`}>
                               {pq.deviation}%
                             </span>
-                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div className="w-full bg-slate-200 rounded-full h-1 md:h-2 overflow-hidden">
                               <div 
                                 className={`h-full rounded-full ${
                                   isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-600' : 'bg-emerald-600'
@@ -1138,70 +1133,49 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
             </div>
 
             {/* Legend */}
-            <div className="bg-slate-50 p-4 border-t-2 border-slate-200">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs font-semibold text-slate-600">Good (&lt;5%)</span>
+            <div className="bg-slate-50 p-2 md:p-4 border-t md:border-t-2 border-slate-200">
+              <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4">
+                <div className="flex items-center gap-2 md:gap-6">
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-emerald-500"></div>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Good (&lt;5%)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-xs font-semibold text-slate-600">Warning (5-10%)</span>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-amber-500"></div>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Warning (5-10%)</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs font-semibold text-slate-600">Alert (&gt;10%)</span>
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-500"></div>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Alert (&gt;10%)</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 italic">Deviation calculated from main tank baseline quality</p>
+                <p className="text-[8px] md:text-xs text-slate-500 italic">Deviation calculated from main tank baseline quality</p>
               </div>
             </div>
           </div>
         </>
       )}
 
-      {/* Pipeline Comparison Charts */}
+      {/* Quality Deviation Chart */}
       {pipelineQualities.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-              <TrendingUp size={18} /> Tank vs Pipeline (pH & Turbidity)
-            </h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={pipelineChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="pipeline" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="tankPH" stroke="#6366f1" strokeDasharray="5 5" name="Tank pH" />
-                  <Line type="monotone" dataKey="pipelinePH" stroke="#ec4899" strokeWidth={2} name="Pipeline pH" />
-                  <Line type="monotone" dataKey="tankTurbidity" stroke="#0ea5e9" strokeDasharray="5 5" name="Tank Turbidity" />
-                  <Line type="monotone" dataKey="pipelineTurbidity" stroke="#f97316" strokeWidth={2} name="Pipeline Turbidity" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-              <BarChart3 size={18} /> Quality Deviation by Pipeline
-            </h3>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={deviationChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="pipeline" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="deviation" fill="#f87171" name="Deviation (%)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
+            <BarChart3 size={18} /> Quality Deviation by Pipeline
+          </h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={deviationChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="pipeline" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="deviation" fill="#f87171" name="Deviation (%)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
+
     </div>
   );
 };
@@ -1245,193 +1219,205 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
         </h2>
         <div className="text-sm text-gray-500">AI Confidence: 85%</div>
       </div>
-      <div className="bg-white rounded-xl border shadow-sm">
-        <div className="bg-fuchsia-50 p-4 border-b border-fuchsia-100">
-          <h3 className="font-bold text-fuchsia-800 flex items-center gap-2">
-            <Wind size={20} /> 1. Flow Pattern Analytics
+      <div className="bg-white rounded-lg md:rounded-xl border shadow-sm">
+        <div className="bg-fuchsia-50 p-2 md:p-4 border-b border-fuchsia-100">
+          <h3 className="font-bold text-fuchsia-800 text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+            <Wind size={14} className="md:w-5 md:h-5" /> 1. Flow Pattern Analytics
           </h3>
         </div>
-        <div className="p-6">
-          <div className="h-64">
+        <div className="p-2 md:p-6">
+          <div className="h-56 md:h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={flow24h}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <ComposedChart data={flow24h} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                 <XAxis
                   dataKey="timeLabel"
-                  interval="preserveStartEnd"
-                  tick={{ fontSize: 10 }}
-                  label={{ value: 'Time of Day', position: 'insideBottom', dy: 10 }}
+                  interval={2}
+                  tick={{ fontSize: 9 }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#d1d5db' }}
                 />
-                <YAxis label={{ value: 'Flow (L/m)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
-                <Legend />
-                <Area type="monotone" dataKey="avg" fill="#fae8ff" stroke="none" name="Daily Avg Trend" />
-                <Line type="monotone" dataKey="flow" stroke="#d946ef" strokeWidth={2} name="Hourly Fluctuation" dot={false} />
-                <Scatter name="Anomalous Event" data={flow24h.filter(d => d.anomaly)} fill="red" shape="cross" />
+                <YAxis 
+                  tick={{ fontSize: 9 }} 
+                  tickLine={false}
+                  axisLine={{ stroke: '#d1d5db' }}
+                  width={35}
+                />
+                <Tooltip 
+                  contentStyle={{ fontSize: '11px', padding: '4px 8px' }}
+                  labelStyle={{ fontSize: '10px' }}
+                />
+                <Legend 
+                  wrapperStyle={{ fontSize: '9px', paddingTop: '8px' }}
+                  iconSize={10}
+                />
+                <Area type="monotone" dataKey="avg" fill="#fae8ff" stroke="none" name="Avg" />
+                <Line type="monotone" dataKey="flow" stroke="#d946ef" strokeWidth={1.5} name="Flow" dot={false} />
+                <Scatter name="Anomaly" data={flow24h.filter(d => d.anomaly)} fill="red" shape="circle" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm">
-          <div className="bg-orange-50 p-4 border-b border-orange-100">
-            <h3 className="font-bold text-orange-800 flex items-center gap-2">
-              <AlertTriangle size={20} /> 2. Fault Prediction Indicators
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
+        <div className="lg:col-span-2 bg-white rounded-lg md:rounded-xl border shadow-sm">
+          <div className="bg-orange-50 p-2 md:p-4 border-b border-orange-100">
+            <h3 className="font-bold text-orange-800 text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+              <AlertTriangle size={14} className="md:w-5 md:h-5" /> 2. Fault Prediction Indicators
             </h3>
           </div>
-          <div className="p-6 grid grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-3 rounded-lg border flex flex-col items-center">
-              <div className="text-xs font-bold text-gray-500 uppercase mb-2">Leak Probability</div>
+          <div className="p-3 md:p-6 grid grid-cols-2 gap-3 md:gap-6">
+            <div className="bg-gray-50 p-2 md:p-3 rounded-lg border flex flex-col items-center">
+              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Leak Probability</div>
               <GaugeChart value={data.predFlowDropPercent} max={100} label="% Risk" color="#ef4444" />
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg border flex flex-col items-center">
-              <div className="text-xs font-bold text-gray-500 uppercase mb-2">Pump Wear</div>
+            <div className="bg-gray-50 p-2 md:p-3 rounded-lg border flex flex-col items-center">
+              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Pump Wear</div>
               <GaugeChart value={data.predEnergySpikePercent} max={100} label="% Wear" color="#f59e0b" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
-          <div className="bg-blue-900 p-4 border-b border-amber-500">
-            <h3 className="font-bold text-white flex items-center gap-2">
-              <CalendarClock size={20} /> 3. Scheduling
+        <div className="bg-white rounded-lg border md:border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
+          <div className="bg-blue-900 p-2 md:p-4 border-b border-amber-500">
+            <h3 className="font-bold text-white text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+              <CalendarClock size={14} className="md:w-5 md:h-5" /> 3. Scheduling
             </h3>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-3 md:p-6 space-y-2 md:space-y-4">
             <CountdownCard title="Pump Service" targetDate={data.nextPumpService} icon={Wrench} />
             <CountdownCard title="Valve Service" targetDate={data.nextValveService} icon={AlertCircle} />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="bg-fuchsia-50 p-4 border-b border-fuchsia-100">
-          <h3 className="font-bold text-fuchsia-800 flex items-center gap-2">
-            <TrendingUp size={18} /> Predictive Insights
+      <div className="bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-fuchsia-50 p-2 md:p-4 border-b border-fuchsia-100">
+          <h3 className="font-bold text-fuchsia-800 text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+            <TrendingUp size={14} className="md:w-[18px] md:h-[18px]" /> Predictive Insights
           </h3>
-          <p className="text-xs text-fuchsia-500 uppercase tracking-wide">Actions that protect uptime</p>
+          <p className="text-[8px] md:text-xs text-fuchsia-500 uppercase tracking-wide">Actions that protect uptime</p>
         </div>
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="p-3 md:p-6 grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
           {predictiveInsights.map(insight => (
-            <div key={insight.title} className="p-4 rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition duration-200">
-              <p className="text-2xs text-gray-400 uppercase tracking-wider">{insight.title}</p>
-              <p className="text-3xl font-black text-black mt-2">{insight.metric}</p>
-              <p className="text-xs text-gray-500 mt-1">{insight.detail}</p>
+            <div key={insight.title} className="p-2 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition duration-200">
+              <p className="text-[7px] md:text-2xs text-gray-400 uppercase tracking-wider">{insight.title}</p>
+              <p className="text-base md:text-3xl font-black text-black mt-1 md:mt-2">{insight.metric}</p>
+              <p className="text-[8px] md:text-xs text-gray-500 mt-0.5 md:mt-1">{insight.detail}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Early Fault Detection System */}
-      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl border-2 border-red-200 shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-red-600 to-orange-600 p-5">
-          <h3 className="font-black text-white flex items-center gap-3 text-xl">
-            <AlertTriangle size={24} /> Early Fault Detection System
+      <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-lg md:rounded-2xl border md:border-2 border-red-200 shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 p-3 md:p-5">
+          <h3 className="font-black text-white flex items-center gap-1 md:gap-3 text-sm md:text-xl">
+            <AlertTriangle size={16} className="md:w-6 md:h-6" /> Early Fault Detection System
           </h3>
-          <p className="text-red-100 text-sm mt-1">Real-time anomaly detection across all system components</p>
+          <p className="text-red-100 text-[9px] md:text-sm mt-0.5 md:mt-1">Real-time anomaly detection across all system components</p>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="p-3 md:p-6 space-y-3 md:space-y-6">
           {/* Pump Station Health */}
-          <div className="bg-white rounded-xl border-2 border-slate-200 shadow-lg overflow-hidden">
-            <div className="bg-slate-800 px-4 py-3 flex items-center justify-between">
-              <h4 className="font-bold text-white flex items-center gap-2">
-                <Power size={18} /> Pump Station Diagnostics
+          <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-slate-200 shadow-lg overflow-hidden">
+            <div className="bg-slate-800 px-2 md:px-4 py-2 md:py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
+                <Power size={14} className="md:w-[18px] md:h-[18px]" /> Pump Station Diagnostics
               </h4>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.pumpEfficiency > 75 ? 'bg-green-500 text-white' : data.pumpEfficiency > 50 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pumpEfficiency > 75 ? 'bg-green-500 text-white' : data.pumpEfficiency > 50 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
                 {data.pumpEfficiency > 75 ? '✓ HEALTHY' : data.pumpEfficiency > 50 ? '⚠ MONITOR' : '✕ CRITICAL'}
               </span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
+            <div className="p-2 md:p-5 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Motor Temperature</span>
-                  <span className={`text-lg font-black ${data.motorTemp > 65 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Motor Temperature</span>
+                  <span className={`text-sm md:text-lg font-black ${data.motorTemp > 65 ? 'text-red-600' : 'text-green-600'}`}>
                     {data.motorTemp || 45}°C
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.motorTemp > 65 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.motorTemp || 45) / 80 * 100)}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.motorTemp > 65 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.motorTemp || 45) / 80 * 100)}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.motorTemp > 65 ? '⚠ Overheating detected' : '✓ Normal operating range'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.motorTemp > 65 ? '⚠ Overheating detected' : '✓ Normal operating range'}</p>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Vibration Level</span>
-                  <span className={`text-lg font-black ${data.vibration > 8 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Vibration Level</span>
+                  <span className={`text-sm md:text-lg font-black ${data.vibration > 8 ? 'text-red-600' : 'text-green-600'}`}>
                     {(data.vibration || 3).toFixed(1)} mm/s
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.vibration > 8 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.vibration || 3) / 10 * 100)}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.vibration > 8 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.vibration || 3) / 10 * 100)}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.vibration > 8 ? '⚠ Bearing wear suspected' : '✓ Stable operation'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.vibration > 8 ? '⚠ Bearing wear suspected' : '✓ Stable operation'}</p>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Power Draw</span>
-                  <span className={`text-lg font-black ${data.powerConsumption > 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Power Draw</span>
+                  <span className={`text-sm md:text-lg font-black ${data.powerConsumption > 10 ? 'text-amber-600' : 'text-green-600'}`}>
                     {(data.powerConsumption || 7.5).toFixed(1)} kW
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.powerConsumption > 10 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.powerConsumption || 7.5) / 12 * 100)}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.powerConsumption > 10 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.powerConsumption || 7.5) / 12 * 100)}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.powerConsumption > 10 ? '⚠ Efficiency drop detected' : '✓ Optimal consumption'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.powerConsumption > 10 ? '⚠ Efficiency drop detected' : '✓ Optimal consumption'}</p>
               </div>
             </div>
           </div>
 
           {/* Water Tank Monitoring */}
-          <div className="bg-white rounded-xl border-2 border-blue-200 shadow-lg overflow-hidden">
-            <div className="bg-blue-600 px-4 py-3 flex items-center justify-between">
-              <h4 className="font-bold text-white flex items-center gap-2">
-                <Droplet size={18} /> Water Tank Health
+          <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-blue-200 shadow-lg overflow-hidden">
+            <div className="bg-blue-600 px-2 md:px-4 py-2 md:py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
+                <Droplet size={14} className="md:w-[18px] md:h-[18px]" /> Water Tank Health
               </h4>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.tankLevel > 30 && data.tankLevel < 95 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.tankLevel > 30 && data.tankLevel < 95 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
                 {data.tankLevel > 30 && data.tankLevel < 95 ? '✓ OPTIMAL' : '⚠ ATTENTION'}
               </span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
+            <div className="p-2 md:p-5 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Water Level</span>
-                  <span className={`text-lg font-black ${data.tankLevel < 20 ? 'text-red-600' : data.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Water Level</span>
+                  <span className={`text-sm md:text-lg font-black ${data.tankLevel < 20 ? 'text-red-600' : data.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
                     {(data.tankLevel || 65).toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.tankLevel < 20 ? 'bg-red-600' : data.tankLevel > 90 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${data.tankLevel || 65}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankLevel < 20 ? 'bg-red-600' : data.tankLevel > 90 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${data.tankLevel || 65}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.tankLevel < 20 ? '⚠ Low water alert' : data.tankLevel > 90 ? '⚠ Near capacity' : '✓ Normal range'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.tankLevel < 20 ? '⚠ Low water alert' : data.tankLevel > 90 ? '⚠ Near capacity' : '✓ Normal range'}</p>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Flow Rate</span>
-                  <span className={`text-lg font-black ${data.pumpFlowRate < 300 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Flow Rate</span>
+                  <span className={`text-sm md:text-lg font-black ${data.pumpFlowRate < 300 ? 'text-red-600' : 'text-green-600'}`}>
                     {(data.pumpFlowRate || 450).toFixed(0)} L/min
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.pumpFlowRate < 300 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.pumpFlowRate || 450) / 600 * 100)}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.pumpFlowRate < 300 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.pumpFlowRate || 450) / 600 * 100)}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.pumpFlowRate < 300 ? '⚠ Possible blockage' : '✓ Normal flow'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.pumpFlowRate < 300 ? '⚠ Possible blockage' : '✓ Normal flow'}</p>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-600">Temperature</span>
-                  <span className={`text-lg font-black ${data.tankTemp > 30 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Temperature</span>
+                  <span className={`text-sm md:text-lg font-black ${data.tankTemp > 30 ? 'text-amber-600' : 'text-green-600'}`}>
                     {(data.tankTemp || 26).toFixed(1)}°C
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.tankTemp > 30 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.tankTemp || 26) / 40 * 100)}%`}}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
+                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankTemp > 30 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.tankTemp || 26) / 40 * 100)}%`}}></div>
                 </div>
-                <p className="text-xs text-slate-500">{data.tankTemp > 30 ? '⚠ Elevated temperature' : '✓ Normal temperature'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">{data.tankTemp > 30 ? '⚠ Elevated temperature' : '✓ Normal temperature'}</p>
               </div>
             </div>
           </div>
@@ -1502,50 +1488,50 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           </div>
 
           {/* Water Quality Sensors */}
-          <div className="bg-white rounded-xl border-2 border-cyan-200 shadow-lg overflow-hidden">
-            <div className="bg-cyan-600 px-4 py-3 flex items-center justify-between">
-              <h4 className="font-bold text-white flex items-center gap-2">
-                <FlaskConical size={18} /> Water Quality Monitoring
+          <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-cyan-200 shadow-lg overflow-hidden">
+            <div className="bg-cyan-600 px-2 md:px-4 py-2 md:py-3 flex items-center justify-between">
+              <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
+                <FlaskConical size={14} className="md:w-[18px] md:h-[18px]" /> Water Quality Monitoring
               </h4>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
                 {data.pH >= 6.5 && data.pH <= 8.5 ? '✓ SAFE' : '⚠ CHECK'}
               </span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
-                <span className="text-xs font-bold text-cyan-700">pH Level</span>
-                <p className="text-2xl font-black text-slate-900">{(data.pH || 7.2).toFixed(2)}</p>
-                <div className="w-full bg-cyan-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.pH || 7.2) / 14) * 100}%`}}></div>
+            <div className="p-2 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+              <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
+                <span className="text-[8px] md:text-xs font-bold text-cyan-700">pH Level</span>
+                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.pH || 7.2).toFixed(2)}</p>
+                <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
+                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.pH || 7.2) / 14) * 100}%`}}></div>
                 </div>
-                <p className="text-2xs text-cyan-600">{data.pH >= 6.5 && data.pH <= 8.5 ? '✓ Within range' : '⚠ Out of range'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">{data.pH >= 6.5 && data.pH <= 8.5 ? '✓ Within range' : '⚠ Out of range'}</p>
               </div>
               
-              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
-                <span className="text-xs font-bold text-cyan-700">Turbidity</span>
-                <p className="text-2xl font-black text-slate-900">{(data.turbidity || 1.2).toFixed(2)} NTU</p>
-                <div className="w-full bg-cyan-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.turbidity < 5 ? 'bg-green-600' : 'bg-red-600'}`} style={{width: `${Math.min(100, ((data.turbidity || 1.2) / 10) * 100)}%`}}></div>
+              <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
+                <span className="text-[8px] md:text-xs font-bold text-cyan-700">Turbidity</span>
+                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.turbidity || 1.2).toFixed(2)} NTU</p>
+                <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
+                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.turbidity < 5 ? 'bg-green-600' : 'bg-red-600'}`} style={{width: `${Math.min(100, ((data.turbidity || 1.2) / 10) * 100)}%`}}></div>
                 </div>
-                <p className="text-2xs text-cyan-600">{data.turbidity < 5 ? '✓ Excellent' : '⚠ High'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">{data.turbidity < 5 ? '✓ Excellent' : '⚠ High'}</p>
               </div>
               
-              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
-                <span className="text-xs font-bold text-cyan-700">Chlorine</span>
-                <p className="text-2xl font-black text-slate-900">{(data.chlorine || 0.5).toFixed(2)} mg/L</p>
-                <div className="w-full bg-cyan-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.chlorine >= 0.2 && data.chlorine <= 1.0 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.chlorine || 0.5) / 2) * 100}%`}}></div>
+              <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
+                <span className="text-[8px] md:text-xs font-bold text-cyan-700">Chlorine</span>
+                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.chlorine || 0.5).toFixed(2)} mg/L</p>
+                <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
+                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.chlorine >= 0.2 && data.chlorine <= 1.0 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.chlorine || 0.5) / 2) * 100}%`}}></div>
                 </div>
-                <p className="text-2xs text-cyan-600">{data.chlorine >= 0.2 && data.chlorine <= 1.0 ? '✓ Safe level' : '⚠ Adjust dosage'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">{data.chlorine >= 0.2 && data.chlorine <= 1.0 ? '✓ Safe level' : '⚠ Adjust dosage'}</p>
               </div>
               
-              <div className="space-y-2 bg-cyan-50 rounded-lg p-3">
-                <span className="text-xs font-bold text-cyan-700">TDS</span>
-                <p className="text-2xl font-black text-slate-900">{(data.TDS || 245).toFixed(0)} ppm</p>
-                <div className="w-full bg-cyan-200 rounded-full h-2">
-                  <div className={`h-2 rounded-full transition-all ${data.TDS < 500 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${Math.min(100, ((data.TDS || 245) / 1000) * 100)}%`}}></div>
+              <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
+                <span className="text-[8px] md:text-xs font-bold text-cyan-700">TDS</span>
+                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.TDS || 245).toFixed(0)} ppm</p>
+                <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
+                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.TDS < 500 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${Math.min(100, ((data.TDS || 245) / 1000) * 100)}%`}}></div>
                 </div>
-                <p className="text-2xs text-cyan-600">{data.TDS < 500 ? '✓ Good' : '⚠ High'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">{data.TDS < 500 ? '✓ Good' : '⚠ High'}</p>
               </div>
             </div>
           </div>
@@ -2149,54 +2135,54 @@ const EnergyDashboard = ({ data, history }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-black flex items-center gap-3">
-            <Zap size={32} className="text-amber-500" /> Energy & Power Intelligence
+          <h2 className="text-lg md:text-3xl font-bold text-black flex items-center gap-2 md:gap-3">
+            <Zap size={20} className="text-amber-500 md:w-8 md:h-8" /> Energy & Power Intelligence
           </h2>
-          <p className="text-sm text-gray-500">Track consumption, costs, efficiency and sustainability metrics</p>
+          <p className="text-[10px] md:text-sm text-gray-500">Track consumption, costs, efficiency and sustainability metrics</p>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">Motor Efficiency {pumpEfficiency.toFixed(0)}%</span>
-          <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">Power Factor {powerFactor.toFixed(2)}</span>
-          <span className="px-3 py-1 rounded-full bg-gray-50 text-black">Load {pumpPowerKW.toFixed(1)} kW</span>
+        <div className="flex flex-wrap gap-1 md:gap-2 text-[8px] md:text-xs font-semibold">
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-emerald-50 text-emerald-700">Motor Efficiency {pumpEfficiency.toFixed(0)}%</span>
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-blue-50 text-blue-700">Power Factor {powerFactor.toFixed(2)}</span>
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-gray-50 text-black">Load {pumpPowerKW.toFixed(1)} kW</span>
         </div>
       </div>
 
       {/* Top Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl border-2 border-amber-100 bg-amber-50/60">
-          <p className="text-xs text-amber-700 font-bold uppercase">Real-time Consumption</p>
-          <p className="text-4xl font-black text-amber-600">{pumpPowerKW.toFixed(1)}<span className="text-lg font-normal"> kW</span></p>
-          <p className="text-xs text-amber-700">Live motor load</p>
+      <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
+        <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-amber-100 bg-amber-50/60">
+          <p className="text-[8px] md:text-xs text-amber-700 font-bold uppercase">Real-time Consumption</p>
+          <p className="text-base md:text-4xl font-black text-amber-600">{pumpPowerKW.toFixed(1)}<span className="text-[10px] md:text-lg font-normal"> kW</span></p>
+          <p className="text-[8px] md:text-xs text-amber-700">Live motor load</p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-green-200 bg-green-50/60">
-          <p className="text-xs text-green-800 font-bold uppercase">Daily Energy</p>
-          <p className="text-4xl font-black text-green-700">{dailyEnergyKWh.toFixed(1)}<span className="text-lg font-normal"> kWh</span></p>
-          <p className="text-xs text-green-800">₹ {dailyEnergyCost.toFixed(0)} per day</p>
+        <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-green-200 bg-green-50/60">
+          <p className="text-[8px] md:text-xs text-green-800 font-bold uppercase">Daily Energy</p>
+          <p className="text-base md:text-4xl font-black text-green-700">{dailyEnergyKWh.toFixed(1)}<span className="text-[10px] md:text-lg font-normal"> kWh</span></p>
+          <p className="text-[8px] md:text-xs text-green-800">₹ {dailyEnergyCost.toFixed(0)} per day</p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-emerald-100 bg-emerald-50/60">
-          <p className="text-xs text-emerald-700 font-bold uppercase">Energy per KL</p>
-          <p className="text-4xl font-black text-emerald-600">{energyPerKL}<span className="text-lg font-normal"> kWh/kL</span></p>
-          <p className="text-xs text-emerald-700">Benchmark: 0.45</p>
+        <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-emerald-100 bg-emerald-50/60">
+          <p className="text-[8px] md:text-xs text-emerald-700 font-bold uppercase">Energy per KL</p>
+          <p className="text-base md:text-4xl font-black text-emerald-600">{energyPerKL}<span className="text-[10px] md:text-lg font-normal"> kWh/kL</span></p>
+          <p className="text-[8px] md:text-xs text-emerald-700">Benchmark: 0.45</p>
         </div>
-        <div className="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/60">
-          <p className="text-xs text-slate-700 font-bold uppercase">Carbon Footprint</p>
-          <p className="text-4xl font-black text-slate-700">{carbonFootprint}<span className="text-lg font-normal"> kg CO₂</span></p>
-          <p className="text-xs text-slate-500">Scope-2 daily emissions</p>
+        <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-slate-100 bg-slate-50/60">
+          <p className="text-[8px] md:text-xs text-slate-700 font-bold uppercase">Carbon Footprint</p>
+          <p className="text-base md:text-4xl font-black text-slate-700">{carbonFootprint}<span className="text-[10px] md:text-lg font-normal"> kg CO₂</span></p>
+          <p className="text-[8px] md:text-xs text-slate-500">Scope-2 daily emissions</p>
         </div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-black flex items-center gap-2">
-              <Activity size={18} /> 24h Energy Load & Peak Analysis
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-6">
+        <div className="xl:col-span-2 bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm p-3 md:p-6">
+          <div className="flex items-center justify-between mb-2 md:mb-4">
+            <h3 className="font-bold text-black text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+              <Activity size={14} className="md:w-[18px] md:h-[18px]" /> 24h Energy Load & Peak Analysis
             </h3>
-            <span className="text-xs text-gray-400">kW</span>
+            <span className="text-[9px] md:text-xs text-gray-400">kW</span>
           </div>
-          <div className="h-80">
+          <div className="h-48 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={energyTrend}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -2210,12 +2196,12 @@ const EnergyDashboard = ({ data, history }) => {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <PieChartIcon size={18} /> Peak vs Off-Peak Usage
+        <div className="bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm p-3 md:p-6">
+          <h3 className="font-bold text-black text-[11px] md:text-base mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
+            <PieChartIcon size={14} className="md:w-[18px] md:h-[18px]" /> Peak vs Off-Peak Usage
           </h3>
           <div className="flex flex-col items-center">
-            <PieChart width={220} height={220}>
+            <PieChart width={160} height={160} className="md:w-[220px] md:h-[220px]">
               <Pie
                 data={peakData}
                 cx="50%"
@@ -2244,58 +2230,58 @@ const EnergyDashboard = ({ data, history }) => {
       </div>
 
       {/* Cost & Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <DollarSign size={18} /> Cost & Efficiency Insights
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
+        <div className="lg:col-span-2 bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm p-3 md:p-6">
+          <h3 className="font-bold text-black text-[11px] md:text-base mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
+            <DollarSign size={14} className="md:w-[18px] md:h-[18px]" /> Cost & Efficiency Insights
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="border rounded-xl p-4 bg-gray-50">
-              <p className="text-xs text-gray-500 uppercase">Daily Operating Cost</p>
-              <p className="text-2xl font-bold text-black">₹ {dailyEnergyCost.toFixed(0)}</p>
-              <p className="text-xs text-gray-400">Based on current tariff</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 text-[9px] md:text-sm">
+            <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50">
+              <p className="text-[8px] md:text-xs text-gray-500 uppercase">Daily Operating Cost</p>
+              <p className="text-base md:text-2xl font-bold text-black">₹ {dailyEnergyCost.toFixed(0)}</p>
+              <p className="text-[7px] md:text-xs text-gray-400">Based on current tariff</p>
             </div>
-            <div className="border rounded-xl p-4 bg-gray-50">
-              <p className="text-xs text-gray-500 uppercase">Monthly Projection</p>
-              <p className="text-2xl font-bold text-blue-600">₹ {monthlyEnergyCost.toLocaleString()}</p>
-              <p className="text-xs text-gray-400">At current load</p>
+            <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50">
+              <p className="text-[8px] md:text-xs text-gray-500 uppercase">Monthly Projection</p>
+              <p className="text-base md:text-2xl font-bold text-blue-600">₹ {monthlyEnergyCost.toLocaleString()}</p>
+              <p className="text-[7px] md:text-xs text-gray-400">At current load</p>
             </div>
-            <div className="border rounded-xl p-4 bg-gray-50">
-              <p className="text-xs text-gray-500 uppercase">Benchmark Comparison</p>
-              <p className="text-2xl font-bold text-emerald-600">{energyPerKL} kWh/kL</p>
-              <p className="text-xs text-emerald-600">State Avg 0.55</p>
+            <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50 col-span-2 md:col-span-1">
+              <p className="text-[8px] md:text-xs text-gray-500 uppercase">Benchmark Comparison</p>
+              <p className="text-base md:text-2xl font-bold text-emerald-600">{energyPerKL} kWh/kL</p>
+              <p className="text-[7px] md:text-xs text-emerald-600">State Avg 0.55</p>
             </div>
           </div>
-          <div className="mt-6">
-            <p className="text-xs font-bold text-gray-500 uppercase mb-2">Energy-Saving Recommendations</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div className="mt-3 md:mt-6">
+            <p className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Energy-Saving Recommendations</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-[9px] md:text-sm">
               {recommendations.map(rec => (
-                <div key={rec} className="p-3 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 flex items-center gap-2">
-                  <Leaf size={16} /> {rec}
+                <div key={rec} className="p-2 md:p-3 rounded-lg md:rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 flex items-center gap-1 md:gap-2">
+                  <Leaf size={12} className="md:w-4 md:h-4" /> {rec}
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-          <h3 className="font-bold text-black flex items-center gap-2">
-            <Sun size={18} /> Renewable & Backup Status
+        <div className="bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm p-3 md:p-6 space-y-2 md:space-y-4">
+          <h3 className="font-bold text-black text-[11px] md:text-base flex items-center gap-1 md:gap-2">
+            <Sun size={14} className="md:w-[18px] md:h-[18px]" /> Renewable & Backup Status
           </h3>
-          <div className="text-xs text-gray-500">
+          <div className="text-[9px] md:text-xs text-gray-500">
             <p>Solar Contribution</p>
-            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mt-1">
+            <div className="w-full h-2 md:h-3 bg-gray-100 rounded-full overflow-hidden mt-1">
               <div className="h-full bg-yellow-400" style={{ width: `${renewableContribution.solar}%` }}></div>
             </div>
             <p className="mt-1 text-black font-bold">{renewableContribution.solar}% of daily demand</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="border rounded-xl p-3 bg-gray-50">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 text-[9px] md:text-xs">
+            <div className="border rounded-lg md:rounded-xl p-2 md:p-3 bg-gray-50">
               <p className="text-gray-500">Grid Uptime</p>
-              <p className="text-xl font-bold text-black">98.7%</p>
+              <p className="text-base md:text-xl font-bold text-black">98.7%</p>
             </div>
-            <div className="border rounded-xl p-3 bg-gray-50">
+            <div className="border rounded-lg md:rounded-xl p-2 md:p-3 bg-gray-50">
               <p className="text-gray-500">Generator Fuel</p>
-              <p className="text-xl font-bold text-amber-600">74%</p>
+              <p className="text-base md:text-xl font-bold text-amber-600">74%</p>
             </div>
           </div>
           <div className="text-xs text-gray-500">
@@ -2532,6 +2518,7 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
   if (activeTab === 'daily') return <DailyOperationDashboard data={data} user={user} logInspection={logInspection} history={history} systemState={systemState} />;
   if (activeTab === 'quality') return <WaterQualityDashboard data={data} logWaterTest={logWaterTest} systemState={systemState} />;
   if (activeTab === 'service-requests') return <ServiceRequestDashboard userRole={userRole} globalSearchQuery={globalSearchQuery} />;
+  if (activeTab === 'maintenance') return <MaintenanceDashboard onBack={() => setActiveTab('overview')} />;
   if (activeTab === 'forecasting') return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
   if (activeTab === 'reports' && userRole === 'researcher') return <ReportsDashboard data={data} history={history} flow24h={flow24h} alerts={alerts} tickets={tickets} systemState={systemState} />;
   if (activeTab === 'accountability') return <AccountabilityDashboard data={data} logs={logs} alerts={alerts} complaints={complaints} responseTimeData={responseTimeData} systemState={systemState} />;
@@ -2999,16 +2986,19 @@ const App = () => {
       [language]
     );
     const languageMenuRef = useRef(null);
+    const [isLanguageExpanded, setIsLanguageExpanded] = React.useState(false);
 
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (languageMenuRef.current && !languageMenuRef.current.contains(event.target)) {
-          setShowLanguageMenu(false);
+          if (showLanguageMenu) {
+            setShowLanguageMenu(false);
+          }
         }
       };
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [showLanguageMenu]);
 
     const handleLanguageChange = (langCode) => {
       if (langCode === language) {
@@ -3020,23 +3010,46 @@ const App = () => {
     };
 
     return (
-      <div ref={languageMenuRef} className="relative">
-        <button
-          onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 ${
-            showLanguageMenu 
-              ? 'bg-white shadow-lg border-2 border-blue-500' 
-              : 'bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-blue-300'
-          }`}
-        >
-          <Languages size={18} className="text-blue-600" />
-          <div className="text-left min-w-[60px]">
-            <div className="text-xs font-bold text-gray-800 leading-tight">{currentLang.nativeName}</div>
+      <div ref={languageMenuRef} className="relative z-[60]">
+        {!isLanguageExpanded ? (
+          <button
+            onClick={() => {
+              setIsLanguageExpanded(true);
+              setShowLanguageMenu(true);
+            }}
+            className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-300"
+          >
+            <Languages size={18} className="text-blue-600" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 bg-white shadow-lg border-2 border-blue-500"
+            >
+              <Languages size={18} className="text-blue-600" />
+              <div className="text-left min-w-[60px]">
+                <div className="text-xs font-bold text-gray-800 leading-tight">{currentLang.nativeName}</div>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setIsLanguageExpanded(false);
+                setShowLanguageMenu(false);
+              }}
+              className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-red-300 transition-all duration-300"
+              title="Close language selector"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 hover:text-red-600">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-        </button>
+        )}
 
         {showLanguageMenu && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-[100]">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2">
               <h3 className="text-white font-bold text-xs flex items-center gap-2">
                 <Languages size={14} />
@@ -3080,10 +3093,10 @@ const App = () => {
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-30 lg:hidden p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all"
+          className="fixed top-4 left-4 z-[60] lg:hidden p-2 bg-white/60 backdrop-blur-md border border-gray-200 hover:border-blue-300 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300"
           aria-label="Open menu"
         >
-          <Menu size={24} />
+          <Menu size={20} className="text-blue-600" />
         </button>
       )}
 
@@ -3105,84 +3118,90 @@ const App = () => {
       <div className="flex-1 flex flex-col min-h-screen" style={{ background: 'linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end))' }}>
         {/* Floating Search Bar with Language Selector */}
         <div className="sticky top-4 z-50 px-2 sm:px-4 lg:px-6">
-          <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-end gap-2 sm:gap-3">
             {/* Search Bar */}
-            <div className="flex-1 relative">
-              <div className={`relative transition-all duration-300 ${globalSearchQuery ? 'bg-white shadow-lg' : 'bg-white/60 backdrop-blur-md shadow-sm'}`} style={{ borderRadius: '12px' }}>
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={globalSearchQuery}
-                onChange={(e) => {
-                  setGlobalSearchQuery(e.target.value);
-                }}
-                onBlur={() => {
-                  // Delay hiding results to allow click
-                  setTimeout(() => setShowSearchResults(false), 200);
-                }}
-                onFocus={() => {
-                  if (globalSearchQuery && searchResults.length > 0) {
-                    setShowSearchResults(true);
-                  }
-                }}
-                className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2 sm:py-3 rounded-xl focus:outline-none text-sm transition-all duration-300 ${
-                  globalSearchQuery 
-                    ? 'bg-white' 
-                    : 'bg-transparent placeholder-gray-500'
-                }`}
-                style={{ 
-                  border: globalSearchQuery ? '2px solid #3b82f6' : '1px solid rgba(209, 213, 219, 0.5)'
-                }}
-              />
-              {globalSearchQuery && (
+            <div className={`relative transition-all duration-300 ${showSearchResults ? 'flex-1' : 'flex-none'}`}>
+              {!showSearchResults ? (
                 <button
-                  onClick={() => {
-                    setGlobalSearchQuery('');
-                    setShowSearchResults(false);
-                  }}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowSearchResults(true)}
+                  className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-300"
                 >
-                  <X size={18} />
+                  <Search size={18} className="text-blue-600" />
                 </button>
-              )}
-            </div>
-
-            {/* Search Results Dropdown */}
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-                <div className="p-2 bg-gray-50 border-b border-gray-200">
-                  <p className="text-xs font-semibold text-gray-600 px-3">Search Results</p>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {searchResults.map((result, index) => (
-                    <button
-                      key={`${result.tab}-${index}`}
-                      onClick={() => handleSearchResultClick(result.tab)}
-                      className="w-full px-4 py-3 flex items-center gap-3 hover:bg-blue-50 transition-colors text-left group"
-                    >
-                      <span className="text-2xl">{result.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {result.title}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {result.keyword}
-                        </p>
-                      </div>
-                      <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  ))}
-                </div>
-                {searchResults.length === 0 && globalSearchQuery && (
-                  <div className="px-4 py-8 text-center">
-                    <p className="text-sm text-gray-500">No results found for "{globalSearchQuery}"</p>
+              ) : (
+                <div className="relative">
+                  <div className={`relative transition-all duration-300 bg-white shadow-lg`} style={{ borderRadius: '12px' }}>
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={globalSearchQuery}
+                      onChange={(e) => {
+                        setGlobalSearchQuery(e.target.value);
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          if (!globalSearchQuery) {
+                            setShowSearchResults(false);
+                          }
+                        }, 200);
+                      }}
+                      autoFocus
+                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2 sm:py-3 rounded-xl focus:outline-none text-sm transition-all duration-300 bg-white"
+                      style={{ 
+                        border: globalSearchQuery ? '2px solid #3b82f6' : '1px solid rgba(209, 213, 219, 0.5)'
+                      }}
+                    />
+                    {globalSearchQuery && (
+                      <button
+                        onClick={() => {
+                          setGlobalSearchQuery('');
+                          setShowSearchResults(false);
+                        }}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Search Results Dropdown */}
+                  {searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                      <div className="p-2 bg-gray-50 border-b border-gray-200">
+                        <p className="text-xs font-semibold text-gray-600 px-3">Search Results</p>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {searchResults.map((result, index) => (
+                          <button
+                            key={`${result.tab}-${index}`}
+                            onClick={() => handleSearchResultClick(result.tab)}
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-blue-50 transition-colors text-left group"
+                          >
+                            <span className="text-2xl">{result.icon}</span>
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {result.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {result.keyword}
+                              </p>
+                            </div>
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                      {searchResults.length === 0 && globalSearchQuery && (
+                        <div className="px-4 py-8 text-center">
+                          <p className="text-sm text-gray-500">No results found for "{globalSearchQuery}"</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Language Selector */}

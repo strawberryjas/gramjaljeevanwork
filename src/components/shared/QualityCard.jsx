@@ -5,17 +5,17 @@ export const QualityCard = ({ label, value, unit, safeMax, safeMin = 0, icon: Ic
 
   return (
     <div 
-      className="p-4"
+      className="p-2 md:p-4"
       style={{
         backgroundColor: isSafe ? 'var(--bg-white)' : '#FEE2E2',
         border: isSafe ? '1px solid #86EFAC' : '1px solid #FCA5A5',
         borderRadius: 'var(--radius-sm)'
       }}
     >
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-start mb-1 md:mb-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <div 
-            className="p-1.5"
+            className="p-1 md:p-1.5"
             style={{
               borderRadius: 'var(--radius-sm)',
               backgroundColor: isSafe ? '#D1FAE5' : '#FEE2E2',
@@ -23,17 +23,16 @@ export const QualityCard = ({ label, value, unit, safeMax, safeMin = 0, icon: Ic
             }}
           >
             {iconSrc ? (
-              <img src={iconSrc} alt={label} className="w-4 h-4 object-contain" />
+              <img src={iconSrc} alt={label} className="w-3 h-3 md:w-4 md:h-4 object-contain" />
             ) : Icon ? (
-              <Icon size={16} />
+              <Icon size={12} className="md:w-4 md:h-4" />
             ) : null}
           </div>
-          <span style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--gray-text-dark)' }}>{label}</span>
+          <span className="text-[10px] md:text-base" style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--gray-text-dark)' }}>{label}</span>
         </div>
         <span 
-          className="px-2 py-1"
+          className="px-1 py-0.5 md:px-2 md:py-1 text-[8px] md:text-xs"
           style={{
-            fontSize: 'var(--font-size-xs)',
             fontWeight: 'var(--font-weight-bold)',
             borderRadius: 'var(--radius-sm)',
             backgroundColor: isSafe ? '#D1FAE5' : '#FEE2E2',
@@ -43,10 +42,10 @@ export const QualityCard = ({ label, value, unit, safeMax, safeMin = 0, icon: Ic
           {isSafe ? 'SAFE' : 'ALERT'}
         </span>
       </div>
-      <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
-        {value.toFixed(2)} <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--gray-text)', fontWeight: 'var(--font-weight-normal)' }}>{unit}</span>
+      <div className="text-sm md:text-2xl" style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+        {value.toFixed(2)} <span className="text-[10px] md:text-sm" style={{ color: 'var(--gray-text)', fontWeight: 'var(--font-weight-normal)' }}>{unit}</span>
       </div>
-      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--gray-text)', marginTop: '4px' }}>
+      <div className="text-[8px] md:text-xs" style={{ color: 'var(--gray-text)', marginTop: '4px' }}>
         Standard: {safeMin > 0 ? `${safeMin}-` : '<'}{safeMax} {unit}
       </div>
     </div>

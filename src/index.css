@@ -225,45 +225,45 @@ body {
   border-color: var(--color-border) !important;
 }
 
-/* Override Tailwind Text Sizes */
+/* Override Tailwind Text Sizes - Allow md: breakpoints to override by removing !important */
 .text-2xs {
-  font-size: calc(0.625rem * var(--text-scale)) !important;
+  font-size: calc(0.625rem * var(--text-scale));
 }
 
 .text-xs {
-  font-size: calc(0.75rem * var(--text-scale)) !important;
+  font-size: calc(0.75rem * var(--text-scale));
 }
 
 .text-sm {
-  font-size: calc(0.875rem * var(--text-scale)) !important;
+  font-size: calc(0.875rem * var(--text-scale));
 }
 
 .text-base {
-  font-size: calc(1rem * var(--text-scale)) !important;
+  font-size: calc(1rem * var(--text-scale));
 }
 
 .text-lg {
-  font-size: calc(1.125rem * var(--text-scale)) !important;
+  font-size: calc(1.125rem * var(--text-scale));
 }
 
 .text-xl {
-  font-size: calc(1.25rem * var(--text-scale)) !important;
+  font-size: calc(1.25rem * var(--text-scale));
 }
 
 .text-2xl {
-  font-size: calc(1.5rem * var(--text-scale)) !important;
+  font-size: calc(1.5rem * var(--text-scale));
 }
 
 .text-3xl {
-  font-size: calc(1.875rem * var(--text-scale)) !important;
+  font-size: calc(1.875rem * var(--text-scale));
 }
 
 .text-4xl {
-  font-size: calc(2.25rem * var(--text-scale)) !important;
+  font-size: calc(2.25rem * var(--text-scale));
 }
 
 .text-5xl {
-  font-size: calc(3rem * var(--text-scale)) !important;
+  font-size: calc(3rem * var(--text-scale));
 }
 
 /* Component Overrides for Dark Mode Compatibility */
@@ -1119,11 +1119,11 @@ body {
     min-height: 44px;
   }
   
-  /* Scale down large content */
-  .text-2xl { font-size: 1.25rem !important; }
-  .text-3xl { font-size: 1.5rem !important; }
-  .text-4xl { font-size: 1.75rem !important; }
-  .text-5xl { font-size: 2rem !important; }
+  /* Scale down large content - ONLY FOR MOBILE (removed !important to allow md: breakpoints) */
+  .text-2xl { font-size: 1.25rem; }
+  .text-3xl { font-size: 1.5rem; }
+  .text-4xl { font-size: 1.75rem; }
+  .text-5xl { font-size: 2rem; }
   
   /* Better card layouts */
   .rounded-2xl { border-radius: 12px !important; }

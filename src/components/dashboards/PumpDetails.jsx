@@ -34,6 +34,8 @@ const COLOR_MAP = {
   red: 'text-red-600',
   amber: 'text-amber-600',
   blue: 'text-blue-600',
+  cyan: 'text-cyan-600',
+  orange: 'text-orange-600',
   emerald: 'text-emerald-600',
   purple: 'text-purple-600',
   gray: 'text-gray-600'
@@ -112,14 +114,14 @@ export const PumpDetails = ({ onBack }) => {
       label: 'Flow Rate',
       value: (pump.pumpFlowOutput || 0).toFixed(1),
       icon: Activity,
-      color: 'blue',
+      color: 'orange',
       unit: 'L/min'
     },
     {
       label: 'Pressure',
       value: (pump.pumpPressureOutput || 0).toFixed(2),
       icon: Gauge,
-      color: 'emerald',
+      color: 'orange',
       unit: 'Bar'
     },
     {
@@ -165,11 +167,11 @@ export const PumpDetails = ({ onBack }) => {
             <ArrowLeft size={20} className="text-slate-700" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <Power className="text-green-600" size={28} />
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-2">
+              <Power size={28} className="text-green-600 md:w-9 md:h-9" />
               Pump Station Details
             </h2>
-            <p className="text-sm text-slate-500">Complete pump monitoring and control</p>
+            <p className="text-sm md:text-lg text-slate-500">Complete pump monitoring and control</p>
           </div>
         </div>
         {isLive && (
@@ -180,87 +182,11 @@ export const PumpDetails = ({ onBack }) => {
         )}
       </div>
 
-      {/* Pump Scheduler - Moved from Dashboard */}
-      <div className="bg-slate-900 text-white rounded-xl border border-slate-800 p-5 shadow-inner space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Pump Scheduler</p>
-            <p className="text-sm text-slate-300">Define runtime or schedule automatic shutdown</p>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs font-bold">
-            <span className="px-3 py-1 rounded-full bg-slate-800 border border-slate-600">
-              Mode: {schedule.mode || 'MANUAL'}
-            </span>
-            {(schedule.timerRemainingMs > 0 || isStopScheduled) && (
-              <span className={`px-3 py-1 rounded-full border ${isTimerActive ? 'border-emerald-400 bg-emerald-500/20 text-emerald-100' : 'border-blue-400 bg-blue-500/20 text-blue-100'}`}>
-                {isTimerActive ? `Stops in ${countdownLabel}` : `Auto stop ${stopLabel}`}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs uppercase text-slate-400 font-semibold">Run for (minutes)</label>
-            <div className="mt-1 flex gap-2">
-              <input
-                type="number"
-                min={1}
-                max={240}
-                value={timerMinutes}
-                onChange={(e) => setTimerMinutes(e.target.value)}
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-400"
-              />
-              <button
-                onClick={handleTimerStart}
-                className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-bold hover:bg-emerald-400 transition-colors"
-              >
-                Start
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs uppercase text-slate-400 font-semibold">Stop at (local time)</label>
-            <div className="mt-1 flex gap-2">
-              <input
-                type="datetime-local"
-                value={scheduledStop || ''}
-                onChange={(e) => setScheduledStop(e.target.value)}
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-400"
-              />
-              <button
-                onClick={handleScheduleStop}
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-400 transition-colors"
-              >
-                Schedule
-              </button>
-            </div>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-3 flex flex-col justify-between">
-            <div>
-              <p className="text-[11px] uppercase text-slate-400 font-semibold">Next Auto Stop</p>
-              <p className="text-2xl font-black">{isTimerActive ? countdownLabel : stopLabel}</p>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-2">
-              {schedule.lastEvent?.type ? `Last: ${schedule.lastEvent.type.replace(/_/g, ' ')}` : 'Awaiting instruction'}
-            </p>
-            <button
-              onClick={handleClearSchedule}
-              className="mt-3 text-xs font-bold text-rose-200 hover:text-rose-400 text-left"
-            >
-              Clear schedule
-            </button>
-          </div>
-        </div>
-        <p className="text-[11px] text-slate-500">
-          System failsafe will always cut the pump at 100% tank level, even if a timer is running.
-        </p>
-      </div>
-
       {/* Ultra-Realistic Centrifugal Pump Visualization */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-0">
+      <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl overflow-hidden shadow-lg border-2 border-slate-200">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
           {/* Left: 3D Pump Visualization */}
-          <div className="xl:col-span-3 bg-gradient-to-br from-slate-900 to-slate-950 p-8 relative overflow-hidden">
+          <div className="lg:col-span-3 bg-gradient-to-br from-slate-100 to-slate-50 p-4 md:p-5 relative overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-200">
             {/* Industrial Floor Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0" style={{
@@ -271,30 +197,27 @@ export const PumpDetails = ({ onBack }) => {
             
             <div className="relative z-10">
               {/* Header Label */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${isPumpOn ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span>
-                    Horizontal Centrifugal Pump Unit
+                  <h3 className="text-sm md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${isPumpOn ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                    Pump Unit
                   </h3>
-                  <p className="text-xs text-gray-400 mt-1">KIRLOSKAR KDS-2050 • End Suction Monoblock</p>
+                  <p className="text-[10px] md:text-sm text-slate-500 mt-0.5 md:mt-1">KIRLOSKAR KDS-2050</p>
                 </div>
-                <div className={`px-3 py-1.5 rounded-lg font-bold text-xs ${isPumpOn 
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-gray-700/50 text-gray-400 border border-gray-600'}`}>
+                <div className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg font-bold text-[10px] md:text-sm border-2 ${isPumpOn 
+                  ? 'bg-green-50 text-green-700 border-green-300' 
+                  : 'bg-slate-100 text-slate-600 border-slate-300'}`}>
                   {isPumpOn ? '● RUNNING' : '○ STOPPED'}
                 </div>
               </div>
 
               {/* Realistic External Pump View */}
-              <div className="relative flex items-center justify-center py-8">
+              <div className="relative flex items-center justify-center py-4 md:py-8">
                 {/* Ambient Effects when Running */}
                 {isPumpOn && (
                   <>
-                    <div className="absolute inset-0 bg-gradient-radial from-emerald-500/10 via-blue-500/5 to-transparent animate-pulse" style={{animationDuration: '3s'}}></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl" style={{
-                      animation: isPumpOn ? 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
-                    }}></div>
+                    <div className="absolute inset-0 bg-gradient-radial from-green-100 via-blue-50 to-transparent animate-pulse" style={{animationDuration: '3s'}}></div>
                   </>
                 )}
                 
@@ -599,75 +522,153 @@ export const PumpDetails = ({ onBack }) => {
                       style={{ transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
                     />
                     <circle cx="130" cy="140" r="4" fill="#ef4444"/>
-                    <text x="130" y="172" fontSize="8" fill="#a1a1aa" textAnchor="middle" fontWeight="bold">PRESSURE</text>
-                    <text x="130" y="182" fontSize="7" fill="#71717a" textAnchor="middle">BAR</text>
-                  </g>
+                  <text x="130" y="172" fontSize="10" fill="#a1a1aa" textAnchor="middle" fontWeight="bold">PRESSURE</text>
+                  <text x="130" y="182" fontSize="9" fill="#71717a" textAnchor="middle">BAR</text>
+                </g>
 
-                  {/* Pipe Labels */}
-                  <text x="135" y="165" fontSize="9" fill="#71717a" textAnchor="middle">↑ DISCHARGE</text>
-                  <text x="135" y="350" fontSize="9" fill="#71717a" textAnchor="middle">↓ SUCTION</text>
-                  <text x="600" y="150" fontSize="9" fill="#71717a" textAnchor="middle">MOTOR</text>
+                {/* Pipe Labels */}
+                <text x="135" y="165" fontSize="11" fill="#71717a" textAnchor="middle">↑ DISCHARGE</text>
+                <text x="135" y="350" fontSize="11" fill="#71717a" textAnchor="middle">↓ SUCTION</text>
+                <text x="600" y="150" fontSize="11" fill="#71717a" textAnchor="middle">MOTOR</text>
                 </svg>
               </div>
 
-              {/* Technical Specifications Bar */}
-              <div className="grid grid-cols-4 gap-3 mt-6">
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Rated Head</p>
-                  <p className="text-lg font-bold text-white">25 m</p>
+              {/* Pump Scheduler - Compact */}
+              <div className="mt-3 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg border border-cyan-200 shadow-sm overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-2 md:p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 md:gap-3">
+                      <svg className="w-3 h-3 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h3 className="text-xs md:text-xl font-bold text-white">Scheduler</h3>
+                    </div>
+                    <div className="flex gap-1 md:gap-2">
+                      <span className="px-1.5 md:px-4 py-0.5 md:py-2 rounded-md bg-white/20 border border-white/30 text-[9px] md:text-base font-bold text-white">
+                        {schedule.mode || 'MANUAL'}
+                      </span>
+                      {(schedule.timerRemainingMs > 0 || isStopScheduled) && (
+                        <span className={`px-1.5 md:px-4 py-0.5 md:py-2 rounded-md text-[9px] md:text-base font-bold text-white ${isTimerActive ? 'bg-green-500' : 'bg-blue-500'}`}>
+                          {isTimerActive ? countdownLabel : stopLabel}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Design Flow</p>
-                  <p className="text-lg font-bold text-white">50 m³/h</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Impeller Dia.</p>
-                  <p className="text-lg font-bold text-white">180 mm</p>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
-                  <p className="text-xs text-gray-500 uppercase">Material</p>
-                  <p className="text-lg font-bold text-white">CI / SS</p>
+
+                {/* Content */}
+                <div className="p-2 md:p-5 space-y-2 md:space-y-4">
+                  {/* Timer Controls - Compact */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                    {/* Run Timer */}
+                    <div className="bg-white rounded-md border border-cyan-200 p-2 md:p-4 shadow-sm">
+                      <label className="flex items-center gap-1 md:gap-2 text-[9px] md:text-base font-semibold text-cyan-700 mb-1.5 md:mb-3">
+                        <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Run Timer
+                      </label>
+                      <div className="flex gap-1.5 md:gap-3">
+                        <input
+                          type="number"
+                          min={1}
+                          max={240}
+                          value={timerMinutes}
+                          onChange={(e) => setTimerMinutes(e.target.value)}
+                          placeholder="Min"
+                          className="flex-1 bg-cyan-50 border border-cyan-300 rounded px-2 py-1 md:px-4 md:py-3 text-[10px] md:text-base text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        />
+                        <button
+                          onClick={handleTimerStart}
+                          className="px-2 md:px-6 py-1 md:py-3 rounded bg-gradient-to-r from-green-500 to-green-600 text-white text-[10px] md:text-base font-bold hover:from-green-600 hover:to-green-700 transition-all"
+                        >
+                          Start
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Schedule Stop */}
+                    <div className="bg-white rounded-md border border-cyan-200 p-2 md:p-4 shadow-sm">
+                      <label className="flex items-center gap-1 md:gap-2 text-[9px] md:text-base font-semibold text-cyan-700 mb-1.5 md:mb-3">
+                        <svg className="w-2.5 h-2.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Stop Time
+                      </label>
+                      <div className="flex gap-1.5 md:gap-3">
+                        <input
+                          type="datetime-local"
+                          value={scheduledStop || ''}
+                          onChange={(e) => setScheduledStop(e.target.value)}
+                          className="flex-1 bg-cyan-50 border border-cyan-300 rounded px-2 py-1 md:px-4 md:py-3 text-[10px] md:text-base text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        />
+                        <button
+                          onClick={handleScheduleStop}
+                          className="px-2 md:px-6 py-1 md:py-3 rounded bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] md:text-base font-bold hover:from-blue-600 hover:to-blue-700 transition-all"
+                        >
+                          Set
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status - Compact */}
+                  {(schedule.timerRemainingMs > 0 || isStopScheduled) && (
+                    <div className="flex items-center justify-between gap-2 bg-white rounded-md p-2 border border-cyan-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[9px] md:text-xs text-cyan-600 font-medium">Next Stop</p>
+                        <p className="text-xs md:text-sm font-bold text-slate-800 truncate">{isTimerActive ? countdownLabel : stopLabel}</p>
+                      </div>
+                      <button
+                        onClick={handleClearSchedule}
+                        className="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700 text-[9px] md:text-xs font-semibold transition-colors shrink-0"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right: Control Panel */}
-          <div className="xl:col-span-2 bg-gradient-to-br from-gray-900 to-gray-950 p-8 border-l border-gray-700/50">
-            <div className="space-y-6">
+          <div className="lg:col-span-2 bg-white p-4 md:p-6">
+            <div className="space-y-4 md:space-y-5">
               {/* Status Display */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
+                <label className="text-[10px] md:text-base font-semibold text-slate-600 uppercase tracking-wider mb-2 block">
                   Operational Status
                 </label>
-                <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700/50">
-                  <div className="flex items-center gap-4">
-                    <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 md:p-6 border-2 border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className={`relative w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 border-2 ${
                       isPumpOn 
-                        ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/30' 
-                        : 'bg-gradient-to-br from-gray-700 to-gray-800'
+                        ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-green-400' 
+                        : 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400'
                     }`}>
-                      <Power size={36} className="text-white" />
+                      <Power size={24} className="text-white md:w-12 md:h-12" />
                       {isPumpOn && (
-                        <div className="absolute inset-0 rounded-2xl bg-green-400 animate-ping opacity-20"></div>
+                        <div className="absolute inset-0 rounded-xl md:rounded-2xl bg-green-400 animate-ping opacity-20"></div>
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="text-3xl font-black text-white mb-1">
+                      <p className="text-xl md:text-[2.5rem] md:leading-tight font-black text-slate-800 mb-0.5 md:mb-2">
                         {pump.pumpStatus || 'OFF'}
                       </p>
-                      <p className="text-sm text-gray-400 flex items-center gap-2">
+                      <p className="text-[10px] md:text-lg text-slate-500 flex items-center gap-1.5 md:gap-2">
                         {isPumpOn ? (
                           <>
-                            <span className="flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            <span className="flex h-1.5 w-1.5 md:h-2 md:w-2">
+                              <span className="animate-ping absolute inline-flex h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-green-500 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-600"></span>
                             </span>
                             Active Operation
                           </>
                         ) : (
                           <>
-                            <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-slate-400"></span>
                             Standby Mode
                           </>
                         )}
@@ -679,74 +680,93 @@ export const PumpDetails = ({ onBack }) => {
 
               {/* Real-time Metrics */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block">
+                <label className="text-[10px] md:text-base font-semibold text-slate-600 uppercase tracking-wider mb-2 md:mb-3 block">
                   Live Parameters
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity size={16} className="text-cyan-400" />
-                      <p className="text-xs text-gray-400">Flow Rate</p>
+                <div className="grid grid-cols-2 gap-2 md:gap-3">
+                  <div className="bg-gradient-to-br from-cyan-50 to-white rounded-lg md:rounded-xl p-2 md:p-5 border-2 border-cyan-200 shadow-sm">
+                    <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                      <Activity size={14} className="text-cyan-600 md:w-6 md:h-6" />
+                      <p className="text-[10px] md:text-base text-cyan-700 font-semibold">Flow Rate</p>
                     </div>
-                    <p className="text-2xl font-bold text-cyan-400">
+                    <p className="text-base md:text-[2rem] md:leading-tight font-black text-cyan-700">
                       {(pump.pumpFlowOutput || 0).toFixed(1)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">L/min</p>
+                    <p className="text-[10px] md:text-base text-cyan-600 mt-0.5 md:mt-1">L/min</p>
                   </div>
                   
-                  <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Gauge size={16} className="text-blue-400" />
-                      <p className="text-xs text-gray-400">Pressure</p>
+                  <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg md:rounded-xl p-2 md:p-5 border-2 border-blue-200 shadow-sm">
+                    <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                      <Gauge size={14} className="text-blue-600 md:w-6 md:h-6" />
+                      <p className="text-[10px] md:text-base text-blue-700 font-semibold">Pressure</p>
                     </div>
-                    <p className="text-2xl font-bold text-blue-400">
+                    <p className="text-base md:text-[2rem] md:leading-tight font-black text-blue-700">
                       {(pump.pumpPressureOutput || 0).toFixed(2)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">bar</p>
+                    <p className="text-[10px] md:text-base text-blue-600 mt-0.5 md:mt-1">bar</p>
                   </div>
                   
-                  <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap size={16} className="text-yellow-400" />
-                      <p className="text-xs text-gray-400">Power</p>
+                  <div className="bg-gradient-to-br from-yellow-50 to-white rounded-lg md:rounded-xl p-2 md:p-5 border-2 border-yellow-200 shadow-sm">
+                    <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                      <Zap size={14} className="text-yellow-600 md:w-6 md:h-6" />
+                      <p className="text-[10px] md:text-base text-yellow-700 font-semibold">Power</p>
                     </div>
-                    <p className="text-2xl font-bold text-yellow-400">
+                    <p className="text-base md:text-[2rem] md:leading-tight font-black text-yellow-700">
                       {(pump.powerConsumption || 0).toFixed(1)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">kW</p>
+                    <p className="text-[10px] md:text-base text-yellow-600 mt-0.5 md:mt-1">kW</p>
                   </div>
                   
-                  <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Thermometer size={16} className="text-orange-400" />
-                      <p className="text-xs text-gray-400">Temperature</p>
+                  <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg md:rounded-xl p-2 md:p-5 border-2 border-orange-200 shadow-sm">
+                    <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2">
+                      <Thermometer size={14} className="text-orange-600 md:w-6 md:h-6" />
+                      <p className="text-[10px] md:text-base text-orange-700 font-semibold">Temperature</p>
                     </div>
-                    <p className="text-2xl font-bold text-orange-400">
+                    <p className="text-base md:text-[2rem] md:leading-tight font-black text-orange-700">
                       {(pump.motorTemperature || 0).toFixed(1)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">°C</p>
+                    <p className="text-[10px] md:text-base text-orange-600 mt-0.5 md:mt-1">°C</p>
                   </div>
                 </div>
               </div>
 
-              {/* Additional Info */}
-              <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Running Hours</p>
-                    <p className="text-white font-bold">{pump.pumpRunningHours || 0} hrs</p>
+              {/* Performance Monitoring */}
+              <div className="bg-gradient-to-br from-slate-50 to-white rounded-lg md:rounded-xl p-2 md:p-5 border-2 border-slate-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2 md:mb-3">
+                  <Activity size={16} className="text-slate-600 md:w-7 md:h-7" />
+                  <h4 className="text-xs md:text-xl font-bold text-slate-700">Performance Monitoring</h4>
+                </div>
+                <div className="space-y-3 md:space-y-4">
+                  {/* Efficiency Monitoring */}
+                  <div className="space-y-1 md:space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] md:text-base font-semibold text-slate-600 flex items-center gap-1">
+                        <Activity size={12} className="md:w-5 md:h-5" /> Pump Efficiency
+                      </span>
+                      <span className={`text-sm md:text-[1.75rem] md:leading-tight font-black ${pump.pumpEfficiency < 70 ? 'text-amber-600' : 'text-green-600'}`}>
+                        {(pump.pumpEfficiency || 85).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2 md:h-3">
+                      <div className={`h-2 md:h-3 rounded-full transition-all ${pump.pumpEfficiency < 70 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${pump.pumpEfficiency || 85}%`}}></div>
+                    </div>
+                    <p className="text-[9px] md:text-sm text-slate-500">{pump.pumpEfficiency < 70 ? '⚠ Check impeller' : '✓ Optimal'}</p>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Power Factor</p>
-                    <p className="text-white font-bold">{(pump.powerFactor || 0.95).toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Motor Speed</p>
-                    <p className="text-white font-bold">{isPumpOn ? '2900' : '0'} RPM</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 text-xs mb-1">Efficiency</p>
-                    <p className="text-white font-bold">{(pump.pumpEfficiency || 0).toFixed(0)}%</p>
+
+                  {/* Pressure Monitoring */}
+                  <div className="space-y-1 md:space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] md:text-base font-semibold text-slate-600 flex items-center gap-1">
+                        <Gauge size={12} className="md:w-5 md:h-5" /> Output Pressure
+                      </span>
+                      <span className={`text-sm md:text-[1.75rem] md:leading-tight font-black ${pump.pumpPressureOutput < 2.5 ? 'text-red-600' : 'text-green-600'}`}>
+                        {(pump.pumpPressureOutput || 0).toFixed(2)} bar
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2 md:h-3">
+                      <div className={`h-2 md:h-3 rounded-full transition-all ${pump.pumpPressureOutput < 2.5 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (pump.pumpPressureOutput || 3.5) / 5 * 100)}%`}}></div>
+                    </div>
+                    <p className="text-[9px] md:text-sm text-slate-500">{pump.pumpPressureOutput < 2.5 ? '⚠ Low pressure' : '✓ Normal'}</p>
                   </div>
                 </div>
               </div>
@@ -754,7 +774,7 @@ export const PumpDetails = ({ onBack }) => {
               {/* Control Button */}
               <button
                 onClick={togglePump}
-                className={`w-full px-6 py-5 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                className={`w-full px-4 md:px-6 py-3 md:py-5 rounded-lg md:rounded-xl font-bold text-base md:text-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
                   isPumpOn
                     ? 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white shadow-red-500/30'
                     : 'bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white shadow-green-500/30'
@@ -780,158 +800,107 @@ export const PumpDetails = ({ onBack }) => {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
         {pumpMetrics.map((metric, idx) => {
           const Icon = metric.icon;
           const statusColor = COLOR_MAP[metric.color] || COLOR_MAP.gray;
 
           return (
-            <div key={idx} className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-slate-300">
-              <div className="flex items-center justify-between mb-3">
-                <Icon size={32} className={statusColor} />
+            <div key={idx} className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6 border-l-2 md:border-l-4 border-slate-300">
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between mb-1 md:mb-3">
+                <Icon size={20} className={`${statusColor} md:w-12 md:h-12`} />
                 {metric.color === 'red' && (
-                  <AlertTriangle size={20} className="text-red-600" />
+                  <AlertTriangle size={16} className="text-red-600 md:w-6 md:h-6" />
                 )}
               </div>
-              <p className="text-sm text-gray-600 font-semibold">{metric.label}</p>
-              <p className="text-3xl font-black text-black mt-2">
-                {metric.value} <span className="text-lg text-gray-500">{metric.unit}</span>
+              <p className="text-[10px] md:text-lg text-gray-600 font-semibold leading-tight">{metric.label}</p>
+              <p className="text-sm md:text-[2rem] md:leading-tight font-black text-black mt-1 md:mt-2">
+                {metric.value} <span className="text-[10px] md:text-2xl text-gray-500">{metric.unit}</span>
               </p>
             </div>
           );
         })}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pressure & Flow Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Gauge size={20} className="text-emerald-600" />
-            Pressure & Flow Rate
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={historyData}>
-              <defs>
-                <linearGradient id="colorPressure" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorFlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Area yAxisId="left" type="monotone" dataKey="pressure" stroke="#10b981" fillOpacity={1} fill="url(#colorPressure)" name="Pressure (Bar)" />
-              <Area yAxisId="right" type="monotone" dataKey="flow" stroke="#3b82f6" fillOpacity={1} fill="url(#colorFlow)" name="Flow (L/min)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Power & Efficiency Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Zap size={20} className="text-purple-600" />
-            Power & Efficiency
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={historyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Line yAxisId="left" type="monotone" dataKey="power" stroke="#8b5cf6" strokeWidth={2} name="Power (kW)" />
-              <Line yAxisId="right" type="monotone" dataKey="efficiency" stroke="#10b981" strokeWidth={2} name="Efficiency (%)" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
       {/* Additional Information */}
-      <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-6 border-2 border-blue-100">
-        <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-          <Clock size={24} className="text-blue-600" />
+      <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl shadow-2xl p-4 md:p-6 border-2 border-slate-200">
+        <h3 className="text-xl md:text-3xl font-black text-slate-800 mb-6 md:mb-5 flex items-center gap-3">
+          <Clock size={24} className="text-slate-600 md:w-9 md:h-9" />
           Pump Information
         </h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Basic Info */}
           <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-5 border-2 border-slate-200 shadow-md">
-            <h4 className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
-              <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+            <h4 className="text-xs md:text-base uppercase tracking-widest text-slate-500 font-bold mb-4 flex items-center gap-2">
+              <span className="w-1 h-4 bg-slate-500 rounded-full"></span>
               Basic Details
             </h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                <span className="text-sm text-gray-600">Pump ID</span>
-                <span className="text-base font-black text-slate-900">PUMP-001</span>
+                <span className="text-sm md:text-lg text-gray-600">Pump ID</span>
+                <span className="text-base md:text-xl font-black text-slate-900">PUMP-001</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                <span className="text-sm text-gray-600">Voltage</span>
-                <span className="text-base font-black text-slate-900">{(pump.voltage || 220).toFixed(1)} V</span>
+                <span className="text-sm md:text-lg text-gray-600">Voltage</span>
+                <span className="text-base md:text-xl font-black text-slate-900">{(pump.voltage || 220).toFixed(1)} V</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                <span className="text-sm text-gray-600">Power Factor</span>
-                <span className="text-base font-black text-slate-900">{(pump.powerFactor || 0.95).toFixed(2)}</span>
+                <span className="text-sm md:text-lg text-gray-600">Power Factor</span>
+                <span className="text-base md:text-xl font-black text-slate-900">{(pump.powerFactor || 0.95).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Discharge Rate</span>
-                <span className="text-base font-black text-slate-900">{(pump.pumpDischargeRate || 0).toFixed(1)} L/min</span>
+                <span className="text-sm md:text-lg text-gray-600">Discharge Rate</span>
+                <span className="text-base md:text-xl font-black text-slate-900">{(pump.pumpDischargeRate || 0).toFixed(1)} L/min</span>
               </div>
             </div>
           </div>
 
           {/* Running Hours */}
           <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-5 border-2 border-emerald-200 shadow-md">
-            <h4 className="text-xs uppercase tracking-widest text-emerald-700 font-bold mb-4 flex items-center gap-2">
+            <h4 className="text-xs md:text-base uppercase tracking-widest text-emerald-700 font-bold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
               Running Hours Analysis
             </h4>
             <div className="space-y-3">
               <div className="bg-white rounded-lg p-3 border border-emerald-100">
-                <span className="text-xs text-gray-500 uppercase">Total Runtime</span>
-                <p className="text-2xl font-black text-emerald-600 mt-1">{(pump.pumpRunningHours || 0).toFixed(1)} hrs</p>
+                <span className="text-xs md:text-base text-gray-500 uppercase">Total Runtime</span>
+                <p className="text-2xl md:text-4xl font-black text-emerald-600 mt-1">{(pump.pumpRunningHours || 0).toFixed(1)} hrs</p>
               </div>
               <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
-                <span className="text-sm text-gray-600">Today</span>
-                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.day).toFixed(1)} hrs</span>
+                <span className="text-sm md:text-lg text-gray-600">Today</span>
+                <span className="text-base md:text-xl font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.day).toFixed(1)} hrs</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
-                <span className="text-sm text-gray-600">This Week</span>
-                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.week).toFixed(1)} hrs</span>
+                <span className="text-sm md:text-lg text-gray-600">This Week</span>
+                <span className="text-base md:text-xl font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.week).toFixed(1)} hrs</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">This Month</span>
-                <span className="text-base font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.month).toFixed(1)} hrs</span>
+                <span className="text-sm md:text-lg text-gray-600">This Month</span>
+                <span className="text-base md:text-xl font-bold text-slate-900">{Math.min((pump.pumpRunningHours || 0), HOUR_LIMITS.month).toFixed(1)} hrs</span>
               </div>
             </div>
           </div>
 
           {/* Maintenance & Health */}
           <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-5 border-2 border-amber-200 shadow-md">
-            <h4 className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-4 flex items-center gap-2">
+            <h4 className="text-xs md:text-base uppercase tracking-widest text-amber-700 font-bold mb-4 flex items-center gap-2">
               <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
               Maintenance & Health
             </h4>
             <div className="space-y-3">
               <div className="bg-white rounded-lg p-3 border border-amber-100">
-                <span className="text-xs text-gray-500 uppercase">Last Maintenance</span>
-                <p className="text-xl font-black text-amber-600 mt-1">7 days ago</p>
+                <span className="text-xs md:text-base text-gray-500 uppercase">Last Maintenance</span>
+                <p className="text-xl md:text-3xl font-black text-amber-600 mt-1">7 days ago</p>
               </div>
               <div className="bg-white rounded-lg p-3 border border-amber-100">
-                <span className="text-xs text-gray-500 uppercase">Next Scheduled</span>
-                <p className="text-xl font-black text-slate-900 mt-1">23 days</p>
+                <span className="text-xs md:text-base text-gray-500 uppercase">Next Scheduled</span>
+                <p className="text-xl md:text-3xl font-black text-slate-900 mt-1">23 days</p>
               </div>
               <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={20} className="text-green-600" />
-                  <span className="text-sm font-bold text-green-700">System Healthy</span>
+                  <CheckCircle size={20} className="text-green-600 md:w-6 md:h-6" />
+                  <span className="text-sm md:text-lg font-bold text-green-700">System Healthy</span>
                 </div>
               </div>
             </div>
@@ -939,60 +908,6 @@ export const PumpDetails = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Performance Monitoring Section */}
-      <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl shadow-2xl p-6 border-2 border-slate-200">
-        <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-          <Activity size={24} className="text-blue-600" />
-          Performance Monitoring
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Efficiency Monitoring */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                <Activity size={16} /> Pump Efficiency
-              </span>
-              <span className={`text-lg font-black ${pump.pumpEfficiency < 70 ? 'text-amber-600' : 'text-green-600'}`}>
-                {(pump.pumpEfficiency || 85).toFixed(1)}%
-              </span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-3">
-              <div className={`h-3 rounded-full transition-all ${pump.pumpEfficiency < 70 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${pump.pumpEfficiency || 85}%`}}></div>
-            </div>
-            <p className="text-xs text-slate-500">{pump.pumpEfficiency < 70 ? '⚠ Efficiency drop detected - Check impeller' : '✓ Optimal performance'}</p>
-          </div>
-
-          {/* Pressure Monitoring */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                <Gauge size={16} /> Output Pressure
-              </span>
-              <span className={`text-lg font-black ${pump.pumpPressureOutput < 2.5 ? 'text-red-600' : 'text-green-600'}`}>
-                {(pump.pumpPressureOutput || 3.5).toFixed(2)} Bar
-              </span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-3">
-              <div className={`h-3 rounded-full transition-all ${pump.pumpPressureOutput < 2.5 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (pump.pumpPressureOutput || 3.5) / 5 * 100)}%`}}></div>
-            </div>
-            <p className="text-xs text-slate-500">{pump.pumpPressureOutput < 2.5 ? '⚠ Low pressure - Check for leaks or blockages' : '✓ Pressure within normal range'}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Maintenance Management Section */}
-      <div className="mt-8">
-        <MaintenanceCard
-          title="Pump Station Maintenance Schedule"
-          lastMaintenanceDate={pump.lastMaintenanceDate}
-          nextMaintenanceDate={pump.nextMaintenanceDate}
-          maintenanceIntervalDays={pump.maintenanceIntervalDays}
-          maintenanceHistory={pump.maintenanceHistory}
-          type="pump"
-          additionalMetrics={maintenanceMetrics}
-        />
-      </div>
     </div>
   );
 };

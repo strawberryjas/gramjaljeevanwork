@@ -121,28 +121,28 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
       label: 'Inlet Flow',
       value: inletFlow.toFixed(1),
       icon: Activity,
-      color: 'blue',
+      color: 'cyan',
       unit: 'L/min'
     },
     {
       label: 'Outlet Flow',
       value: outletFlow.toFixed(1),
       icon: Activity,
-      color: 'blue',
+      color: 'orange',
       unit: 'L/min'
     },
     {
       label: 'Inlet Pressure',
       value: inletPressure.toFixed(2),
       icon: Gauge,
-      color: 'emerald',
+      color: 'cyan',
       unit: 'Bar'
     },
     {
       label: 'Outlet Pressure',
       value: outletPressure.toFixed(2),
       icon: Gauge,
-      color: 'emerald',
+      color: 'orange',
       unit: 'Bar'
     },
     {
@@ -919,44 +919,44 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
           </div>
 
           {/* Flow Metrics Cards */}
-          <div className="grid grid-cols-3 gap-4 mt-8">
-            <div className="bg-gray-900/50 rounded-xl p-4 shadow-lg border border-gray-700/50">
-              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Flow Rate</div>
-              <div className={`text-2xl font-black ${isOpen ? 'text-cyan-400' : 'text-gray-600'}`}>
+          <div className="grid grid-cols-3 gap-2 md:gap-4 mt-4 md:mt-8">
+            <div className="bg-gray-900/50 rounded-lg md:rounded-xl p-2 md:p-4 shadow-lg border border-gray-700/50">
+              <div className="text-[8px] md:text-sm font-bold text-gray-400 mb-1 md:mb-2 uppercase tracking-wider">Flow Rate</div>
+              <div className={`text-sm md:text-2xl font-black ${isOpen ? 'text-cyan-400' : 'text-gray-600'}`}>
                 {isOpen ? inletFlow.toFixed(1) : '0.0'}
               </div>
-              <div className="text-xs text-gray-500 mt-1">L/min</div>
+              <div className="text-[8px] md:text-sm text-gray-500 mt-0.5 md:mt-1">L/min</div>
               {isOpen && (
-                <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div className="mt-1 md:mt-2 h-0.5 md:h-1 bg-gray-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-pulse" style={{width: '75%'}}></div>
                 </div>
               )}
             </div>
             
-            <div className="bg-gray-900/50 rounded-xl p-4 shadow-lg border border-gray-700/50">
-              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Flow Loss</div>
-              <div className={`text-2xl font-black ${flowLoss > 5 ? 'text-red-400' : 'text-green-400'}`}>
+            <div className="bg-gray-900/50 rounded-lg md:rounded-xl p-2 md:p-4 shadow-lg border border-gray-700/50">
+              <div className="text-[8px] md:text-sm font-bold text-gray-400 mb-1 md:mb-2 uppercase tracking-wider">Flow Loss</div>
+              <div className={`text-sm md:text-2xl font-black ${flowLoss > 5 ? 'text-red-400' : 'text-green-400'}`}>
                 {flowLoss.toFixed(1)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">L/min</div>
+              <div className="text-[8px] md:text-sm text-gray-500 mt-0.5 md:mt-1">L/min</div>
               {flowLoss > 5 && (
-                <div className="flex items-center gap-1 mt-2">
-                  <AlertTriangle size={12} className="text-red-400"/>
-                  <span className="text-xs text-red-400 font-semibold">High Loss</span>
+                <div className="flex items-center gap-0.5 md:gap-1 mt-1 md:mt-2">
+                  <AlertTriangle size={10} className="text-red-400 md:w-3 md:h-3"/>
+                  <span className="text-[8px] md:text-xs text-red-400 font-semibold">High Loss</span>
                 </div>
               )}
             </div>
             
-            <div className="bg-gray-900/50 rounded-xl p-4 shadow-lg border border-gray-700/50">
-              <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Pressure Drop</div>
-              <div className={`text-2xl font-black ${(inletPressure - outletPressure) > 0.5 ? 'text-amber-400' : 'text-green-400'}`}>
+            <div className="bg-gray-900/50 rounded-lg md:rounded-xl p-2 md:p-4 shadow-lg border border-gray-700/50">
+              <div className="text-[8px] md:text-sm font-bold text-gray-400 mb-1 md:mb-2 uppercase tracking-wider">Pressure Drop</div>
+              <div className={`text-sm md:text-4xl font-black ${(inletPressure - outletPressure) > 0.5 ? 'text-amber-400' : 'text-green-400'}`}>
                 {(inletPressure - outletPressure).toFixed(2)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">Bar</div>
+              <div className="text-[8px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Bar</div>
               {(inletPressure - outletPressure) > 0.8 && (
-                <div className="flex items-center gap-1 mt-2">
-                  <AlertTriangle size={12} className="text-amber-400"/>
-                  <span className="text-xs text-amber-400 font-semibold">Possible Blockage</span>
+                <div className="flex items-center gap-0.5 md:gap-1 mt-1 md:mt-2">
+                  <AlertTriangle size={10} className="text-amber-400 md:w-3 md:h-3"/>
+                  <span className="text-[8px] md:text-xs text-amber-400 font-semibold">Possible Blockage</span>
                 </div>
               )}
             </div>
@@ -978,150 +978,137 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-2 md:gap-4">
         {pipelineMetrics.map((metric, idx) => {
           const Icon = metric.icon;
           const statusColor = metric.color === 'green' ? 'text-green-600' :
                             metric.color === 'red' ? 'text-red-600' :
                             metric.color === 'blue' ? 'text-blue-600' :
+                            metric.color === 'cyan' ? 'text-cyan-600' :
+                            metric.color === 'orange' ? 'text-orange-600' :
                             'text-emerald-600';
           
           return (
-            <div key={idx} className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-slate-300">
-              <div className="flex items-center justify-between mb-3">
-                <Icon size={32} className={statusColor} />
+            <div key={idx} className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6 border-l-2 md:border-l-4 border-slate-300">
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between mb-1 md:mb-3">
+                <Icon size={20} className={`${statusColor} md:w-8 md:h-8`} />
                 {metric.color === 'red' && (
-                  <AlertTriangle size={20} className="text-red-600" />
+                  <AlertTriangle size={16} className="text-red-600 md:w-5 md:h-5" />
                 )}
               </div>
-              <p className="text-sm text-gray-600 font-semibold">{metric.label}</p>
-              <p className="text-3xl font-black text-black mt-2">
-                {metric.value} <span className="text-lg text-gray-500">{metric.unit}</span>
+              <p className="text-[10px] md:text-lg text-gray-600 font-semibold leading-tight">{metric.label}</p>
+              <p className="text-sm md:text-3xl font-black text-black mt-1 md:mt-2">
+                {metric.value} <span className="text-[10px] md:text-2xl text-gray-500">{metric.unit}</span>
               </p>
             </div>
           );
         })}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Flow Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Activity size={20} className="text-blue-600" />
-            Flow Rate (Inlet vs Outlet)
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={historyData}>
-              <defs>
-                <linearGradient id="colorInletFlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorOutletFlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Area type="monotone" dataKey="inletFlow" stroke="#3b82f6" fillOpacity={1} fill="url(#colorInletFlow)" name="Inlet Flow (L/min)" />
-              <Area type="monotone" dataKey="outletFlow" stroke="#10b981" fillOpacity={1} fill="url(#colorOutletFlow)" name="Outlet Flow (L/min)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Pressure Chart */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Gauge size={20} className="text-emerald-600" />
-            Pressure (Inlet vs Outlet)
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={historyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="inletPressure" stroke="#3b82f6" strokeWidth={2} name="Inlet Pressure (Bar)" />
-              <Line type="monotone" dataKey="outletPressure" stroke="#10b981" strokeWidth={2} name="Outlet Pressure (Bar)" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
       {/* Water Quality */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <Droplet size={20} className="text-blue-600" />
+      <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6">
+        <h3 className="text-sm md:text-lg font-bold text-slate-800 mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
+          <Droplet size={16} className="text-blue-600 md:w-5 md:h-5" />
           Water Quality Parameters
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-2 md:gap-6">
           <div>
-            <h4 className="font-bold text-slate-700 mb-3">Inlet Quality</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">pH</span>
-                <span className="text-sm font-bold">{(inletQuality.pH || 7.0).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">Turbidity</span>
-                <span className="text-sm font-bold">{(inletQuality.turbidity || 0).toFixed(2)} NTU</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">Chlorine</span>
-                <span className="text-sm font-bold">{(inletQuality.chlorine || 0).toFixed(2)} mg/L</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">TDS</span>
-                <span className="text-sm font-bold">{(inletQuality.TDS || 0).toFixed(0)} ppm</span>
-              </div>
+            <h4 className="text-[10px] md:text-base font-bold text-slate-700 mb-1 md:mb-3">Inlet Quality</h4>
+            <div className="space-y-1 md:space-y-2">
+              {(() => {
+                const pH = inletQuality.pH || 7.0;
+                const phColor = pH >= 6.5 && pH <= 8.5 ? 'bg-green-50 border-green-200' : pH >= 6.0 && pH <= 9.0 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const phTextColor = pH >= 6.5 && pH <= 8.5 ? 'text-green-700' : pH >= 6.0 && pH <= 9.0 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${phColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">pH</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${phTextColor}`}>{pH.toFixed(2)}</span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const turbidity = inletQuality.turbidity || 0;
+                const turbidityColor = turbidity <= 5 ? 'bg-green-50 border-green-200' : turbidity <= 10 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const turbidityTextColor = turbidity <= 5 ? 'text-green-700' : turbidity <= 10 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${turbidityColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">Turbidity</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${turbidityTextColor}`}>{turbidity.toFixed(2)} NTU</span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const tds = inletQuality.TDS || 0;
+                const tdsColor = tds <= 500 ? 'bg-green-50 border-green-200' : tds <= 1000 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const tdsTextColor = tds <= 500 ? 'text-green-700' : tds <= 1000 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${tdsColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">TDS</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${tdsTextColor}`}>{tds.toFixed(0)} ppm</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div>
-            <h4 className="font-bold text-slate-700 mb-3">Outlet Quality</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">pH</span>
-                <span className="text-sm font-bold">{(outletQuality.pH || 7.0).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">Turbidity</span>
-                <span className="text-sm font-bold">{(outletQuality.turbidity || 0).toFixed(2)} NTU</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">Chlorine</span>
-                <span className="text-sm font-bold">{(outletQuality.chlorine || 0).toFixed(2)} mg/L</span>
-              </div>
-              <div className="flex justify-between p-2 bg-slate-50 rounded">
-                <span className="text-sm text-gray-600">TDS</span>
-                <span className="text-sm font-bold">{(outletQuality.TDS || 0).toFixed(0)} ppm</span>
-              </div>
+            <h4 className="text-[10px] md:text-base font-bold text-slate-700 mb-1 md:mb-3">Outlet Quality</h4>
+            <div className="space-y-1 md:space-y-2">
+              {(() => {
+                const pH = outletQuality.pH || 7.0;
+                const phColor = pH >= 6.5 && pH <= 8.5 ? 'bg-green-50 border-green-200' : pH >= 6.0 && pH <= 9.0 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const phTextColor = pH >= 6.5 && pH <= 8.5 ? 'text-green-700' : pH >= 6.0 && pH <= 9.0 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${phColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">pH</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${phTextColor}`}>{pH.toFixed(2)}</span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const turbidity = outletQuality.turbidity || 0;
+                const turbidityColor = turbidity <= 5 ? 'bg-green-50 border-green-200' : turbidity <= 10 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const turbidityTextColor = turbidity <= 5 ? 'text-green-700' : turbidity <= 10 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${turbidityColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">Turbidity</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${turbidityTextColor}`}>{turbidity.toFixed(2)} NTU</span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const tds = outletQuality.TDS || 0;
+                const tdsColor = tds <= 500 ? 'bg-green-50 border-green-200' : tds <= 1000 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                const tdsTextColor = tds <= 500 ? 'text-green-700' : tds <= 1000 ? 'text-yellow-700' : 'text-red-700';
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${tdsColor}`}>
+                    <span className="text-[9px] md:text-base text-gray-600">TDS</span>
+                    <span className={`text-[9px] md:text-lg font-bold ${tdsTextColor}`}>{tds.toFixed(0)} ppm</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
       </div>
 
       {/* Sensor Information */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <Radio size={20} className="text-blue-600" />
+      <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6">
+        <h3 className="text-sm md:text-lg font-bold text-slate-800 mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
+          <Radio size={16} className="text-blue-600 md:w-5 md:h-5" />
           Sensor Information
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="font-bold text-blue-800 mb-2">Inlet Sensors</p>
-            <div className="space-y-1 text-sm">
+        <div className="grid grid-cols-2 gap-2 md:gap-4">
+          <div className="p-2 md:p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-[10px] md:text-base font-bold text-blue-800 mb-1 md:mb-2">Inlet Sensors</p>
+            <div className="space-y-0.5 md:space-y-1 text-[9px] md:text-sm">
               <p>Flow Sensor: {inletFlow.toFixed(1)} L/min</p>
               <p>Pressure Sensor: {inletPressure.toFixed(2)} Bar</p>
               <p>Battery: 85%</p>
             </div>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-            <p className="font-bold text-green-800 mb-2">Outlet Sensors</p>
-            <div className="space-y-1 text-sm">
+          <div className="p-2 md:p-4 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-[10px] md:text-base font-bold text-green-800 mb-1 md:mb-2">Outlet Sensors</p>
+            <div className="space-y-0.5 md:space-y-1 text-[9px] md:text-sm">
               <p>Flow Sensor: {outletFlow.toFixed(1)} L/min</p>
               <p>Pressure Sensor: {outletPressure.toFixed(2)} Bar</p>
               <p>Battery: 82%</p>

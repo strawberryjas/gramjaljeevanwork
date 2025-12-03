@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSimulationData } from '../../hooks/useSimulationData';
 import IconImage from '../IconImage';
 
@@ -16,132 +16,394 @@ export const SystemContainer = ({ onNavigate }) => {
   const pipelines = state?.pipelines || [];
   const isPumpOn = pump.pumpStatus === 'ON';
 
+  // Pinch-to-zoom state
+  const [scale, setScale] = useState(1);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const containerRef = useRef(null);
+  const lastTouchDistance = useRef(0);
+  const lastTouchCenter = useRef({ x: 0, y: 0 });
+  const isPinching = useRef(false);
+
+  // Get distance between two touch points
+  const getTouchDistance = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Get center point between two touches
+  const getTouchCenter = (touches) => {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2,
+    };
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      isPinching.current = true;
+      lastTouchDistance.current = getTouchDistance(e.touches);
+      lastTouchCenter.current = getTouchCenter(e.touches);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && isPinching.current) {
+      e.preventDefault();
+      
+      const currentDistance = getTouchDistance(e.touches);
+      const currentCenter = getTouchCenter(e.touches);
+      
+      // Calculate scale change
+      const scaleChange = currentDistance / lastTouchDistance.current;
+      const newScale = Math.min(Math.max(0.5, scale * scaleChange), 3);
+      
+      // Calculate translation to keep zoom centered on pinch point
+      const rect = containerRef.current.getBoundingClientRect();
+      const relativeX = (currentCenter.x - rect.left) / rect.width;
+      const relativeY = (currentCenter.y - rect.top) / rect.height;
+      
+      const deltaX = currentCenter.x - lastTouchCenter.current.x;
+      const deltaY = currentCenter.y - lastTouchCenter.current.y;
+      
+      setScale(newScale);
+      setTranslateX(translateX + deltaX);
+      setTranslateY(translateY + deltaY);
+      
+      lastTouchDistance.current = currentDistance;
+      lastTouchCenter.current = currentCenter;
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      isPinching.current = false;
+    }
+  };
+
+  // Mouse wheel zoom (for desktop)
+  const handleWheel = (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      const newScale = Math.min(Math.max(0.5, scale * delta), 3);
+      setScale(newScale);
+    }
+  };
+
+  // Reset zoom
+  const handleResetZoom = () => {
+    setScale(1);
+    setTranslateX(0);
+    setTranslateY(0);
+  };
+
   return (
     <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border border-slate-200">
       {/* Components rearranged: Diagram is now top, others moved below */}
 
       {/* Realistic Indian Rural Water Infrastructure Network */}
-      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-xl p-8 border-2 border-amber-300 shadow-2xl" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%)' }}>
-        <div className="relative" style={{ minHeight: '700px' }}>
-          {/* Realistic Mechanical Pump Motor - Left Side */}
+      <div 
+        ref={containerRef}
+        className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-xl p-2 lg:p-8 border-2 border-amber-300 shadow-2xl overflow-auto relative"
+        style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%)' }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
+      >
+        <div 
+          className="relative scale-[0.6] sm:scale-75 md:scale-90 lg:scale-100 origin-top-left" 
+          style={{ 
+            minHeight: '700px', 
+            minWidth: '1200px',
+            transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+            transformOrigin: 'center center'
+          }}
+        >
+          {/* Horizontal Centrifugal Pump Station - Left Side */}
           <div className="absolute top-8 left-8 flex flex-col items-center gap-3 z-20">
-            {/* Pump Motor Assembly - Realistic Industrial Design */}
-            <button
+            {/* Pump Assembly - Exact Design from PumpDetails */}
+            <div
               onClick={(e) => {
                 e.stopPropagation();
                 togglePump();
               }}
-              className="relative transition-all hover:scale-105"
-              style={{ width: '140px', height: '160px' }}
+              className="relative transition-all hover:scale-105 cursor-pointer"
+              style={{ width: '250px', height: '130px' }}
             >
-              {/* Mounting Base */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-gradient-to-b from-stone-600 to-stone-800 rounded-sm border-2 border-stone-900"
-                style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}>
-                {/* Bolt Holes */}
-                <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
-                <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
-              </div>
+              <svg viewBox="0 0 900 450" className="w-full h-auto" style={{ maxHeight: '130px', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }}>
+                <defs>
+                  <linearGradient id="pipeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#71717a" />
+                    <stop offset="50%" stopColor="#a1a1aa" />
+                    <stop offset="100%" stopColor="#52525b" />
+                  </linearGradient>
+                  
+                  <linearGradient id="motorBodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#27272a" />
+                    <stop offset="30%" stopColor="#3f3f46" />
+                    <stop offset="70%" stopColor="#27272a" />
+                    <stop offset="100%" stopColor="#18181b" />
+                  </linearGradient>
+                  
+                  <linearGradient id="pumpBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#1e3a8a" />
+                    <stop offset="40%" stopColor="#2563eb" />
+                    <stop offset="70%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#1e40af" />
+                  </linearGradient>
+                  
+                  <radialGradient id="statusGlow">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8"/>
+                    <stop offset="50%" stopColor="#22c55e" stopOpacity="0.3"/>
+                    <stop offset="100%" stopColor="#22c55e" stopOpacity="0"/>
+                  </radialGradient>
+                  
+                  <radialGradient id="vibrationGlow">
+                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.6"/>
+                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0"/>
+                  </radialGradient>
+                  
+                  <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+                    <feOffset dx="3" dy="6" result="offsetblur"/>
+                    <feComponentTransfer>
+                      <feFuncA type="linear" slope="0.4"/>
+                    </feComponentTransfer>
+                    <feMerge>
+                      <feMergeNode/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  
+                  <filter id="insetShadow">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                    <feOffset dx="2" dy="2"/>
+                    <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                    <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                    <feBlend in2="SourceGraphic" mode="multiply"/>
+                  </filter>
+                </defs>
 
-              {/* Motor Housing (Cylindrical Body) */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-28 rounded-lg overflow-hidden"
-                style={{
-                  background: isPumpOn
-                    ? 'linear-gradient(90deg, #334155 0%, #475569 20%, #64748b 50%, #475569 80%, #334155 100%)'
-                    : 'linear-gradient(90deg, #1e293b 0%, #334155 20%, #475569 50%, #334155 80%, #1e293b 100%)',
-                  boxShadow: isPumpOn
-                    ? '0 8px 25px rgba(34, 197, 94, 0.3), inset -4px 0 8px rgba(0,0,0,0.3), inset 4px 0 8px rgba(255,255,255,0.1)'
-                    : '0 8px 25px rgba(0,0,0,0.5), inset -4px 0 8px rgba(0,0,0,0.4), inset 4px 0 8px rgba(255,255,255,0.05)',
-                  border: '3px solid #1e293b'
-                }}>
-
-                {/* Cooling Fins (Horizontal Lines) */}
-                <div className="absolute inset-0">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="absolute left-0 right-0 h-0.5 bg-slate-900/40"
-                      style={{ top: `${12 + i * 10}%` }}></div>
+                {/* Concrete Foundation with Mounting */}
+                <g>
+                  <rect x="120" y="340" width="660" height="70" fill="#3f3f46" rx="6"/>
+                  <rect x="120" y="340" width="660" height="12" fill="#52525b" rx="6"/>
+                  <rect x="130" y="348" width="640" height="55" fill="#27272a" rx="4" filter="url(#insetShadow)"/>
+                  
+                  {/* Anchor Bolts */}
+                  {[180, 720].map((x) => (
+                    <g key={x}>
+                      <rect x={x-10} y="325" width="20" height="35" fill="#52525b" rx="3"/>
+                      <circle cx={x} cy="322" r="12" fill="#71717a" stroke="#27272a" strokeWidth="2.5"/>
+                      <circle cx={x} cy="322" r="6" fill="#18181b"/>
+                      <circle cx={x} cy="322" r="3" fill="#3f3f46"/>
+                    </g>
                   ))}
-                </div>
+                </g>
 
-                {/* Motor Name Plate */}
-                <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-yellow-600 px-2 py-0.5 rounded-sm border border-yellow-800">
-                  <p className="text-[8px] font-bold text-slate-900">5HP MOTOR</p>
-                </div>
-
-                {/* Ventilation Grills */}
-                <div className="absolute bottom-2 left-2 right-2 flex gap-1">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="flex-1 h-3 bg-slate-900/60 rounded-sm border border-slate-700"></div>
+                {/* Inlet/Suction Pipe */}
+                <g filter="url(#dropShadow)">
+                  <rect x="60" y="280" width="170" height="55" fill="url(#pipeGradient)" rx="6"/>
+                  <rect x="65" y="285" width="160" height="45" fill="#27272a" rx="5" filter="url(#insetShadow)"/>
+                  <line x1="70" y1="292" x2="220" y2="292" stroke="#52525b" strokeWidth="2.5"/>
+                  <line x1="70" y1="322" x2="220" y2="322" stroke="#18181b" strokeWidth="2.5"/>
+                  
+                  {/* Flange Connection */}
+                  <ellipse cx="230" cy="307" rx="40" ry="48" fill="#52525b" stroke="#27272a" strokeWidth="3.5"/>
+                  <ellipse cx="230" cy="307" rx="28" ry="36" fill="#18181b"/>
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                    <circle 
+                      key={`suction-${angle}`}
+                      cx={230 + Math.cos(angle * Math.PI / 180) * 32} 
+                      cy={307 + Math.sin(angle * Math.PI / 180) * 40}
+                      r="5" 
+                      fill="#27272a"
+                      stroke="#18181b"
+                      strokeWidth="1.5"
+                    />
                   ))}
-                </div>
-              </div>
+                  
+                  {/* Water Flow Animation */}
+                  {isPumpOn && (
+                    <>
+                      {[0, 1, 2, 3].map((i) => (
+                        <circle 
+                          key={`suction-flow-${i}`}
+                          cx="80" 
+                          cy={295 + (i * 8)} 
+                          r={4 + Math.random() * 2} 
+                          fill="#3b82f6" 
+                          opacity="0.4"
+                        >
+                          <animate attributeName="cx" from="80" to="220" dur={`${1.2 + i * 0.3}s`} repeatCount="indefinite"/>
+                          <animate attributeName="opacity" from="0.5" to="0" dur={`${1.2 + i * 0.3}s`} repeatCount="indefinite"/>
+                        </circle>
+                      ))}
+                    </>
+                  )}
+                </g>
 
-              {/* Pump Head (Front Casing) */}
-              <div className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%)',
-                  boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
-                  border: '2px solid #0a3a5a'
-                }}>
+                {/* Main Pump Body (Closed Volute Casing) */}
+                <g filter="url(#dropShadow)">
+                  {/* Outer Casing Shell */}
+                  <ellipse cx="350" cy="240" rx="140" ry="130" fill="url(#pumpBodyGradient)" stroke="#1e3a8a" strokeWidth="5"/>
+                  <ellipse cx="350" cy="240" rx="130" ry="120" fill="#1e40af" filter="url(#insetShadow)"/>
+                  
+                  {/* Metallic Highlights */}
+                  <ellipse cx="340" cy="220" rx="60" ry="55" fill="none" stroke="#60a5fa" strokeWidth="2" opacity="0.3"/>
+                  <ellipse cx="360" cy="250" rx="45" ry="40" fill="none" stroke="#3b82f6" strokeWidth="1.5" opacity="0.2"/>
+                  
+                  {/* Assembly Bolts */}
+                  {[[280, 160], [420, 160], [460, 240], [420, 320], [280, 320], [240, 240]].map(([x, y], i) => (
+                    <g key={`bolt-${i}`}>
+                      <circle cx={x} cy={y} r="10" fill="#64748b" stroke="#27272a" strokeWidth="2.5"/>
+                      <circle cx={x} cy={y} r="5" fill="#27272a"/>
+                      <circle cx={x} cy={y} r="2" fill="#18181b"/>
+                    </g>
+                  ))}
+                  
+                  {/* Vibration/Running Effect */}
+                  {isPumpOn && (
+                    <>
+                      <ellipse cx="350" cy="240" rx="145" ry="135" fill="url(#vibrationGlow)" opacity="0.4">
+                        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+                      </ellipse>
+                      <ellipse cx="350" cy="240" rx="155" ry="145" fill="none" stroke="#06b6d4" strokeWidth="2" opacity="0.2">
+                        <animate attributeName="opacity" values="0.1;0.3;0.1" dur="1.5s" repeatCount="indefinite"/>
+                        <animate attributeName="rx" values="155;160;155" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="ry" values="145;150;145" dur="2s" repeatCount="indefinite"/>
+                      </ellipse>
+                    </>
+                  )}
+                  
+                  {/* Brand Nameplate */}
+                  <rect x="305" y="280" width="90" height="35" fill="#fcd34d" stroke="#f59e0b" strokeWidth="2.5" rx="4"/>
+                  <text x="350" y="297" fontSize="11" fill="#78350f" textAnchor="middle" fontWeight="bold">KIRLOSKAR</text>
+                  <text x="350" y="308" fontSize="8" fill="#92400e" textAnchor="middle" fontWeight="600">KDS-2050</text>
+                </g>
 
-                {/* Impeller Housing (Circular) */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-4 border-sky-900/50"
-                  style={{
-                    background: 'radial-gradient(circle, #0369a1 0%, #075985 50%, #0c4a6e 100%)',
-                    boxShadow: 'inset 0 0 15px rgba(0,0,0,0.6)'
-                  }}>
+                {/* Outlet/Discharge Pipe */}
+                <g filter="url(#dropShadow)">
+                  <rect x="60" y="180" width="170" height="55" fill="url(#pipeGradient)" rx="6"/>
+                  <rect x="65" y="185" width="160" height="45" fill="#27272a" rx="5" filter="url(#insetShadow)"/>
+                  <line x1="70" y1="192" x2="220" y2="192" stroke="#52525b" strokeWidth="2.5"/>
+                  <line x1="70" y1="222" x2="220" y2="222" stroke="#18181b" strokeWidth="2.5"/>
+                  
+                  {/* Flange Connection */}
+                  <ellipse cx="230" cy="207" rx="40" ry="48" fill="#52525b" stroke="#27272a" strokeWidth="3.5"/>
+                  <ellipse cx="230" cy="207" rx="28" ry="36" fill="#18181b"/>
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                    <circle 
+                      key={`discharge-${angle}`}
+                      cx={230 + Math.cos(angle * Math.PI / 180) * 32} 
+                      cy={207 + Math.sin(angle * Math.PI / 180) * 40}
+                      r="5" 
+                      fill="#27272a"
+                      stroke="#18181b"
+                      strokeWidth="1.5"
+                    />
+                  ))}
+                  
+                  {/* Water Flow Animation (Opposite Direction) */}
+                  {isPumpOn && (
+                    <>
+                      {[0, 1, 2, 3].map((i) => (
+                        <circle 
+                          key={`discharge-flow-${i}`}
+                          cx="200" 
+                          cy={195 + (i * 8)} 
+                          r={5 + Math.random() * 2} 
+                          fill="#22c55e" 
+                          opacity="0.5"
+                        >
+                          <animate attributeName="cx" from="200" to="70" dur={`${0.9 + i * 0.2}s`} repeatCount="indefinite"/>
+                          <animate attributeName="opacity" from="0.6" to="0" dur={`${0.9 + i * 0.2}s`} repeatCount="indefinite"/>
+                        </circle>
+                      ))}
+                    </>
+                  )}
+                </g>
 
-                  {/* Rotating Impeller */}
-                  <div className={`absolute inset-0 ${isPumpOn ? 'animate-spin' : ''}`}
-                    style={{ animationDuration: '1.5s' }}>
-                    {/* Impeller Blades */}
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="absolute top-1/2 left-1/2 w-1 h-5 bg-cyan-400/70 rounded"
-                        style={{
-                          transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-8px)`,
-                          transformOrigin: 'center'
-                        }}></div>
-                    ))}
-                    {/* Center Hub */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-600"></div>
-                  </div>
-                </div>
+                {/* Coupling/Shaft Housing */}
+                <g>
+                  <rect x="480" y="220" width="60" height="40" fill="#52525b" rx="4"/>
+                  <rect x="485" y="225" width="50" height="30" fill="#3f3f46" rx="2" filter="url(#insetShadow)"/>
+                  <line x1="490" y1="235" x2="530" y2="235" stroke="#71717a" strokeWidth="2"/>
+                  <line x1="490" y1="245" x2="530" y2="245" stroke="#27272a" strokeWidth="2"/>
+                  
+                  {/* Coupling Bolts */}
+                  {[[495, 230], [525, 230], [495, 250], [525, 250]].map(([x, y], i) => (
+                    <circle key={`coupling-${i}`} cx={x} cy={y} r="3" fill="#18181b"/>
+                  ))}
+                </g>
 
-                {/* Outlet Flange */}
-                <div className="absolute top-0 right-0 w-6 h-8 bg-gradient-to-r from-sky-800 to-sky-900 border-2 border-sky-950 rounded-r"
-                  style={{ boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.5)' }}>
-                  {/* Bolt Holes on Flange */}
-                  <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
-                  <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
-                </div>
-              </div>
-
-              {/* Status Indicator Light */}
-              <div className={`absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-white ${isPumpOn
-                ? 'bg-green-400 shadow-lg shadow-green-400/80 animate-pulse'
-                : 'bg-red-500 shadow-lg shadow-red-500/50'
-                }`}
-                style={{
-                  boxShadow: isPumpOn
-                    ? '0 0 15px rgba(34, 197, 94, 0.8), inset 0 1px 2px rgba(255,255,255,0.5)'
-                    : '0 0 10px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(0,0,0,0.3)'
-                }}>
-              </div>
-
-              {/* Vibration Effect when Running */}
-              {isPumpOn && (
-                <div className="absolute inset-0 animate-pulse opacity-30 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)'
-                  }}></div>
-              )}
-            </button>
+                {/* Electric Motor Assembly */}
+                <g filter="url(#dropShadow)">
+                  {/* Motor Housing */}
+                  <ellipse cx="600" cy="240" rx="110" ry="130" fill="url(#motorBodyGradient)" stroke="#52525b" strokeWidth="5"/>
+                  <ellipse cx="600" cy="240" rx="100" ry="120" fill="#18181b"/>
+                  
+                  {/* Cooling Fins (External Ribs) */}
+                  {[...Array(16)].map((_, i) => (
+                    <rect 
+                      key={`fin-${i}`}
+                      x="540" 
+                      y={135 + i * 13} 
+                      width="120" 
+                      height="6" 
+                      fill="#3f3f46"
+                      rx="1.5"
+                      opacity="0.9"
+                    />
+                  ))}
+                  
+                  {/* Terminal Box */}
+                  <rect x="670" y="210" width="50" height="50" fill="#3f3f46" stroke="#52525b" strokeWidth="2.5" rx="3"/>
+                  <rect x="675" y="215" width="40" height="40" fill="#27272a" rx="2"/>
+                  
+                  {/* Three-Phase Terminals */}
+                  <circle cx="695" cy="230" r="4" fill="#ef4444"/>
+                  <circle cx="695" cy="242" r="4" fill="#eab308"/>
+                  <circle cx="695" cy="254" r="4" fill="#3b82f6"/>
+                  <text x="708" y="233" fontSize="7" fill="#a1a1aa">R</text>
+                  <text x="708" y="245" fontSize="7" fill="#a1a1aa">Y</text>
+                  <text x="708" y="257" fontSize="7" fill="#a1a1aa">B</text>
+                  
+                  {/* Motor Nameplate */}
+                  <rect x="548" y="285" width="104" height="42" fill="#fcd34d" stroke="#f59e0b" strokeWidth="2.5" rx="4"/>
+                  <text x="600" y="301" fontSize="12" fill="#78350f" textAnchor="middle" fontWeight="bold">KIRLOSKAR</text>
+                  <text x="600" y="313" fontSize="9" fill="#92400e" textAnchor="middle" fontWeight="600">5.0 HP • 415V</text>
+                  <text x="600" y="323" fontSize="7" fill="#92400e" textAnchor="middle">2900 RPM • 50Hz • 3Ph</text>
+                  
+                  {/* Status Indicator LED */}
+                  <circle 
+                    cx="690" 
+                    cy="175" 
+                    r="12" 
+                    fill={isPumpOn ? '#22c55e' : '#3f3f46'}
+                    stroke={isPumpOn ? '#10b981' : '#27272a'}
+                    strokeWidth="2.5"
+                  />
+                  {isPumpOn && (
+                    <circle cx="690" cy="175" r="18" fill="url(#statusGlow)" opacity="0.6">
+                      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                  )}
+                  <circle cx="690" cy="175" r="7" fill={isPumpOn ? '#86efac' : '#52525b'}/>
+                </g>
+              </svg>
+            </div>
 
             {/* Pump Label - Clickable for Details */}
             <div
               onClick={() => onNavigate && onNavigate('pump-details')}
               className="text-center cursor-pointer hover:scale-105 transition-transform group"
             >
-              <p className="text-sm font-bold text-slate-800 group-hover:text-green-600">Borewell Pump</p>
+              <p className="text-sm font-bold text-slate-800 group-hover:text-green-600">Pump Station</p>
+              <p className="text-xs text-slate-600">{pump.pumpModel || 'Submersible Pump'}</p>
               <p className="text-xs text-slate-600">{isPumpOn ? 'Running' : 'Stopped'}</p>
               <p className="text-[10px] text-blue-600 font-semibold">Click for details</p>
             </div>
@@ -557,108 +819,30 @@ export const SystemContainer = ({ onNavigate }) => {
 
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs text-blue-600 font-bold">Total Flow</p>
-          <p className="text-2xl font-black text-blue-700">
+      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+        <div className="p-2 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-[10px] sm:text-xs md:text-base text-blue-600 font-bold">Total Flow</p>
+          <p className="text-sm sm:text-2xl md:text-2xl font-black text-blue-700">
             {pipelines.reduce((sum, p) => sum + (p.outlet?.flowSensor?.value || 0), 0)} L/min
           </p>
         </div>
-        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-xs text-green-600 font-bold">Open Pipelines</p>
-          <p className="text-2xl font-black text-green-700">
+        <div className="p-2 sm:p-4 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-[10px] sm:text-xs md:text-base text-green-600 font-bold">Open Pipelines</p>
+          <p className="text-sm sm:text-2xl md:text-2xl font-black text-green-700">
             {pipelines.filter(p => p.valveStatus === 'OPEN').length} / 5
           </p>
         </div>
-        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-          <p className="text-xs text-amber-600 font-bold">Avg Pressure</p>
-          <p className="text-2xl font-black text-amber-700">
+        <div className="p-2 sm:p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-[10px] sm:text-xs md:text-base text-amber-600 font-bold">Avg Pressure</p>
+          <p className="text-sm sm:text-2xl md:text-2xl font-black text-amber-700">
             {(pump.pumpPressureOutput || 0).toFixed(1)} bar
           </p>
         </div>
-        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-          <p className="text-xs text-purple-600 font-bold">System Efficiency</p>
-          <p className="text-2xl font-black text-purple-700">
+        <div className="p-2 sm:p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <p className="text-[10px] sm:text-xs md:text-base text-purple-600 font-bold">System Efficiency</p>
+          <p className="text-sm sm:text-2xl md:text-4xl font-black text-purple-700">
             {state?.systemMetrics?.systemEfficiency || 0}%
           </p>
-        </div>
-      </div>
-
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 mt-8 border-t border-slate-200 pt-6">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <IconImage name="activity" alt="Activity" size={24} />
-            Junja Network Monitoring
-          </h2>
-          <p className="text-sm text-slate-500">Real-time pipeline status & control</p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {isLive && (
-            <span className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              LIVE
-            </span>
-          )}
-          <button
-            onClick={togglePump}
-            className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${isPumpOn
-              ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200'
-              : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-              }`}
-          >
-            <IconImage name="power" alt="Power" size={18} />
-            Pump {isPumpOn ? 'ON' : 'OFF'}
-          </button>
-        </div>
-      </div>
-
-      {/* IoT Sensors Network - Moved to Bottom */}
-      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-4 shadow-lg mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg">
-              <IconImage name="radio" alt="IoT" size={26} />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">IoT Sensors Network</p>
-              <p className="text-xs text-slate-600">{pipelines.length * 2} Active Sensors Monitoring</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onNavigate && onNavigate('pipelines-overview')}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-lg transition-all"
-            >
-              View All Pipelines
-            </button>
-            <button
-              onClick={() => onNavigate && onNavigate('infrastructure')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 shadow-lg transition-all"
-            >
-              View All Sensors
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
-          {pipelines.map((p) => (
-            <div key={p.pipelineId} className="bg-white rounded-lg p-3 border border-blue-200 shadow-sm hover:shadow-md transition-all">
-              <p className="font-bold text-slate-800 mb-1">P{p.pipelineId}</p>
-              <div className="space-y-1">
-                <p className="text-slate-600">
-                  <span className="text-blue-600 font-semibold">Flow:</span> {p.inlet?.flowSensor?.value || 0} L/min
-                </p>
-                <p className="text-slate-600">
-                  <span className="text-emerald-600 font-semibold">Press:</span> {(p.inlet?.pressureSensor?.value || 0).toFixed(1)} bar
-                </p>
-                <p className={`text-xs font-bold ${p.valveStatus === 'OPEN' ? 'text-green-600' : 'text-red-600'}`}>
-                  Valve: {p.valveStatus}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
