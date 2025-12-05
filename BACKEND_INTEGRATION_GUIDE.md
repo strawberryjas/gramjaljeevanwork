@@ -5,6 +5,7 @@ This document outlines how to integrate the frontend with backend APIs and the e
 ## Overview
 
 The frontend is designed to work with a REST API backend. All API calls go through a centralized `apiClient` that handles:
+
 - Request/response transformation
 - Automatic retry with exponential backoff
 - Authentication token management
@@ -27,6 +28,7 @@ VITE_BACKEND_ENERGY_MONITORING=true
 ## Authentication API
 
 ### Login
+
 ```
 POST /api/auth/login
 Content-Type: application/json
@@ -51,6 +53,7 @@ Response (200 OK):
 ```
 
 ### Logout
+
 ```
 POST /api/auth/logout
 Authorization: Bearer {token}
@@ -62,6 +65,7 @@ Response (200 OK):
 ```
 
 ### Get Profile
+
 ```
 GET /api/auth/profile
 Authorization: Bearer {token}
@@ -73,6 +77,7 @@ Response (200 OK):
 ```
 
 ### Refresh Token
+
 ```
 POST /api/auth/refresh
 Authorization: Bearer {token}
@@ -86,6 +91,7 @@ Response (200 OK):
 ## Pipeline & Sensor APIs
 
 ### Get Pipelines
+
 ```
 GET /api/pipelines?scheme=Scheme-001
 Authorization: Bearer {token}
@@ -106,6 +112,7 @@ Response (200 OK):
 ```
 
 ### Get Sensor Data
+
 ```
 GET /api/schemes/{schemeId}/sensors/data
 Authorization: Bearer {token}
@@ -127,6 +134,7 @@ Response (200 OK):
 ```
 
 ### Control Valve
+
 ```
 POST /api/valves/{valveId}/control
 Authorization: Bearer {token}
@@ -151,6 +159,7 @@ Response (200 OK):
 ## Service Request APIs
 
 ### Create Service Request
+
 ```
 POST /api/service-requests
 Authorization: Bearer {token}
@@ -174,6 +183,7 @@ Response (201 Created):
 ```
 
 ### Get Service Requests
+
 ```
 GET /api/service-requests?status=OPEN&priority=HIGH
 Authorization: Bearer {token}
@@ -193,6 +203,7 @@ Response (200 OK):
 ```
 
 ### Update Request Status
+
 ```
 PATCH /api/service-requests/{requestId}/status
 Authorization: Bearer {token}
@@ -224,6 +235,7 @@ All error responses follow this format:
 ```
 
 Common error codes:
+
 - `400` - Bad Request (validation error)
 - `401` - Unauthorized (invalid token)
 - `403` - Forbidden (insufficient permissions)
@@ -247,43 +259,43 @@ Common error codes:
 ### Basic Usage
 
 ```javascript
-import { apiClient } from './api/apiClient'
+import { apiClient } from './api/apiClient';
 
 // GET request
-const response = await apiClient.get('/pipelines')
-console.log(response.data)
+const response = await apiClient.get('/pipelines');
+console.log(response.data);
 
 // POST request
 const response = await apiClient.post('/service-requests', {
   title: 'Issue',
-  description: 'Description'
-})
+  description: 'Description',
+});
 
 // Set auth token
-apiClient.setAuthToken(token)
+apiClient.setAuthToken(token);
 
 // Clear auth token
-apiClient.clearAuthToken()
+apiClient.clearAuthToken();
 ```
 
 ### Using Service Classes
 
 ```javascript
-import AuthService from './api/authService'
-import PipelineService from './api/pipelineService'
-import ServiceRequestService from './api/serviceRequestService'
+import AuthService from './api/authService';
+import PipelineService from './api/pipelineService';
+import ServiceRequestService from './api/serviceRequestService';
 
 // Login
-const response = await AuthService.login('email@example.com', 'password', 'English')
+const response = await AuthService.login('email@example.com', 'password', 'English');
 
 // Get sensor data
-const response = await PipelineService.getSensorData('scheme-id')
+const response = await PipelineService.getSensorData('scheme-id');
 
 // Create service request
 const response = await ServiceRequestService.createRequest({
   title: 'Issue',
-  description: 'Details'
-})
+  description: 'Details',
+});
 ```
 
 ## Feature Flags for Backend Integration
@@ -307,7 +319,7 @@ VITE_BACKEND_ENERGY_MONITORING=true
 Check in components:
 
 ```javascript
-import { isFeatureEnabled } from './api/featureFlags'
+import { isFeatureEnabled } from './api/featureFlags';
 
 if (isFeatureEnabled('BACKEND_AUTH')) {
   // Use real auth APIs
@@ -343,6 +355,7 @@ This intercepts all API calls and returns mock data. Update `src/api/mswSetup.js
 ## Support
 
 For API integration issues, refer to:
+
 - Backend repository documentation
 - API specification document
 - OpenAPI/Swagger specification (if available)

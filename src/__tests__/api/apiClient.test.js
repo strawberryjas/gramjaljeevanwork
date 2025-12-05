@@ -19,20 +19,27 @@ describe('APIClient', () => {
       expect(apiClient.getAuthToken()).toBe(token);
     });
 
-    it('clears auth token', () => {
+    it('clears auth token and falls back to localStorage', () => {
       apiClient.setAuthToken('test-token');
+      localStorage.setItem('auth_token', 'local-token');
       apiClient.clearAuthToken();
-      expect(apiClient.getAuthToken()).toBeNull();
+      expect(apiClient.getAuthToken()).toBe('local-token');
     });
 
-    it('gets token from localStorage', () => {
+    it('gets token from localStorage when no instance token', () => {
       localStorage.setItem('auth_token', 'local-token');
       expect(apiClient.getAuthToken()).toBe('local-token');
     });
 
-    it('gets token from sessionStorage', () => {
+    it('gets token from sessionStorage when no instance or localStorage token', () => {
       sessionStorage.setItem('auth_token', 'session-token');
       expect(apiClient.getAuthToken()).toBe('session-token');
+    });
+
+    it('prioritizes instance token over localStorage', () => {
+      localStorage.setItem('auth_token', 'local-token');
+      apiClient.setAuthToken('instance-token');
+      expect(apiClient.getAuthToken()).toBe('instance-token');
     });
   });
 
@@ -180,4 +187,3 @@ describe('APIClient', () => {
     });
   });
 });
-

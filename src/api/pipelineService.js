@@ -35,9 +35,7 @@ class PipelineService {
    */
   static async getSensorData(schemeId, sensorId = null) {
     try {
-      const endpoint = sensorId
-        ? `/sensors/${sensorId}/data`
-        : `/schemes/${schemeId}/sensors/data`;
+      const endpoint = sensorId ? `/sensors/${sensorId}/data` : `/schemes/${schemeId}/sensors/data`;
       const response = await apiClient.get(endpoint);
       return response;
     } catch (error) {
@@ -91,9 +89,7 @@ class PipelineService {
    */
   static async getTankStatus(schemeId, tankId = null) {
     try {
-      const endpoint = tankId
-        ? `/tanks/${tankId}/status`
-        : `/schemes/${schemeId}/tanks/status`;
+      const endpoint = tankId ? `/tanks/${tankId}/status` : `/schemes/${schemeId}/tanks/status`;
       const response = await apiClient.get(endpoint);
       return response;
     } catch (error) {
@@ -106,9 +102,7 @@ class PipelineService {
    */
   static async getPumpStatus(schemeId, pumpId = null) {
     try {
-      const endpoint = pumpId
-        ? `/pumps/${pumpId}/status`
-        : `/schemes/${schemeId}/pumps/status`;
+      const endpoint = pumpId ? `/pumps/${pumpId}/status` : `/schemes/${schemeId}/pumps/status`;
       const response = await apiClient.get(endpoint);
       return response;
     } catch (error) {
@@ -136,9 +130,7 @@ class PipelineService {
    */
   static async getEnergyData(schemeId, timeRange = 'day') {
     try {
-      const response = await apiClient.get(
-        `/schemes/${schemeId}/energy?range=${timeRange}`
-      );
+      const response = await apiClient.get(`/schemes/${schemeId}/energy?range=${timeRange}`);
       return response;
     } catch (error) {
       throw error;
@@ -162,10 +154,7 @@ class PipelineService {
    */
   static async submitQualityTest(schemeId, testData) {
     try {
-      const response = await apiClient.post(
-        `/schemes/${schemeId}/quality/test`,
-        testData
-      );
+      const response = await apiClient.post(`/schemes/${schemeId}/quality/test`, testData);
       return response;
     } catch (error) {
       throw error;
@@ -178,9 +167,7 @@ class PipelineService {
   static async getAlarms(schemeId, filters = {}) {
     try {
       const queryString = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(
-        `/schemes/${schemeId}/alarms?${queryString}`
-      );
+      const response = await apiClient.get(`/schemes/${schemeId}/alarms?${queryString}`);
       return response;
     } catch (error) {
       throw error;

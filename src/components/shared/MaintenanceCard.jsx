@@ -1,26 +1,57 @@
 import React from 'react';
-import { Calendar, Clock, User, AlertTriangle, CheckCircle, Wrench, TrendingUp } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  User,
+  AlertTriangle,
+  CheckCircle,
+  Wrench,
+  TrendingUp,
+} from 'lucide-react';
 
-const MaintenanceCard = ({ 
-  title, 
-  lastMaintenanceDate, 
-  nextMaintenanceDate, 
+const MaintenanceCard = ({
+  title,
+  lastMaintenanceDate,
+  nextMaintenanceDate,
   maintenanceIntervalDays,
   maintenanceHistory = [],
   additionalMetrics = [],
-  type = "general" // general, pump, tank, pipeline, sensor
+  type = 'general', // general, pump, tank, pipeline, sensor
 }) => {
   // Calculate days until next maintenance
   const now = Date.now();
   const daysUntil = Math.ceil((nextMaintenanceDate - now) / (24 * 60 * 60 * 1000));
   const daysSince = Math.ceil((now - lastMaintenanceDate) / (24 * 60 * 60 * 1000));
-  
+
   // Determine status based on days until maintenance
   const getMaintenanceStatus = () => {
-    if (daysUntil < 0) return { status: 'OVERDUE', color: 'red', bgColor: 'bg-red-50', borderColor: 'border-red-500' };
-    if (daysUntil <= 7) return { status: 'URGENT', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-500' };
-    if (daysUntil <= 14) return { status: 'DUE SOON', color: 'yellow', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-500' };
-    return { status: 'SCHEDULED', color: 'green', bgColor: 'bg-green-50', borderColor: 'border-green-500' };
+    if (daysUntil < 0)
+      return {
+        status: 'OVERDUE',
+        color: 'red',
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-500',
+      };
+    if (daysUntil <= 7)
+      return {
+        status: 'URGENT',
+        color: 'orange',
+        bgColor: 'bg-orange-50',
+        borderColor: 'border-orange-500',
+      };
+    if (daysUntil <= 14)
+      return {
+        status: 'DUE SOON',
+        color: 'yellow',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-500',
+      };
+    return {
+      status: 'SCHEDULED',
+      color: 'green',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-500',
+    };
   };
 
   const statusInfo = getMaintenanceStatus();
@@ -33,12 +64,17 @@ const MaintenanceCard = ({
 
   // Get icon based on type
   const getTypeIcon = () => {
-    switch(type) {
-      case 'pump': return <TrendingUp className="w-5 h-5" />;
-      case 'tank': return <CheckCircle className="w-5 h-5" />;
-      case 'pipeline': return <Wrench className="w-5 h-5" />;
-      case 'sensor': return <AlertTriangle className="w-5 h-5" />;
-      default: return <Calendar className="w-5 h-5" />;
+    switch (type) {
+      case 'pump':
+        return <TrendingUp className="w-5 h-5" />;
+      case 'tank':
+        return <CheckCircle className="w-5 h-5" />;
+      case 'pipeline':
+        return <Wrench className="w-5 h-5" />;
+      case 'sensor':
+        return <AlertTriangle className="w-5 h-5" />;
+      default:
+        return <Calendar className="w-5 h-5" />;
     }
   };
 
@@ -48,13 +84,15 @@ const MaintenanceCard = ({
       <div className={`${statusInfo.bgColor} ${statusInfo.borderColor} border-b-4 px-6 py-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`text-${statusInfo.color}-600`}>
-              {getTypeIcon()}
-            </div>
+            <div className={`text-${statusInfo.color}-600`}>{getTypeIcon()}</div>
             <h3 className="text-lg font-bold text-gray-800">{title}</h3>
           </div>
-          <div className={`px-4 py-1.5 rounded-full bg-${statusInfo.color}-100 border border-${statusInfo.color}-300`}>
-            <span className={`text-sm font-bold text-${statusInfo.color}-700`}>{statusInfo.status}</span>
+          <div
+            className={`px-4 py-1.5 rounded-full bg-${statusInfo.color}-100 border border-${statusInfo.color}-300`}
+          >
+            <span className={`text-sm font-bold text-${statusInfo.color}-700`}>
+              {statusInfo.status}
+            </span>
           </div>
         </div>
       </div>
@@ -95,7 +133,9 @@ const MaintenanceCard = ({
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase">Interval</p>
-              <p className="text-sm font-bold text-gray-800">Every {maintenanceIntervalDays} days</p>
+              <p className="text-sm font-bold text-gray-800">
+                Every {maintenanceIntervalDays} days
+              </p>
               <p className="text-xs text-gray-500 mt-0.5">Regular schedule</p>
             </div>
           </div>
@@ -110,12 +150,15 @@ const MaintenanceCard = ({
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-            <div 
+            <div
               className={`h-full rounded-full transition-all duration-500 bg-gradient-to-r ${
-                statusInfo.color === 'red' ? 'from-red-500 to-red-600' :
-                statusInfo.color === 'orange' ? 'from-orange-500 to-orange-600' :
-                statusInfo.color === 'yellow' ? 'from-yellow-500 to-yellow-600' :
-                'from-green-500 to-green-600'
+                statusInfo.color === 'red'
+                  ? 'from-red-500 to-red-600'
+                  : statusInfo.color === 'orange'
+                    ? 'from-orange-500 to-orange-600'
+                    : statusInfo.color === 'yellow'
+                      ? 'from-yellow-500 to-yellow-600'
+                      : 'from-green-500 to-green-600'
               }`}
               style={{ width: `${Math.min((daysSince / maintenanceIntervalDays) * 100, 100)}%` }}
             />
@@ -132,9 +175,7 @@ const MaintenanceCard = ({
               <div key={index} className="bg-white p-3 rounded-lg border border-gray-200">
                 <p className="text-xs text-gray-500 mb-1">{metric.label}</p>
                 <p className="text-sm font-bold text-gray-800">{metric.value}</p>
-                {metric.subtext && (
-                  <p className="text-xs text-gray-400 mt-0.5">{metric.subtext}</p>
-                )}
+                {metric.subtext && <p className="text-xs text-gray-400 mt-0.5">{metric.subtext}</p>}
               </div>
             ))}
           </div>
@@ -150,7 +191,10 @@ const MaintenanceCard = ({
           </h4>
           <div className="space-y-3">
             {maintenanceHistory.slice(0, 3).map((entry, index) => (
-              <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+              <div
+                key={index}
+                className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+              >
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <Wrench className="w-5 h-5 text-blue-600" />
@@ -185,18 +229,23 @@ const MaintenanceCard = ({
 
       {/* Action Recommendations */}
       {daysUntil <= 14 && (
-        <div className={`px-6 py-4 bg-${statusInfo.color}-50 border-t-2 border-${statusInfo.color}-200`}>
+        <div
+          className={`px-6 py-4 bg-${statusInfo.color}-50 border-t-2 border-${statusInfo.color}-200`}
+        >
           <div className="flex items-start gap-3">
-            <AlertTriangle className={`w-5 h-5 text-${statusInfo.color}-600 flex-shrink-0 mt-0.5`} />
+            <AlertTriangle
+              className={`w-5 h-5 text-${statusInfo.color}-600 flex-shrink-0 mt-0.5`}
+            />
             <div>
-              <h4 className={`text-sm font-bold text-${statusInfo.color}-800 mb-1`}>Action Required</h4>
+              <h4 className={`text-sm font-bold text-${statusInfo.color}-800 mb-1`}>
+                Action Required
+              </h4>
               <p className="text-xs text-gray-700">
-                {daysUntil < 0 
+                {daysUntil < 0
                   ? `Maintenance is overdue by ${Math.abs(daysUntil)} days. Schedule immediate service.`
                   : daysUntil <= 7
-                  ? `Maintenance due in ${daysUntil} days. Contact technician immediately.`
-                  : `Maintenance due soon. Schedule service within next ${daysUntil} days.`
-                }
+                    ? `Maintenance due in ${daysUntil} days. Contact technician immediately.`
+                    : `Maintenance due soon. Schedule service within next ${daysUntil} days.`}
               </p>
             </div>
           </div>

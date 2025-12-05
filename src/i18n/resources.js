@@ -1148,4 +1148,3 @@ assign('sat', santali);
 assign('mni', manipuri);
 
 export const translationResources = resources;
-

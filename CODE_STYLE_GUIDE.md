@@ -10,6 +10,7 @@
 ## 🎨 File Naming Conventions
 
 ### Components
+
 ```
 PascalCase.jsx
 Examples:
@@ -21,6 +22,7 @@ Examples:
 ```
 
 ### Hooks
+
 ```
 camelCase.js (with 'use' prefix)
 Examples:
@@ -31,6 +33,7 @@ Examples:
 ```
 
 ### Utilities & Helpers
+
 ```
 camelCase.js
 Examples:
@@ -41,6 +44,7 @@ Examples:
 ```
 
 ### Constants
+
 ```
 camelCase.js (file), UPPER_CASE (exports)
 Examples:
@@ -51,6 +55,7 @@ Examples:
 ## 📁 Folder Structure Rules
 
 ### 1. Components Organization
+
 ```
 components/
 ├── auth/           # Authentication related
@@ -60,6 +65,7 @@ components/
 ```
 
 ### 2. Group by Feature, Not by Type
+
 ```
 ✅ Good:
 components/
@@ -78,6 +84,7 @@ components/
 ## 🔧 Code Organization
 
 ### Component Structure
+
 ```jsx
 // 1. Imports (grouped)
 import React, { useState, useEffect } from 'react';
@@ -91,34 +98,31 @@ const DEFAULT_VALUE = 100;
 export const MyComponent = ({ prop1, prop2 }) => {
   // 4. State declarations
   const [state, setState] = useState(null);
-  
+
   // 5. Effects
   useEffect(() => {
     // effect logic
   }, []);
-  
+
   // 6. Event handlers
   const handleClick = () => {
     // handler logic
   };
-  
+
   // 7. Render helpers (if needed)
   const renderItem = (item) => {
     return <div>{item}</div>;
   };
-  
+
   // 8. Return JSX
-  return (
-    <div>
-      {/* Component JSX */}
-    </div>
-  );
+  return <div>{/* Component JSX */}</div>;
 };
 ```
 
 ## 🎯 Best Practices
 
 ### 1. Props Destructuring
+
 ```jsx
 ✅ Good:
 export const MyComponent = ({ name, age, onSubmit }) => {
@@ -132,18 +136,20 @@ export const MyComponent = (props) => {
 ```
 
 ### 2. Default Props
+
 ```jsx
 ✅ Good:
-export const MyComponent = ({ 
-  data = [], 
+export const MyComponent = ({
+  data = [],
   isLoading = false,
-  onSubmit = () => {} 
+  onSubmit = () => {}
 }) => {
   // component logic
 };
 ```
 
 ### 3. Conditional Rendering
+
 ```jsx
 ✅ Good:
 {isLoading && <Spinner />}
@@ -155,6 +161,7 @@ export const MyComponent = ({
 ```
 
 ### 4. Event Handlers
+
 ```jsx
 ✅ Good:
 const handleSubmit = (e) => {
@@ -172,6 +179,7 @@ const handleSubmit = (e) => {
 ```
 
 ### 5. State Management
+
 ```jsx
 ✅ Good:
 const [user, setUser] = useState({ name: '', age: 0 });
@@ -185,6 +193,7 @@ const [loading, setLoading] = useState(null);
 ## 🎨 Styling Guidelines
 
 ### Tailwind CSS Classes
+
 ```jsx
 ✅ Good (organized by category):
 <div className="
@@ -204,6 +213,7 @@ const [loading, setLoading] = useState(null);
 ```
 
 ### Class Order
+
 1. Layout (flex, grid, display)
 2. Positioning (relative, absolute)
 3. Spacing (padding, margin)
@@ -216,6 +226,7 @@ const [loading, setLoading] = useState(null);
 ## 📝 Comments
 
 ### When to Comment
+
 ```jsx
 ✅ Good:
 // Calculate water flow rate based on pressure differential
@@ -236,15 +247,16 @@ return <div>Content</div>;
 ```
 
 ### Component Documentation
+
 ```jsx
 /**
  * TechnicianDashboard - Full operational control panel
- * 
+ *
  * Features:
  * - Real-time sensor monitoring
  * - Maintenance task management
  * - Quick action buttons
- * 
+ *
  * @param {Object} sensors - Sensor data object
  * @param {string} language - Current language code
  * @param {Object} t - Translation object
@@ -272,6 +284,7 @@ Before committing code, ensure:
 ## 🚀 Performance Tips
 
 1. **Memoization**
+
 ```jsx
 import { useMemo, useCallback } from 'react';
 
@@ -285,15 +298,17 @@ const handleClick = useCallback(() => {
 ```
 
 2. **Lazy Loading**
+
 ```jsx
 const HeavyComponent = React.lazy(() => import('./HeavyComponent'));
 
 <Suspense fallback={<Loading />}>
   <HeavyComponent />
-</Suspense>
+</Suspense>;
 ```
 
 3. **Conditional Imports**
+
 ```jsx
 // Only import when needed
 if (condition) {
@@ -305,6 +320,7 @@ if (condition) {
 ## 📦 Export Patterns
 
 ### Named Exports (Preferred)
+
 ```jsx
 // MyComponent.jsx
 export const MyComponent = () => { ... };
@@ -314,6 +330,7 @@ export { MyComponent } from './MyComponent';
 ```
 
 ### Default Exports (Avoid)
+
 ```jsx
 // Less clear what's being imported
 export default MyComponent;
@@ -332,4 +349,3 @@ export default MyComponent;
 - [React Best Practices](https://react.dev/learn)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [JavaScript Style Guide](https://github.com/airbnb/javascript)
-

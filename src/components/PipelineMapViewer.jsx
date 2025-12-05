@@ -1,5 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, Layers, ZoomIn, ZoomOut, Navigation, X, Map as MapIcon, Satellite, Filter, Info, Activity, Droplet, AlertTriangle, Zap, Gauge, Database, Settings } from 'lucide-react';
+import {
+  MapPin,
+  Layers,
+  ZoomIn,
+  ZoomOut,
+  Navigation,
+  X,
+  Map as MapIcon,
+  Satellite,
+  Filter,
+  Info,
+  Activity,
+  Droplet,
+  AlertTriangle,
+  Zap,
+  Gauge,
+  Database,
+  Settings,
+} from 'lucide-react';
 
 export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
   const mapRef = useRef(null);
@@ -15,7 +33,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
     pumps: true,
     tanks: true,
     valves: true,
-    alerts: true
+    alerts: true,
   });
   const markersRef = useRef([]);
 
@@ -71,14 +89,14 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
     try {
       const mapInstance = L.map(mapRef.current, {
-        center: [12.9150, 80.2250],
+        center: [12.915, 80.225],
         zoom: 15,
-        zoomControl: false
+        zoomControl: false,
       });
 
       L.tileLayer('https://mt1.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
         maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       }).addTo(mapInstance);
 
       mapInstanceRef.current = mapInstance;
@@ -116,7 +134,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
     L.tileLayer(tileUrl, {
       maxZoom: 20,
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
     }).addTo(mapInstanceRef.current);
   };
 
@@ -125,7 +143,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
     const L = window.L;
 
-    markersRef.current.forEach(marker => {
+    markersRef.current.forEach((marker) => {
       mapInstanceRef.current.removeLayer(marker);
     });
     markersRef.current = [];
@@ -133,7 +151,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
     // Render pipelines
     if (activeFilters.pipelines && pipelineData) {
       pipelineData.features.forEach((feature) => {
-        const coords = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        const coords = feature.geometry.coordinates.map((coord) => [coord[1], coord[0]]);
 
         let color, weight, dashArray;
         switch (feature.properties.status) {
@@ -157,13 +175,14 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
           color: color,
           weight: weight,
           opacity: 0.8,
-          dashArray: dashArray
+          dashArray: dashArray,
         }).addTo(mapInstanceRef.current);
 
         markersRef.current.push(pipeline);
         pipeline.on('click', () => setSelectedFeature(feature));
 
-        pipeline.bindTooltip(`
+        pipeline.bindTooltip(
+          `
           <div style="font-family: sans-serif; padding: 8px; min-width: 250px;">
             <div style="font-weight: 700; font-size: 14px; color: #000; margin-bottom: 8px; border-bottom: 2px solid #3b82f6; padding-bottom: 4px;">
               ${feature.properties.name}
@@ -193,26 +212,36 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
                   ${feature.properties.status.toUpperCase()}
                 </td>
               </tr>
-              ${feature.properties.installDate ? `
+              ${
+                feature.properties.installDate
+                  ? `
               <tr>
                 <td style="padding: 4px 0; color: #666; font-weight: 600;">Installed:</td>
                 <td style="padding: 4px 0; text-align: right; color: #000; font-weight: 700;">${feature.properties.installDate}</td>
               </tr>
-              ` : ''}
+              `
+                  : ''
+              }
             </table>
-            ${feature.properties.alert ? `
+            ${
+              feature.properties.alert
+                ? `
             <div style="margin-top: 8px; padding: 6px; background: #fef2f2; border: 1px solid #dc2626; border-radius: 4px;">
               <div style="color: #dc2626; font-weight: 700; font-size: 11px; margin-bottom: 2px;">⚠ ALERT</div>
               <div style="color: #991b1b; font-size: 11px;">${feature.properties.alert}</div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
-        `, {
-          className: 'custom-tooltip',
-          permanent: false,
-          direction: 'top',
-          offset: [0, -10]
-        });
+        `,
+          {
+            className: 'custom-tooltip',
+            permanent: false,
+            direction: 'top',
+            offset: [0, -10],
+          }
+        );
       });
     }
 
@@ -222,19 +251,19 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
         const coords = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
         const props = feature.properties;
 
-        const shouldShow = (
+        const shouldShow =
           (props.type === 'sensor' && activeFilters.sensors) ||
           (props.type === 'pump' && activeFilters.pumps) ||
           (props.type === 'tank' && activeFilters.tanks) ||
           (props.type === 'valve' && activeFilters.valves) ||
           (props.type === 'alert' && activeFilters.alerts) ||
-          (props.type === 'treatment_plant' && activeFilters.pipelines)
-        );
+          (props.type === 'treatment_plant' && activeFilters.pipelines);
 
         if (!shouldShow) return;
 
         let iconHtml, iconSize;
-        const baseStyle = 'border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+        const baseStyle =
+          'border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
 
         switch (props.type) {
           case 'treatment_plant':
@@ -299,7 +328,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
         const icon = L.divIcon({
           html: iconHtml,
           iconSize: iconSize,
-          className: ''
+          className: '',
         });
 
         const marker = L.marker(coords, { icon }).addTo(mapInstanceRef.current);
@@ -308,13 +337,19 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
         let tooltipContent = `
           <div style="font-family: sans-serif; padding: 8px; min-width: 250px;">
-            <div style="font-weight: 700; font-size: 14px; color: #000; margin-bottom: 8px; border-bottom: 2px solid ${props.type === 'treatment_plant' ? '#3b82f6' :
-            props.type === 'tank' ? '#059669' :
-              props.type === 'pump' ? '#7c3aed' :
-                props.type === 'sensor' ? '#059669' :
-                  props.type === 'valve' ? '#4f46e5' :
-                    '#dc2626'
-          }; padding-bottom: 4px;">
+            <div style="font-weight: 700; font-size: 14px; color: #000; margin-bottom: 8px; border-bottom: 2px solid ${
+              props.type === 'treatment_plant'
+                ? '#3b82f6'
+                : props.type === 'tank'
+                  ? '#059669'
+                  : props.type === 'pump'
+                    ? '#7c3aed'
+                    : props.type === 'sensor'
+                      ? '#059669'
+                      : props.type === 'valve'
+                        ? '#4f46e5'
+                        : '#dc2626'
+            }; padding-bottom: 4px;">
               ${props.name}
             </div>
             <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
@@ -367,7 +402,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               </tr>
               <tr style="border-bottom: 1px solid #e5e7eb;">
                 <td style="padding: 4px 0; color: #666; font-weight: 600;">Volume:</td>
-                <td style="padding: 4px 0; text-align: right; color: #000; font-weight: 700;">${Math.round(props.capacity * props.currentLevel / 100).toLocaleString()} L</td>
+                <td style="padding: 4px 0; text-align: right; color: #000; font-weight: 700;">${Math.round((props.capacity * props.currentLevel) / 100).toLocaleString()} L</td>
               </tr>`;
         }
 
@@ -453,7 +488,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
           className: 'custom-tooltip',
           permanent: false,
           direction: 'top',
-          offset: [0, -10]
+          offset: [0, -10],
         });
       });
     }
@@ -469,14 +504,14 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
   const handleResetView = () => {
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView([12.9150, 80.2250], 15);
+      mapInstanceRef.current.setView([12.915, 80.225], 15);
     }
   };
 
   const toggleFilter = (filter) => {
-    setActiveFilters(prev => ({
+    setActiveFilters((prev) => ({
       ...prev,
-      [filter]: !prev[filter]
+      [filter]: !prev[filter],
     }));
   };
 
@@ -484,10 +519,18 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
     <div className="relative w-full h-full bg-gray-100">
       {/* Loading Indicator */}
       {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center z-[2000]" style={{ backgroundColor: 'var(--bg-white)' }}>
+        <div
+          className="absolute inset-0 flex items-center justify-center z-[2000]"
+          style={{ backgroundColor: 'var(--bg-white)' }}
+        >
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 mb-3 mx-auto" style={{ borderColor: 'var(--gray-border)', borderTopColor: 'var(--primary-blue)' }}></div>
-            <p className="text-sm font-bold" style={{ color: 'var(--gray-text-dark)' }}>Loading Map...</p>
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-4 mb-3 mx-auto"
+              style={{ borderColor: 'var(--gray-border)', borderTopColor: 'var(--primary-blue)' }}
+            ></div>
+            <p className="text-sm font-bold" style={{ color: 'var(--gray-text-dark)' }}>
+              Loading Map...
+            </p>
           </div>
         </div>
       )}
@@ -506,7 +549,7 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               borderRadius: 'var(--radius-sm)',
               backgroundColor: mapView === 'satellite' ? 'var(--primary-blue)' : 'var(--bg-white)',
               color: mapView === 'satellite' ? 'var(--bg-white)' : 'var(--gray-text-dark)',
-              boxShadow: mapView === 'satellite' ? 'var(--shadow-lg)' : 'var(--shadow-md)'
+              boxShadow: mapView === 'satellite' ? 'var(--shadow-lg)' : 'var(--shadow-md)',
             }}
           >
             <Satellite size={14} /> Satellite
@@ -518,17 +561,18 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               borderRadius: 'var(--radius-sm)',
               backgroundColor: mapView === 'street' ? 'var(--primary-blue)' : 'var(--bg-white)',
               color: mapView === 'street' ? 'var(--bg-white)' : 'var(--gray-text-dark)',
-              boxShadow: mapView === 'street' ? 'var(--shadow-lg)' : 'var(--shadow-md)'
+              boxShadow: mapView === 'street' ? 'var(--shadow-lg)' : 'var(--shadow-md)',
             }}
           >
             <MapPin size={14} /> Street
           </button>
           <button
             onClick={() => setMapView('hybrid')}
-            className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all flex items-center gap-2 ${mapView === 'hybrid'
+            className={`px-3 py-2 rounded-lg font-semibold text-xs transition-all flex items-center gap-2 ${
+              mapView === 'hybrid'
                 ? 'bg-blue-600 text-white shadow-lg'
                 : 'bg-white text-black shadow-md hover:shadow-lg'
-              }`}
+            }`}
           >
             <MapIcon size={14} /> Hybrid
           </button>
@@ -553,12 +597,25 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="absolute top-20 right-4 rounded-lg shadow-xl z-[1000] w-64" style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}>
-          <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--primary-blue)', borderTopLeftRadius: 'var(--radius-sm)', borderTopRightRadius: 'var(--radius-sm)' }}>
+        <div
+          className="absolute top-20 right-4 rounded-lg shadow-xl z-[1000] w-64"
+          style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}
+        >
+          <div
+            className="p-3 flex items-center justify-between"
+            style={{
+              backgroundColor: 'var(--primary-blue)',
+              borderTopLeftRadius: 'var(--radius-sm)',
+              borderTopRightRadius: 'var(--radius-sm)',
+            }}
+          >
             <h4 className="font-bold text-white text-sm flex items-center gap-2">
               <Layers size={14} /> Map Layers
             </h4>
-            <button onClick={() => setShowFilters(false)} className="text-white hover:text-gray-200">
+            <button
+              onClick={() => setShowFilters(false)}
+              className="text-white hover:text-gray-200"
+            >
               <X size={16} />
             </button>
           </div>
@@ -569,14 +626,15 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               { key: 'pumps', label: 'Pump Stations', icon: Zap },
               { key: 'tanks', label: 'Water Tanks', icon: Droplet },
               { key: 'valves', label: 'Control Valves', icon: Settings },
-              { key: 'alerts', label: 'Active Alerts', icon: AlertTriangle }
+              { key: 'alerts', label: 'Active Alerts', icon: AlertTriangle },
             ].map(({ key, label, icon: Icon }) => (
               <label
                 key={key}
-                className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all ${activeFilters[key]
+                className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-all ${
+                  activeFilters[key]
                     ? 'bg-blue-50 border border-blue-600'
                     : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
+                }`}
               >
                 <input
                   type="checkbox"
@@ -625,10 +683,15 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
           </h4>
           <div className="space-y-2 text-xs">
             <div>
-              <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">Pipeline Status</div>
+              <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">
+                Pipeline Status
+              </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-1.5 rounded" style={{ backgroundColor: 'var(--primary-blue)' }}></div>
+                  <div
+                    className="w-6 h-1.5 rounded"
+                    style={{ backgroundColor: 'var(--primary-blue)' }}
+                  ></div>
                   <span style={{ color: 'var(--gray-text-dark)' }}>Operational</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -642,10 +705,18 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               </div>
             </div>
             <div className="border-t pt-2">
-              <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">Infrastructure</div>
+              <div className="font-semibold text-black mb-1.5 text-2xs uppercase tracking-wide">
+                Infrastructure
+              </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full border-2 shadow" style={{ backgroundColor: 'var(--primary-blue)', borderColor: 'var(--bg-white)' }}></div>
+                  <div
+                    className="w-3 h-3 rounded-full border-2 shadow"
+                    style={{
+                      backgroundColor: 'var(--primary-blue)',
+                      borderColor: 'var(--bg-white)',
+                    }}
+                  ></div>
                   <span style={{ color: 'var(--gray-text-dark)' }}>Treatment Plant</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -676,8 +747,14 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
       {/* Feature Details Panel */}
       {selectedFeature && (
-        <div className="absolute bottom-4 right-4 rounded-lg shadow-xl z-[1000] w-80 max-h-96 overflow-hidden" style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}>
-          <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--primary-blue)' }}>
+        <div
+          className="absolute bottom-4 right-4 rounded-lg shadow-xl z-[1000] w-80 max-h-96 overflow-hidden"
+          style={{ backgroundColor: 'var(--bg-white)', borderRadius: 'var(--radius-sm)' }}
+        >
+          <div
+            className="p-3 flex items-center justify-between"
+            style={{ backgroundColor: 'var(--primary-blue)' }}
+          >
             <h4 className="font-bold text-white text-sm flex items-center gap-2">
               <MapPin size={14} />
               {selectedFeature.properties.name}
@@ -698,15 +775,22 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
 
             <div className="flex justify-between text-xs">
               <span className="text-gray-600 font-semibold">Type</span>
-              <span className="font-bold text-black capitalize">{selectedFeature.properties.type.replace('_', ' ')}</span>
+              <span className="font-bold text-black capitalize">
+                {selectedFeature.properties.type.replace('_', ' ')}
+              </span>
             </div>
 
             <div className="flex justify-between text-xs">
               <span className="text-gray-600 font-semibold">Status</span>
-              <span className={`font-bold px-2 py-0.5 rounded text-xs ${selectedFeature.properties.status === 'operational' ? 'bg-green-100 text-green-700' :
-                  selectedFeature.properties.status === 'warning' ? 'bg-amber-100 text-amber-700' :
-                    'bg-red-100 text-red-700'
-                }`}>
+              <span
+                className={`font-bold px-2 py-0.5 rounded text-xs ${
+                  selectedFeature.properties.status === 'operational'
+                    ? 'bg-green-100 text-green-700'
+                    : selectedFeature.properties.status === 'warning'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-red-100 text-red-700'
+                }`}
+              >
                 {selectedFeature.properties.status.toUpperCase()}
               </span>
             </div>
@@ -715,19 +799,29 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               <>
                 <div className="flex justify-between text-xs pt-2 border-t">
                   <span className="text-gray-600 font-semibold">Diameter</span>
-                  <span className="font-bold text-black">{selectedFeature.properties.diameter} mm</span>
+                  <span className="font-bold text-black">
+                    {selectedFeature.properties.diameter} mm
+                  </span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 font-semibold">Pressure</span>
-                  <span className={`font-bold ${selectedFeature.properties.pressure > 3 ? 'text-green-700' :
-                      selectedFeature.properties.pressure > 2 ? 'text-amber-700' : 'text-red-700'
-                    }`}>
+                  <span
+                    className={`font-bold ${
+                      selectedFeature.properties.pressure > 3
+                        ? 'text-green-700'
+                        : selectedFeature.properties.pressure > 2
+                          ? 'text-amber-700'
+                          : 'text-red-700'
+                    }`}
+                  >
                     {selectedFeature.properties.pressure} Bar
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 font-semibold">Material</span>
-                  <span className="font-bold text-black">{selectedFeature.properties.material}</span>
+                  <span className="font-bold text-black">
+                    {selectedFeature.properties.material}
+                  </span>
                 </div>
               </>
             )}
@@ -736,18 +830,26 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               <>
                 <div className="flex justify-between text-xs pt-2 border-t">
                   <span className="text-gray-600 font-semibold">Capacity</span>
-                  <span className="font-bold text-black">{selectedFeature.properties.capacity.toLocaleString()} L</span>
+                  <span className="font-bold text-black">
+                    {selectedFeature.properties.capacity.toLocaleString()} L
+                  </span>
                 </div>
                 <div className="pt-1">
                   <div className="flex justify-between text-xs mb-1">
                     <span className="text-gray-600 font-semibold">Current Level</span>
-                    <span className="font-bold text-black">{selectedFeature.properties.currentLevel}%</span>
+                    <span className="font-bold text-black">
+                      {selectedFeature.properties.currentLevel}%
+                    </span>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className={`h-full ${selectedFeature.properties.currentLevel > 60 ? 'bg-green-600' :
-                          selectedFeature.properties.currentLevel > 30 ? 'bg-amber-500' : 'bg-red-600'
-                        }`}
+                      className={`h-full ${
+                        selectedFeature.properties.currentLevel > 60
+                          ? 'bg-green-600'
+                          : selectedFeature.properties.currentLevel > 30
+                            ? 'bg-amber-500'
+                            : 'bg-red-600'
+                      }`}
                       style={{ width: `${selectedFeature.properties.currentLevel}%` }}
                     ></div>
                   </div>
@@ -759,19 +861,27 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
               <>
                 <div className="flex justify-between text-xs pt-2 border-t">
                   <span className="text-gray-600 font-semibold">Reading</span>
-                  <span className="font-bold text-black">{selectedFeature.properties.value} {selectedFeature.properties.unit}</span>
+                  <span className="font-bold text-black">
+                    {selectedFeature.properties.value} {selectedFeature.properties.unit}
+                  </span>
                 </div>
                 {selectedFeature.properties.battery && (
                   <div className="pt-1">
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600 font-semibold">Battery</span>
-                      <span className="font-bold text-black">{selectedFeature.properties.battery}%</span>
+                      <span className="font-bold text-black">
+                        {selectedFeature.properties.battery}%
+                      </span>
                     </div>
                     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${selectedFeature.properties.battery > 60 ? 'bg-green-600' :
-                            selectedFeature.properties.battery > 30 ? 'bg-amber-500' : 'bg-red-600'
-                          }`}
+                        className={`h-full ${
+                          selectedFeature.properties.battery > 60
+                            ? 'bg-green-600'
+                            : selectedFeature.properties.battery > 30
+                              ? 'bg-amber-500'
+                              : 'bg-red-600'
+                        }`}
                         style={{ width: `${selectedFeature.properties.battery}%` }}
                       ></div>
                     </div>
@@ -783,7 +893,9 @@ export const PipelineMapViewer = ({ pipelineData, infrastructureData }) => {
             {selectedFeature.properties.powerConsumption && (
               <div className="flex justify-between text-xs pt-2 border-t">
                 <span className="text-gray-600 font-semibold">Power Consumption</span>
-                <span className="font-bold text-black">{selectedFeature.properties.powerConsumption} kW</span>
+                <span className="font-bold text-black">
+                  {selectedFeature.properties.powerConsumption} kW
+                </span>
               </div>
             )}
 

@@ -3,10 +3,10 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 /**
  * ErrorBoundary - Catches React errors and displays a user-friendly error page
- * 
+ *
  * This component catches JavaScript errors anywhere in the child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
- * 
+ *
  * Usage:
  * <ErrorBoundary>
  *   <App />
@@ -15,10 +15,10 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      hasError: false, 
+    this.state = {
+      hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
@@ -30,10 +30,10 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // Log error details for debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Store error info for display
     this.setState({
-      errorInfo: errorInfo
+      errorInfo: errorInfo,
     });
 
     // Send to error monitoring service (Sentry, etc.)
@@ -41,9 +41,9 @@ class ErrorBoundary extends React.Component {
       window.Sentry.captureException(error, {
         contexts: {
           react: {
-            componentStack: errorInfo.componentStack
-          }
-        }
+            componentStack: errorInfo.componentStack,
+          },
+        },
       });
     }
   }
@@ -73,10 +73,8 @@ class ErrorBoundary extends React.Component {
             </div>
 
             {/* Error Title */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Something went wrong
-            </h1>
-            
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+
             {/* Error Message */}
             <p className="text-gray-600 mb-6">
               We&apos;re sorry, but something unexpected happened. Please try refreshing the page.
@@ -113,15 +111,15 @@ class ErrorBoundary extends React.Component {
                   backgroundColor: 'var(--primary-blue)',
                   color: 'var(--bg-white)',
                   borderRadius: 'var(--radius-sm)',
-                  fontWeight: 'var(--font-weight-medium)'
+                  fontWeight: 'var(--font-weight-medium)',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
               >
                 <RefreshCw className="w-4 h-4" />
                 Reload Page
               </button>
-              
+
               <button
                 onClick={this.handleGoHome}
                 className="flex items-center justify-center gap-2 px-6 py-3 transition-colors"
@@ -129,10 +127,10 @@ class ErrorBoundary extends React.Component {
                   backgroundColor: 'var(--gray-light)',
                   color: 'var(--gray-text-dark)',
                   borderRadius: 'var(--radius-sm)',
-                  fontWeight: 'var(--font-weight-medium)'
+                  fontWeight: 'var(--font-weight-medium)',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-border)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--gray-light)'}  
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray-border)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray-light)')}
               >
                 <Home className="w-4 h-4" />
                 Go Home
@@ -154,4 +152,3 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
-

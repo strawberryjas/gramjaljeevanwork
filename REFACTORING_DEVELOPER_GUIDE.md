@@ -1,6 +1,7 @@
 # Refactored App.jsx - Developer Quick Guide
 
 ## 🎯 Overview
+
 The App.jsx file has been refactored for better maintainability by extracting reusable components and utilities.
 
 ---
@@ -8,22 +9,24 @@ The App.jsx file has been refactored for better maintainability by extracting re
 ## 📁 New File Locations
 
 ### Utility Functions
+
 **File:** `src/utils/appUtils.js`
 
 ```javascript
 import { formatMetric, transformStateToData, toLocalInputString } from './utils/appUtils';
 
 // formatMetric(value, decimals, fallback)
-const pressure = formatMetric(3.14159, 2);  // 3.14
+const pressure = formatMetric(3.14159, 2); // 3.14
 
 // transformStateToData(simulationState)
-const uiData = transformStateToData(simulation.state);  // Full data transform
+const uiData = transformStateToData(simulation.state); // Full data transform
 
 // toLocalInputString(date)
-const dateStr = toLocalInputString(new Date());  // "2024-11-30T14:30"
+const dateStr = toLocalInputString(new Date()); // "2024-11-30T14:30"
 ```
 
 ### Navigation Component
+
 **File:** `src/components/Navigation.jsx`
 
 ```javascript
@@ -43,10 +46,11 @@ import { Navigation } from './components/Navigation';
   lastSync={lastSync}
   handleLogout={handleLogout}
   jalsenseLogoUrl={jalsenseLogoUrl}
-/>
+/>;
 ```
 
 ### Accessibility Panel Component
+
 **File:** `src/components/AccessibilityPanel.jsx`
 
 ```javascript
@@ -64,7 +68,7 @@ import { AccessibilityPanel } from './components/AccessibilityPanel';
   reducedMotion={reducedMotion}
   setReducedMotion={setReducedMotion}
   onReset={handleAccessibilityReset}
-/>
+/>;
 ```
 
 ---
@@ -72,6 +76,7 @@ import { AccessibilityPanel } from './components/AccessibilityPanel';
 ## 🔧 Common Tasks
 
 ### Add a New Navigation Item
+
 Edit `src/components/Navigation.jsx`:
 
 ```javascript
@@ -87,6 +92,7 @@ const PublicNavigation = ({ activeTab, setActiveTab, setMobileMenuOpen, t }) => 
 ```
 
 ### Add a New Accessibility Setting
+
 Edit `src/components/AccessibilityPanel.jsx`:
 
 ```javascript
@@ -99,10 +105,11 @@ const [fontSize, setFontSize] = useState(16);
   hint="Description"
   isEnabled={newSetting}
   onChange={setNewSetting}
-/>
+/>;
 ```
 
 ### Add a New Utility Function
+
 Edit `src/utils/appUtils.js`:
 
 ```javascript
@@ -174,6 +181,7 @@ const App = () => {
 ## 🧪 Testing Guide
 
 ### Test Navigation Component
+
 ```javascript
 // Test that navigation items render correctly
 test('navigation shows correct items for role', () => {
@@ -183,6 +191,7 @@ test('navigation shows correct items for role', () => {
 ```
 
 ### Test Accessibility Panel
+
 ```javascript
 // Test text size changes
 test('text size slider updates font', () => {
@@ -194,6 +203,7 @@ test('text size slider updates font', () => {
 ```
 
 ### Test Utility Functions
+
 ```javascript
 // Test formatting
 test('formatMetric rounds correctly', () => {
@@ -289,4 +299,3 @@ A: No, you can add as many as needed by extending the components
 **Last Updated:** November 30, 2025  
 **Status:** Production Ready  
 **Version:** 1.0
-

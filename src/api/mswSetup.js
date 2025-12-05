@@ -102,7 +102,7 @@ export const handlers = [
 
   rest.get('/api/pipelines/:id', (req, res, ctx) => {
     const { id } = req.params;
-    const pipeline = mockPipelines.find(p => p.id === id);
+    const pipeline = mockPipelines.find((p) => p.id === id);
     return res(
       ctx.status(pipeline ? 200 : 404),
       ctx.json(pipeline || { error: 'Pipeline not found' })
@@ -112,11 +112,8 @@ export const handlers = [
   // Sensors
   rest.get('/api/sensors/:id/data', (req, res, ctx) => {
     const { id } = req.params;
-    const sensor = mockSensors.find(s => s.id === id);
-    return res(
-      ctx.status(sensor ? 200 : 404),
-      ctx.json(sensor || { error: 'Sensor not found' })
-    );
+    const sensor = mockSensors.find((s) => s.id === id);
+    return res(ctx.status(sensor ? 200 : 404), ctx.json(sensor || { error: 'Sensor not found' }));
   }),
 
   rest.get('/api/schemes/:schemeId/sensors/data', (req, res, ctx) => {
@@ -140,7 +137,7 @@ export const handlers = [
 
   rest.get('/api/service-requests/:id', (req, res, ctx) => {
     const { id } = req.params;
-    const request = mockServiceRequests.find(r => r.id === id);
+    const request = mockServiceRequests.find((r) => r.id === id);
     return res(
       ctx.status(request ? 200 : 404),
       ctx.json(request || { error: 'Request not found' })

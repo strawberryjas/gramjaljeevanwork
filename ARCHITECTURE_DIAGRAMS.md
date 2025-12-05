@@ -356,7 +356,7 @@ AppContext (Large)
         ├─ useOffline() ───→ Only status-aware components re-render
         │
         └─ etc.
-        
+
 Result: Selective re-renders instead of app-wide re-renders
 ```
 

@@ -62,7 +62,13 @@ export const ToggleSwitch = ({
 /**
  * Valve Toggle Component - Specialized for valve states
  */
-export const ValveToggle = ({ isOpen, onToggle, disabled = false, pipelineId = '', className = '' }) => {
+export const ValveToggle = ({
+  isOpen,
+  onToggle,
+  disabled = false,
+  pipelineId = '',
+  className = '',
+}) => {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <button
@@ -95,11 +101,7 @@ export const ValveToggle = ({ isOpen, onToggle, disabled = false, pipelineId = '
       </button>
       <div className="flex flex-col">
         <span className="text-xs font-bold text-gray-600 uppercase">Valve {pipelineId}</span>
-        <span
-          className={`text-sm font-bold ${
-            isOpen ? 'text-green-600' : 'text-red-600'
-          }`}
-        >
+        <span className={`text-sm font-bold ${isOpen ? 'text-green-600' : 'text-red-600'}`}>
           {isOpen ? 'OPEN' : 'CLOSED'}
         </span>
       </div>
@@ -144,9 +146,11 @@ export const PumpToggle = ({ isRunning, onToggle, disabled = false, className = 
         )}
 
         {/* Hover Effect */}
-        <div className={`absolute inset-0 rounded-full border-4 transition-all duration-300 ${
-          isRunning ? 'border-white/40' : 'border-white/20'
-        } ${isHovered ? 'border-white/70' : ''}`}></div>
+        <div
+          className={`absolute inset-0 rounded-full border-4 transition-all duration-300 ${
+            isRunning ? 'border-white/40' : 'border-white/20'
+          } ${isHovered ? 'border-white/70' : ''}`}
+        ></div>
       </button>
       <div className="flex flex-col">
         <span className="text-xs font-bold text-gray-600 uppercase">Main Pump</span>
@@ -165,7 +169,13 @@ export const PumpToggle = ({ isRunning, onToggle, disabled = false, className = 
 /**
  * Tank Inlet/Outlet Toggle Component
  */
-export const TankValveToggle = ({ isOpen, onToggle, disabled = false, type = 'inlet', className = '' }) => {
+export const TankValveToggle = ({
+  isOpen,
+  onToggle,
+  disabled = false,
+  type = 'inlet',
+  className = '',
+}) => {
   const title = type === 'inlet' ? 'Tank Inlet Valve' : 'Tank Outlet Valve';
   const label = type === 'inlet' ? 'Inlet' : 'Outlet';
 
@@ -182,11 +192,9 @@ export const TankValveToggle = ({ isOpen, onToggle, disabled = false, type = 'in
         aria-label={`${isOpen ? 'Close' : 'Open'} ${label} valve`}
         title={`${title}: ${isOpen ? 'Open' : 'Closed'}`}
       >
-        <span className="text-white font-bold text-xl">
-          {type === 'inlet' ? '⬇️' : '⬆️'}
-        </span>
+        <span className="text-white font-bold text-xl">{type === 'inlet' ? '⬇️' : '⬆️'}</span>
       </button>
-      <span 
+      <span
         className="text-xs font-bold"
         style={{ color: isOpen ? 'var(--primary-blue)' : '#DC2626' }}
       >

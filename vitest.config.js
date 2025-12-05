@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -15,7 +15,9 @@ export default defineConfig({
         'node_modules/',
         'src/__tests__/',
         '**/*.test.js',
+        '**/*.test.jsx',
         '**/*.spec.js',
+        '**/*.spec.jsx',
         '**/*.stories.js',
         '**/setup.js',
         '**/mswSetup.js',
@@ -35,4 +37,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-})
+});

@@ -42,7 +42,7 @@ class APIError extends Error {
 /**
  * Exponential backoff retry logic
  */
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const retryWithBackoff = async (fn, retries = MAX_RETRIES) => {
   let lastError;
@@ -51,7 +51,8 @@ const retryWithBackoff = async (fn, retries = MAX_RETRIES) => {
       return await fn();
     } catch (error) {
       lastError = error;
-      const isRetryable = error.statusCode >= 500 || error.statusCode === 408 || error.statusCode === 429;
+      const isRetryable =
+        error.statusCode >= 500 || error.statusCode === 408 || error.statusCode === 429;
       if (!isRetryable || i === retries - 1) break;
       const delay = RETRY_DELAY * Math.pow(2, i);
       await sleep(delay);
@@ -89,7 +90,9 @@ class APIClient {
    * Get auth token from localStorage or sessionStorage
    */
   getAuthToken() {
-    return this.authToken || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    return (
+      this.authToken || localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+    );
   }
 
   /**

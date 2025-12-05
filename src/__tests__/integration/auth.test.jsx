@@ -111,4 +111,3 @@ describe('Authentication Flow', () => {
     expect(passwordInput).toHaveAttribute('type', 'text');
   });
 });
-

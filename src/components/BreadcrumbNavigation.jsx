@@ -81,11 +81,11 @@ export const BreadcrumbNavigation = ({ activeTab, onNavigate }) => {
   ];
 
   return (
-    <div 
+    <div
       className="px-4 lg:px-8 py-3 overflow-x-auto"
       style={{
         backgroundColor: 'var(--gray-light)',
-        borderBottom: '1px solid var(--gray-border)'
+        borderBottom: '1px solid var(--gray-border)',
       }}
     >
       <div className="flex items-center gap-2 min-w-min">
@@ -96,7 +96,11 @@ export const BreadcrumbNavigation = ({ activeTab, onNavigate }) => {
           return (
             <div key={crumb.id} className="flex items-center gap-2">
               {index > 0 && (
-                <IconImage name="chevron-right.svg" className="h-9 w-9 flex-shrink-0" aria-hidden="true" />
+                <IconImage
+                  name="chevron-right.svg"
+                  className="h-9 w-9 flex-shrink-0"
+                  aria-hidden="true"
+                />
               )}
               <button
                 onClick={() => onNavigate?.(crumb.id)}
@@ -108,7 +112,7 @@ export const BreadcrumbNavigation = ({ activeTab, onNavigate }) => {
                   color: isLast ? 'var(--gray-text-dark)' : 'var(--gray-text)',
                   cursor: isLast ? 'default' : 'pointer',
                   borderRadius: 'var(--radius-sm)',
-                  textDecoration: isLast ? 'none' : 'underline'
+                  textDecoration: isLast ? 'none' : 'underline',
                 }}
                 onMouseEnter={(e) => {
                   if (!isLast) {
@@ -123,7 +127,9 @@ export const BreadcrumbNavigation = ({ activeTab, onNavigate }) => {
                   }
                 }}
               >
-                {Icon && <IconImage name={Icon} className="h-8 w-8 flex-shrink-0" aria-hidden="true" />}
+                {Icon && (
+                  <IconImage name={Icon} className="h-8 w-8 flex-shrink-0" aria-hidden="true" />
+                )}
                 <span>{crumb.label}</span>
               </button>
             </div>

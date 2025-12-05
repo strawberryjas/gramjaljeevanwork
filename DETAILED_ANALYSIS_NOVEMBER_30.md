@@ -26,6 +26,7 @@ A comprehensive **Operations & Maintenance (O&M) platform** for rural piped wate
 ## 2️⃣ TECHNOLOGY STACK
 
 ### **Frontend Stack**
+
 ```
 React 18.2.0              # Core UI framework
 ├─ Vite 7.2.4            # Build tool & dev server
@@ -44,6 +45,7 @@ State Management:
 ```
 
 ### **Backend Stack**
+
 ```
 FastAPI 0.104.1           # Modern Python web framework
 ├─ Uvicorn 0.24.0         # ASGI server
@@ -329,11 +331,14 @@ const { login, logout } = useAuth();
 const { language, changeLanguage } = useLanguage();
 
 const handleLogin = (username, password, role) => {
-  login({
-    name: username,
-    role: role,
-    loginTime: new Date().toISOString()
-  }, language);
+  login(
+    {
+      name: username,
+      role: role,
+      loginTime: new Date().toISOString(),
+    },
+    language
+  );
 };
 
 // State persists to localStorage
@@ -350,6 +355,7 @@ const handleLogin = (username, password, role) => {
 **8 Major Dashboards:**
 
 #### **Dashboard 1: Infrastructure Command Center**
+
 - **Purpose:** Real-time monitoring of physical infrastructure
 - **Displays:**
   - Pipeline network diagram with pressure/flow
@@ -372,6 +378,7 @@ if (isPumpOn) {
 ```
 
 #### **Dashboard 2: Daily Operations Center**
+
 - **Purpose:** Shift-based routine maintenance
 - **Tracks:**
   - Visual leak inspections
@@ -380,6 +387,7 @@ if (isPumpOn) {
   - Operator log
 
 #### **Dashboard 3: Water Quality Intelligence**
+
 - **Purpose:** Water safety monitoring
 - **Parameters Tracked:**
   - pH Level (6.5-8.5)
@@ -391,7 +399,7 @@ if (isPumpOn) {
 
 ```javascript
 // WQI Score Calculation
-const wqi = 
+const wqi =
   (pH >= 6.5 && pH <= 8.5 ? 25 : 0) +
   (turbidity <= 5 ? 25 : 0) +
   (chlorine >= 0.2 && chlorine <= 1.0 ? 25 : 0) +
@@ -402,6 +410,7 @@ const wqi =
 ```
 
 #### **Dashboard 4: Predictive Maintenance**
+
 - **AI-powered predictions:**
   - Leak probability scoring
   - Pump wear index
@@ -409,6 +418,7 @@ const wqi =
   - Preventive action recommendations
 
 #### **Dashboard 5: Reports & Analytics**
+
 - **6 Report Types:**
   1. Daily operations summary
   2. Weekly supply vs demand
@@ -424,6 +434,7 @@ const wqi =
   - JSON
 
 #### **Dashboard 6: Accountability & Governance**
+
 - **Transparency Features:**
   - Operator audit logs
   - System performance metrics
@@ -431,6 +442,7 @@ const wqi =
   - Community sentiment tracking (star rating)
 
 #### **Dashboard 7: GIS Mapping**
+
 - **Technology:** Leaflet.js
 - **Features:**
   - Interactive pipeline network map
@@ -441,6 +453,7 @@ const wqi =
   - Tooltip information on hover
 
 #### **Dashboard 8: Energy Management**
+
 - **Metrics:**
   - Real-time power consumption (kW)
   - Daily energy (kWh)
@@ -463,34 +476,34 @@ const wqi =
 systemState = {
   // Pump House
   pumpHouse: {
-    pumpStatus: "ON" | "OFF",
-    pumpFlowOutput: number,        // L/min
-    pumpPressureOutput: number,    // bar
-    powerConsumption: number,      // kW
-    motorTemperature: number,      // °C
-    pumpRunningHours: number,      // cumulative
-    voltage: number,               // V
-    pumpEfficiency: number,        // %
+    pumpStatus: 'ON' | 'OFF',
+    pumpFlowOutput: number, // L/min
+    pumpPressureOutput: number, // bar
+    powerConsumption: number, // kW
+    motorTemperature: number, // °C
+    pumpRunningHours: number, // cumulative
+    voltage: number, // V
+    pumpEfficiency: number, // %
     pumpSchedule: {
-      mode: "MANUAL" | "TIMER" | "SCHEDULED",
+      mode: 'MANUAL' | 'TIMER' | 'SCHEDULED',
       timerRemainingMs: number,
       timerEnd: timestamp,
-      lastEvent: { type, time }
-    }
+      lastEvent: { type, time },
+    },
   },
 
   // Overhead Tank
   overheadTank: {
-    tankLevel: number,             // %
-    tankCapacity: number,          // liters
+    tankLevel: number, // %
+    tankCapacity: number, // liters
     isFilling: boolean,
     lastEmptyTime: timestamp,
     waterQuality: {
       pH: number,
-      turbidity: number,           // NTU
-      chlorine: number,            // mg/L
-      TDS: number                  // ppm
-    }
+      turbidity: number, // NTU
+      chlorine: number, // mg/L
+      TDS: number, // ppm
+    },
   },
 
   // 5 Pipelines
@@ -498,35 +511,35 @@ systemState = {
     {
       pipelineId: number,
       pipelineName: string,
-      valveStatus: "OPEN" | "CLOSED",
-      leakageProbability: number,  // %
+      valveStatus: 'OPEN' | 'CLOSED',
+      leakageProbability: number, // %
       inlet: {
         flowSensor: { value: number },
-        pressureSensor: { value: number }
+        pressureSensor: { value: number },
       },
       outlet: {
         flowSensor: { value: number },
-        pressureSensor: { value: number }
-      }
+        pressureSensor: { value: number },
+      },
     },
     // ... 4 more pipelines
   ],
 
   // System Metrics
   systemMetrics: {
-    totalFlowRate: number,         // L/min
-    systemStatus: "operational" | "warning" | "critical",
+    totalFlowRate: number, // L/min
+    systemStatus: 'operational' | 'warning' | 'critical',
     alerts: [
       {
         id: string,
-        type: "leak" | "quality" | "tank" | "pump",
-        severity: "low" | "medium" | "high",
+        type: 'leak' | 'quality' | 'tank' | 'pump',
+        severity: 'low' | 'medium' | 'high',
         message: string,
-        timestamp: timestamp
-      }
-    ]
-  }
-}
+        timestamp: timestamp,
+      },
+    ],
+  },
+};
 ```
 
 **Key Methods:**
@@ -569,10 +582,11 @@ getRealtimeHistory() → Returns last 1440 entries
 **5 Categories of Detection Rules:**
 
 #### **Category 1: Infrastructure Performance**
+
 ```python
 # Pump Dry-Run Detection
 if power > 7.5 and discharge < 15:
-    create_alert("pump", "high", 
+    create_alert("pump", "high",
         f"Possible dry-run: High power but low discharge")
 
 # Tank Critical Level
@@ -592,6 +606,7 @@ if valve_leakage > 5:
 ```
 
 #### **Category 2: Operational Parameters**
+
 ```python
 # Pump Efficiency Drop
 if pump_efficiency < 60:
@@ -618,6 +633,7 @@ if pump_hours > 450:
 ```
 
 #### **Category 3: Water Quality**
+
 ```python
 # Coliform Detection (CRITICAL)
 if coliform_detected:
@@ -636,6 +652,7 @@ if compliance_score < 80:
 ```
 
 #### **Category 4: Asset Health**
+
 ```python
 # Excessive Valve Operations
 if valve_operation_count > 40:
@@ -654,6 +671,7 @@ if filling_delays > 2:
 ```
 
 #### **Category 5: System Integrity**
+
 ```python
 # Tank Empty for Too Long
 if emptiness_hours > 10:
@@ -723,6 +741,7 @@ T+3.0s: System stabilizes
 ```
 
 **State Chain:**
+
 ```
 User Action
   ↓
@@ -975,9 +994,10 @@ Broker:
 ### **Recommendations**
 
 **Authentication:**
+
 ```javascript
 // Current (Development)
-localStorage.setItem('auth_token', token)
+localStorage.setItem('auth_token', token);
 
 // Production (Recommended)
 // Server sets httpOnly, Secure, SameSite cookies
@@ -986,6 +1006,7 @@ localStorage.setItem('auth_token', token)
 ```
 
 **API Validation:**
+
 ```python
 # Add to FastAPI backend
 from fastapi import Depends, HTTPException
@@ -1002,6 +1023,7 @@ async def protected_endpoint(credentials: HTTPAuthorizationCredentials = Depends
 ```
 
 **Rate Limiting:**
+
 ```python
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -1050,14 +1072,14 @@ npm run test:watch    # Watch mode
 describe('useAuth Hook', () => {
   it('should login user successfully', () => {
     const { result } = renderHook(() => useAuth());
-    
+
     act(() => {
       result.current.login({
         name: 'John',
         role: 'technician'
       });
     });
-    
+
     expect(result.current.isAuthenticated).toBe(true);
     expect(result.current.user.name).toBe('John');
   });
@@ -1071,6 +1093,7 @@ describe('useAuth Hook', () => {
 ### **Frontend Deployment**
 
 **Vercel/Netlify:**
+
 ```bash
 npm run build
 # Deploys dist/ folder
@@ -1078,6 +1101,7 @@ npm run build
 ```
 
 **Docker:**
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -1090,6 +1114,7 @@ CMD ["npm", "run", "preview"]
 ```
 
 **Environment Variables:**
+
 ```bash
 VITE_API_URL=https://api.gramjal.example.com
 VITE_MQTT_BROKER=mqtt.gramjal.example.com
@@ -1100,6 +1125,7 @@ VITE_APP_ENV=production
 ### **Backend Deployment**
 
 **Docker:**
+
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
@@ -1111,6 +1137,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 **Environment Variables:**
+
 ```bash
 DATABASE_URL=postgresql://user:pass@host/db
 MQTT_BROKER=mqtt.gramjal.example.com
@@ -1126,6 +1153,7 @@ CORS_ORIGINS=https://gramjal.example.com
 ## 1️⃣1️⃣ FUTURE ROADMAP
 
 ### **Phase 1: Stability & Security (Next 1-3 months)**
+
 - [ ] Replace localStorage with httpOnly cookies
 - [ ] Add database persistence (PostgreSQL)
 - [ ] Implement JWT refresh tokens
@@ -1134,6 +1162,7 @@ CORS_ORIGINS=https://gramjal.example.com
 - [ ] Increase test coverage to 80%+
 
 ### **Phase 2: Real Integration (3-6 months)**
+
 - [ ] Connect real IoT sensors
 - [ ] Remove mock simulator
 - [ ] Real MQTT broker configuration
@@ -1142,6 +1171,7 @@ CORS_ORIGINS=https://gramjal.example.com
 - [ ] Mobile app (React Native)
 
 ### **Phase 3: Advanced Features (6-12 months)**
+
 - [ ] Machine learning predictions
 - [ ] Multi-village federation
 - [ ] Government portal integration
@@ -1150,6 +1180,7 @@ CORS_ORIGINS=https://gramjal.example.com
 - [ ] Mobile notifications
 
 ### **Phase 4: Scale & Optimize (12+ months)**
+
 - [ ] Multi-region deployment
 - [ ] CDN for static assets
 - [ ] Database sharding
@@ -1169,7 +1200,7 @@ The **Gram Jal Jeevan** codebase is:
 ✅ **Feature-rich** - 8 dashboards, 50+ features  
 ✅ **Production-ready** - Handles real-world scenarios  
 ✅ **Scalable** - Extensible component structure  
-✅ **User-centric** - Multi-role, multi-language  
+✅ **User-centric** - Multi-role, multi-language
 
 ### **Strengths**
 
@@ -1218,7 +1249,6 @@ The **Gram Jal Jeevan** codebase is:
 
 **Analysis Complete** ✅
 
-*Document Generated: November 30, 2025*  
-*Analyzer: AI Code Expert*  
-*Status: Comprehensive & Actionable*
-
+_Document Generated: November 30, 2025_  
+_Analyzer: AI Code Expert_  
+_Status: Comprehensive & Actionable_

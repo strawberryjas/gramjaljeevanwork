@@ -50,7 +50,8 @@ export const AnimatedButton = ({
   isLoading = false,
   loadingText = 'Loading...',
 }) => {
-  const baseClasses = 'font-semibold transition-all duration-300 rounded-lg inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses =
+    'font-semibold transition-all duration-300 rounded-lg inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variantClasses = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
@@ -199,11 +200,7 @@ export const AnimatedProgressBar = ({
           style={{ width: `${percentage}%` }}
         />
       </div>
-      {showLabel && (
-        <p className="text-xs text-gray-600 mt-1">
-          {Math.round(percentage)}%
-        </p>
-      )}
+      {showLabel && <p className="text-xs text-gray-600 mt-1">{Math.round(percentage)}%</p>}
     </div>
   );
 };

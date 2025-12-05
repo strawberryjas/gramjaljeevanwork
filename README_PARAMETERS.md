@@ -9,34 +9,44 @@ All **5 categories** of parameters with **70+ unique metrics** are now fully imp
 ## 📊 WHAT YOU NOW HAVE
 
 ### **CATEGORY 1: Infrastructure Performance** ✅
+
 22 parameters across:
+
 - Pump operations (efficiency, discharge, temperature, power)
 - Pipe network (flow, pressure, leak detection)
 - Storage tanks (level, filling, supply duration)
 - Valve systems (position, operation count, faults)
 
 ### **CATEGORY 2: Operational Parameters** ✅
+
 12 parameters including:
+
 - Daily routine checks & inspections
 - Energy consumption & costs
 - Water supply metrics (production, distribution, hours)
 - Breakdown & repair tracking
 
 ### **CATEGORY 3: Water Quality** ✅
+
 15 parameters with:
+
 - Core quality (pH, turbidity, TDS, chlorine, color, temperature)
 - Advanced testing (iron, fluoride, nitrate, hardness, coliform)
 - Testing metadata (time, operator, compliance %)
 
 ### **CATEGORY 4: Predictive Maintenance** ✅
+
 7 parameters for:
+
 - Flow pattern analytics
 - Pump efficiency trending
 - Fault prediction indicators
 - Maintenance scheduling (service due dates)
 
 ### **CATEGORY 5: Governance & Accountability** ✅
+
 5 parameters for:
+
 - Community dashboard metrics
 - Accountability tracking
 - Operator identification
@@ -47,34 +57,44 @@ All **5 categories** of parameters with **70+ unique metrics** are now fully imp
 ## 🔧 SYSTEM COMPONENTS
 
 ### 1. **MQTT Simulator** (`mqtt_simulator.py`)
+
 ✅ Generates realistic data for 4 nodes
+
 - Pump, Tank, Tap, Valve
 - 71 total parameters
 - 5% anomaly injection rate
 - Publishes every 5 seconds
 
 ### 2. **MQTT Listener** (`mqtt_listener.py`)
+
 ✅ Real-time data forwarding
+
 - Subscribes to MQTT topics
 - Forwards to FastAPI backend
 - Error handling & retry logic
 
 ### 3. **FastAPI Backend** (`main.py`)
+
 ✅ Intelligent rule engine
+
 - 20+ anomaly detection rules
 - Alert generation & tracking
 - REST API for dashboard
 - Complete parameter ingestion
 
 ### 4. **React Dashboard** (existing)
+
 ✅ Real-time visualization
+
 - Shows all parameters
 - Color-coded alerts
 - Infrastructure + operational views
 - Water quality indicators
 
 ### 5. **MQTT Broker** (Mosquitto)
+
 ✅ Message routing
+
 - Pub/Sub architecture
 - 4 nodes publishing
 - Listener subscribing
@@ -101,6 +121,7 @@ http://localhost:5178
 ```
 
 **Or use Docker for MQTT:**
+
 ```bash
 docker run -d -p 1883:1883 -p 9001:9001 --name mosquitto eclipse-mosquitto
 ```
@@ -109,24 +130,25 @@ docker run -d -p 1883:1883 -p 9001:9001 --name mosquitto eclipse-mosquitto
 
 ## ✨ KEY FEATURES IMPLEMENTED
 
-| Feature | Status | Details |
-|---------|--------|---------|
-| Real-time simulation | ✅ | 4 nodes, 71 parameters, 5s cycle |
-| Anomaly injection | ✅ | 5% per cycle for testing |
-| Alert generation | ✅ | 20+ rules across all categories |
-| MQTT pub/sub | ✅ | Full broker integration |
-| REST API | ✅ | Nodes, alerts, health endpoints |
-| Operator tracking | ✅ | qualitySamplingOperator field |
-| BIS compliance | ✅ | Water quality standards met |
-| Offline-first | ✅ | Queuing in simulator |
-| Real-time dashboard | ✅ | Live parameter display |
-| Historical alerts | ✅ | Alert acknowledgment & tracking |
+| Feature              | Status | Details                          |
+| -------------------- | ------ | -------------------------------- |
+| Real-time simulation | ✅     | 4 nodes, 71 parameters, 5s cycle |
+| Anomaly injection    | ✅     | 5% per cycle for testing         |
+| Alert generation     | ✅     | 20+ rules across all categories  |
+| MQTT pub/sub         | ✅     | Full broker integration          |
+| REST API             | ✅     | Nodes, alerts, health endpoints  |
+| Operator tracking    | ✅     | qualitySamplingOperator field    |
+| BIS compliance       | ✅     | Water quality standards met      |
+| Offline-first        | ✅     | Queuing in simulator             |
+| Real-time dashboard  | ✅     | Live parameter display           |
+| Historical alerts    | ✅     | Alert acknowledgment & tracking  |
 
 ---
 
 ## 📈 PARAMETER COVERAGE
 
 ### Mandatory Parameters (All Implemented ✅)
+
 - [x] Pump running hours
 - [x] Valve status
 - [x] Leak detection
@@ -138,6 +160,7 @@ docker run -d -p 1883:1883 -p 9001:9001 --name mosquitto eclipse-mosquitto
 - [x] Operator identification
 
 ### Optional High-Value Parameters (Implemented ✅)
+
 - [x] Energy consumption
 - [x] Pump temperature
 - [x] User/community metrics
@@ -150,10 +173,13 @@ docker run -d -p 1883:1883 -p 9001:9001 --name mosquitto eclipse-mosquitto
 ## 🎯 TEST & VALIDATE
 
 ### Run System Test
+
 ```bash
 python backend/test_system.py
 ```
+
 Tests:
+
 - ✅ Backend connectivity
 - ✅ Node data retrieval (71 parameters)
 - ✅ Alert generation
@@ -161,6 +187,7 @@ Tests:
 - ✅ MQTT broker availability
 
 ### Manual API Checks
+
 ```bash
 # Check nodes with all parameters
 curl http://localhost:8000/api/nodes
@@ -177,24 +204,28 @@ curl http://localhost:8000/api/health
 ## 📋 4 SENSOR NODES CONFIGURED
 
 ### Node 1: pump-1 (Borewell Pump)
+
 - Running hours, efficiency, discharge rate, power consumption
 - Voltage, temperature, flow rate, pressure
 - Leak probability score, service due dates
 - Daily operating costs, energy consumed
 
 ### Node 2: tank-1 (Overhead Tank)
+
 - Tank level (% and liters), filling time, emptiness duration
 - Overflow alerts, supply duration, temperature
 - Daily water distributed, supply hours, cycles
 - Maintenance schedules
 
 ### Node 3: tap-1 (Public Tap)
+
 - Valve status and operation count
 - Complete water quality testing (9+ parameters)
 - Test metadata (time, operator, compliance %)
 - Coliform, hardness, iron, fluoride monitoring
 
 ### Node 4: valve-1 (Distribution Valve)
+
 - Valve position and operation count
 - Faulty valve detection, leakage monitoring
 - Maintenance tracking
@@ -204,6 +235,7 @@ curl http://localhost:8000/api/health
 ## 🔔 20+ ALERT RULES
 
 ### Critical Level 🔴
+
 - Motor overheating (>75°C)
 - Tank critically low (<15%)
 - Coliform detected (microbial contamination)
@@ -212,6 +244,7 @@ curl http://localhost:8000/api/health
 - Tank empty >10 hours
 
 ### Warning Level 🟡
+
 - Motor running hot (65-75°C)
 - Tank low (15-25%)
 - Efficiency dropped
@@ -220,6 +253,7 @@ curl http://localhost:8000/api/health
 - Filling delays
 
 ### Info Level 🟢
+
 - Service due (>450h)
 - Excessive valve operations
 - Compliance below target
@@ -270,6 +304,7 @@ curl http://localhost:8000/api/health
 When anomalies trigger, you'll see alerts like:
 
 **🚨 CRITICAL - Pump Node:**
+
 ```
 "LEAK DETECTED: Score=85%, Flow indicator=1"
 "Motor overheating: 78.5°C (critical > 75°C)"
@@ -277,6 +312,7 @@ When anomalies trigger, you'll see alerts like:
 ```
 
 **⚠️ WARNING - Tank Node:**
+
 ```
 "Tank level low: 22.5% - Monitor closely"
 "Filling delays detected: 3 times - Check pump/pipes"
@@ -284,6 +320,7 @@ When anomalies trigger, you'll see alerts like:
 ```
 
 **🔴 CRITICAL - Quality Node:**
+
 ```
 "COLIFORM DETECTED - MICROBIAL CONTAMINATION - WATER NOT SAFE!"
 "Water quality FAILED: pH=5.2 | Turbidity=6.5 NTU | TDS=1250 mg/L"
@@ -341,6 +378,7 @@ When anomalies trigger, you'll see alerts like:
 ## ✅ VERIFICATION CHECKLIST
 
 Before running, ensure:
+
 - [ ] Python 3.8+ installed
 - [ ] `pip install -r requirements.txt` completed
 - [ ] MQTT broker running (Docker or local Mosquitto)
@@ -355,11 +393,13 @@ Before running, ensure:
 When system is running correctly, you should see:
 
 ✅ **Backend Console:**
+
 ```
 Application startup complete [Press ENTER to quit]
 ```
 
 ✅ **MQTT Listener Console:**
+
 ```
 ✓ Connected to MQTT broker at localhost:1883
 ✓ Subscribed to jalsense/nodes/#
@@ -368,12 +408,14 @@ Application startup complete [Press ENTER to quit]
 ```
 
 ✅ **MQTT Simulator Console:**
+
 ```
 Starting simulation with 5s interval...
 📤 Published data for pump-1: {'pumpRunningHours': 245, 'efficiency': 72.5, ...}
 ```
 
 ✅ **Dashboard:**
+
 - Real-time data updates visible
 - Parameters changing every 5 seconds
 - Alerts appearing when anomalies occur

@@ -9,17 +9,20 @@ A comprehensive Operations & Maintenance platform for rural water supply systems
 ## 🌟 Features
 
 ### 🎯 Role-Based Access Control
+
 - **Guest/Public** - View-only access to system status and water quality
 - **Technician** - Full operational control, maintenance management, and real-time monitoring
 - **Researcher** - Advanced analytics, data export, and research tools
 
 ### 📊 Real-Time Monitoring
+
 - Live sensor data (Flow Rate, Pressure, Tank Level, Power Consumption)
 - 24-hour trend analysis with interactive charts
 - Color-coded status indicators (Operational/Warning/Critical)
 - Offline-first mode with local data persistence
 
 ### 🗺️ GIS Mapping
+
 - Interactive pipeline network visualization
 - 3 map views: Satellite, Street, Hybrid
 - Real-time infrastructure monitoring (Pumps, Tanks, Sensors, Valves)
@@ -27,24 +30,28 @@ A comprehensive Operations & Maintenance platform for rural water supply systems
 - Layer filtering and legend controls
 
 ### 💧 Water Quality Monitoring
+
 - pH, Turbidity, Chlorine, TDS tracking
 - Historical comparison charts
 - Quality test scheduling
 - Alert threshold configuration
 
 ### 🔧 Maintenance Management
+
 - Task prioritization (High/Medium/Low)
 - Work order creation and tracking
 - Maintenance history per asset
 - Quick action buttons for common tasks
 
 ### 📈 Advanced Analytics (Researcher)
+
 - Multi-parameter trend analysis
 - System status distribution
 - Data export (CSV, PDF, JSON, Excel)
 - Custom date range selection (24h, 7d, 30d, 90d)
 
 ### 🌐 Multi-Language Support
+
 - English, Hindi, Marathi, Tamil, Telugu
 - Easy language switching
 - Localized content and UI
@@ -52,6 +59,7 @@ A comprehensive Operations & Maintenance platform for rural water supply systems
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 16+ and npm 8+
 - Modern web browser (Chrome, Firefox, Edge, Safari)
 
@@ -76,14 +84,17 @@ The application will be available at `http://localhost:5173`
 ### Default Login Credentials
 
 **Technician:**
+
 - Username: `tech`
 - Password: `admin`
 
 **Researcher:**
+
 - Username: `research`
 - Password: `admin`
 
 **Guest:**
+
 - No credentials required (select Public role)
 
 ## 📁 Project Structure
@@ -120,6 +131,7 @@ gramjaljeevanwork/
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18.2** - UI framework
 - **Vite 5.0** - Build tool and dev server
 - **Tailwind CSS 3.4** - Utility-first CSS framework
@@ -128,6 +140,7 @@ gramjaljeevanwork/
 - **Leaflet 1.9** - Interactive maps
 
 ### Key Libraries
+
 - React Hooks for state management
 - LocalStorage for offline persistence
 - GeoJSON for pipeline data
@@ -136,17 +149,20 @@ gramjaljeevanwork/
 ## 📊 Key Components
 
 ### Dashboards
+
 - `GuestDashboard.jsx` - Public view with limited access
 - `TechnicianDashboard.jsx` - Full operational control
 - `ResearcherDashboard.jsx` - Analytics and data export
 
 ### Shared Components
+
 - `StatCard.jsx` - Metric display cards
 - `GaugeChart.jsx` - Gauge visualizations
 - `QualityCard.jsx` - Water quality indicators
 - `OperatorLogTable.jsx` - Activity logs
 
 ### Utilities
+
 - `useStickyState.js` - Persistent state hook
 - `useIoTSimulation.js` - Real-time data simulation
 - `helpers.js` - Utility functions
@@ -154,13 +170,17 @@ gramjaljeevanwork/
 ## 🎨 Customization
 
 ### Branding
+
 Update logos in `public/` folder:
+
 - `jalsense-logo.svg` - Application logo
 - `ministry-logo.svg` - Government logo
 - `favicon.svg` - Browser icon
 
 ### Theme Colors
+
 Edit `tailwind.config.js` to customize colors:
+
 ```js
 theme: {
   extend: {
@@ -174,28 +194,35 @@ theme: {
 ```
 
 ### Language Support
+
 Add new languages in `src/constants/translations.js`
 
 ## 📦 Build & Deployment
 
 ### Development Build
+
 ```bash
 npm run dev
 ```
 
 ### Production Build
+
 ```bash
 npm run build
 ```
+
 Output will be in `dist/` folder
 
 ### Preview Production Build
+
 ```bash
 npm run preview
 ```
 
 ### Deployment
+
 Deploy the `dist/` folder to any static hosting service:
+
 - Vercel
 - Netlify
 - GitHub Pages
@@ -205,16 +232,20 @@ Deploy the `dist/` folder to any static hosting service:
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Create `.env` file in root:
+
 ```env
 VITE_API_URL=your_api_url
 VITE_MAP_API_KEY=your_map_key
 ```
 
 ### Vite Configuration
+
 Edit `vite.config.js` for build optimization
 
 ### Tailwind Configuration
+
 Edit `tailwind.config.js` for styling customization
 
 ## 🧪 Testing
@@ -272,6 +303,7 @@ Please read [CODE_STYLE_GUIDE.md](CODE_STYLE_GUIDE.md) before contributing.
 ## 🗺️ Roadmap
 
 ### Version 1.1 (Planned)
+
 - [ ] Real API integration
 - [ ] WebSocket for real-time updates
 - [ ] Advanced filtering options
@@ -279,6 +311,7 @@ Please read [CODE_STYLE_GUIDE.md](CODE_STYLE_GUIDE.md) before contributing.
 - [ ] Push notifications
 
 ### Version 1.2 (Future)
+
 - [ ] Machine learning predictions
 - [ ] Automated maintenance scheduling
 - [ ] Integration with government portals

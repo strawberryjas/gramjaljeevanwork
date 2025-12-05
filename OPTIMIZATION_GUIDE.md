@@ -3,23 +3,27 @@
 ## 🚀 Performance Optimizations Implemented
 
 ### 1. Component Structure
+
 ✅ **Separated by Role** - Each user role has its own dashboard
 ✅ **Modular Components** - Reusable shared components
 ✅ **Lazy Loading Ready** - Components can be lazy loaded
 ✅ **Clean Imports** - Organized import statements
 
 ### 2. State Management
+
 ✅ **Local State** - Using useState for component-specific state
 ✅ **Persistent State** - useStickyState hook for localStorage
 ✅ **Minimal Re-renders** - Optimized state updates
 
 ### 3. Data Handling
+
 ✅ **Default Values** - All props have safe defaults
-✅ **Optional Chaining** - Safe property access (?.  operator)
+✅ **Optional Chaining** - Safe property access (?. operator)
 ✅ **Null Checks** - Prevents undefined errors
 ✅ **Mock Data** - Efficient data generation
 
 ### 4. Map Optimization
+
 ✅ **Ref-based Map** - Prevents re-initialization
 ✅ **Marker Cleanup** - Removes old markers before adding new
 ✅ **Conditional Rendering** - Only renders active layers
@@ -47,6 +51,7 @@
 ## 🎯 Optimization Recommendations
 
 ### Phase 1: Code Splitting (Future)
+
 ```jsx
 // Lazy load dashboards
 const GuestDashboard = lazy(() => import('./components/dashboards/GuestDashboard'));
@@ -56,10 +61,11 @@ const ResearcherDashboard = lazy(() => import('./components/dashboards/Researche
 // Wrap in Suspense
 <Suspense fallback={<LoadingSpinner />}>
   <GuestDashboard />
-</Suspense>
+</Suspense>;
 ```
 
 ### Phase 2: Memoization (Future)
+
 ```jsx
 // Memoize expensive calculations
 const chartData = useMemo(() => {
@@ -73,34 +79,34 @@ const handleSubmit = useCallback(() => {
 ```
 
 ### Phase 3: Virtual Scrolling (Future)
+
 ```jsx
 // For large lists (1000+ items)
 import { FixedSizeList } from 'react-window';
 
-<FixedSizeList
-  height={600}
-  itemCount={items.length}
-  itemSize={50}
->
+<FixedSizeList height={600} itemCount={items.length} itemSize={50}>
   {Row}
-</FixedSizeList>
+</FixedSizeList>;
 ```
 
 ## 📦 Bundle Size Optimization
 
 ### Current Dependencies
+
 ```json
 {
-  "react": "^18.2.0",           // 42KB
-  "react-dom": "^18.2.0",       // 130KB
-  "lucide-react": "^0.278.0",   // ~50KB (tree-shakeable)
-  "recharts": "^2.6.2",         // ~180KB
-  "leaflet": "^1.9.4"           // ~140KB (CDN loaded)
+  "react": "^18.2.0", // 42KB
+  "react-dom": "^18.2.0", // 130KB
+  "lucide-react": "^0.278.0", // ~50KB (tree-shakeable)
+  "recharts": "^2.6.2", // ~180KB
+  "leaflet": "^1.9.4" // ~140KB (CDN loaded)
 }
 ```
 
 ### Optimization Tips
+
 1. **Tree Shaking** - Import only what you need
+
    ```jsx
    ✅ import { Activity, Droplet } from 'lucide-react';
    ❌ import * as Icons from 'lucide-react';
@@ -113,6 +119,7 @@ import { FixedSizeList } from 'react-window';
 ## 🔧 Build Optimization
 
 ### Vite Configuration
+
 ```js
 // vite.config.js
 export default defineConfig({
@@ -122,23 +129,25 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'charts': ['recharts'],
-          'icons': ['lucide-react']
-        }
-      }
-    }
-  }
+          charts: ['recharts'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
 });
 ```
 
 ## 🎨 CSS Optimization
 
 ### Tailwind CSS
+
 ✅ **PurgeCSS** - Removes unused styles in production
 ✅ **JIT Mode** - Just-in-time compilation
 ✅ **Minimal Custom CSS** - Uses utility classes
 
 ### Production Build
+
 ```bash
 npm run build
 # Output: Optimized CSS < 50KB
@@ -147,6 +156,7 @@ npm run build
 ## 🗺️ Map Performance
 
 ### Current Optimizations
+
 1. **Single Map Instance** - Using useRef
 2. **Marker Pooling** - Reusing marker objects
 3. **Conditional Layers** - Only render visible layers
@@ -154,6 +164,7 @@ npm run build
 5. **Debounced Updates** - Prevents excessive re-renders
 
 ### Best Practices
+
 ```jsx
 // ✅ Good: Ref-based map
 const mapRef = useRef(null);
@@ -169,25 +180,24 @@ useEffect(() => {
 }, []);
 
 // ✅ Good: Batch marker updates
-markersRef.current.forEach(marker => map.removeLayer(marker));
+markersRef.current.forEach((marker) => map.removeLayer(marker));
 markersRef.current = [];
 ```
 
 ## 📊 Data Optimization
 
 ### Current Approach
+
 ```jsx
 // ✅ Efficient: Generate data only when needed
-const mockData = useMemo(() => 
-  generateMockData(params), 
-  [params]
-);
+const mockData = useMemo(() => generateMockData(params), [params]);
 
 // ✅ Efficient: Default values prevent errors
 const flowRate = sensors?.flowRate || 95.3;
 ```
 
 ### Recommendations
+
 1. **Pagination** - For large datasets (100+ items)
 2. **Virtual Scrolling** - For long lists
 3. **Debouncing** - For search/filter inputs
@@ -196,6 +206,7 @@ const flowRate = sensors?.flowRate || 95.3;
 ## 🔍 Monitoring Performance
 
 ### React DevTools Profiler
+
 ```bash
 # Install React DevTools extension
 # Record performance while using app
@@ -203,6 +214,7 @@ const flowRate = sensors?.flowRate || 95.3;
 ```
 
 ### Key Metrics to Track
+
 - **Initial Load Time** - < 3 seconds
 - **Time to Interactive** - < 5 seconds
 - **First Contentful Paint** - < 1.5 seconds
@@ -211,6 +223,7 @@ const flowRate = sensors?.flowRate || 95.3;
 ## 🎯 Performance Checklist
 
 ### Before Deployment
+
 - [ ] Remove console.log statements
 - [ ] Enable production mode
 - [ ] Minify assets
@@ -223,6 +236,7 @@ const flowRate = sensors?.flowRate || 95.3;
 - [ ] Remove unused dependencies
 
 ### Runtime Optimization
+
 - [ ] Memoize expensive calculations
 - [ ] Use React.memo for pure components
 - [ ] Implement virtual scrolling for long lists
@@ -234,12 +248,14 @@ const flowRate = sensors?.flowRate || 95.3;
 ## 📈 Scalability Considerations
 
 ### Current Capacity
+
 - **Users**: Handles 100+ concurrent users
 - **Data Points**: Processes 10K+ sensor readings
 - **Map Markers**: Renders 100+ markers efficiently
 - **Charts**: Displays 1000+ data points smoothly
 
 ### Future Scaling
+
 1. **Database Integration** - Replace mock data with real API
 2. **Real-time Updates** - WebSocket for live data
 3. **Caching Layer** - Redis for frequently accessed data
@@ -260,4 +276,3 @@ const flowRate = sensors?.flowRate || 95.3;
 - [Vite Build Optimization](https://vitejs.dev/guide/build.html)
 - [Tailwind CSS Optimization](https://tailwindcss.com/docs/optimizing-for-production)
 - [Web Performance](https://web.dev/performance/)
-

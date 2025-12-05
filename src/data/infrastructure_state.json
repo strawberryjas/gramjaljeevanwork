@@ -85,12 +85,26 @@
       "inlet": {
         "flowSensor": { "value": 85, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-1A" },
         "pressureSensor": { "value": 4.2, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-1A" },
-        "qualitySensor": { "turbidity": 1.3, "pH": 7.2, "chlorine": 0.75, "TDS": 325, "status": "ACTIVE", "sensorId": "QS-1A" }
+        "qualitySensor": {
+          "turbidity": 1.3,
+          "pH": 7.2,
+          "chlorine": 0.75,
+          "TDS": 325,
+          "status": "ACTIVE",
+          "sensorId": "QS-1A"
+        }
       },
       "outlet": {
         "flowSensor": { "value": 82, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-1B" },
         "pressureSensor": { "value": 3.8, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-1B" },
-        "qualitySensor": { "turbidity": 1.4, "pH": 7.1, "chlorine": 0.72, "TDS": 330, "status": "ACTIVE", "sensorId": "QS-1B" }
+        "qualitySensor": {
+          "turbidity": 1.4,
+          "pH": 7.1,
+          "chlorine": 0.72,
+          "TDS": 330,
+          "status": "ACTIVE",
+          "sensorId": "QS-1B"
+        }
       },
       "estimatedLeakage": 3,
       "flowLoss": 3,
@@ -108,12 +122,26 @@
       "inlet": {
         "flowSensor": { "value": 68, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-2A" },
         "pressureSensor": { "value": 4.0, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-2A" },
-        "qualitySensor": { "turbidity": 1.25, "pH": 7.25, "chlorine": 0.78, "TDS": 322, "status": "ACTIVE", "sensorId": "QS-2A" }
+        "qualitySensor": {
+          "turbidity": 1.25,
+          "pH": 7.25,
+          "chlorine": 0.78,
+          "TDS": 322,
+          "status": "ACTIVE",
+          "sensorId": "QS-2A"
+        }
       },
       "outlet": {
         "flowSensor": { "value": 60, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-2B" },
         "pressureSensor": { "value": 3.2, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-2B" },
-        "qualitySensor": { "turbidity": 1.6, "pH": 7.0, "chlorine": 0.68, "TDS": 335, "status": "ACTIVE", "sensorId": "QS-2B" }
+        "qualitySensor": {
+          "turbidity": 1.6,
+          "pH": 7.0,
+          "chlorine": 0.68,
+          "TDS": 335,
+          "status": "ACTIVE",
+          "sensorId": "QS-2B"
+        }
       },
       "estimatedLeakage": 8,
       "flowLoss": 8,
@@ -131,12 +159,26 @@
       "inlet": {
         "flowSensor": { "value": 52, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-3A" },
         "pressureSensor": { "value": 3.9, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-3A" },
-        "qualitySensor": { "turbidity": 1.2, "pH": 7.3, "chlorine": 0.8, "TDS": 320, "status": "ACTIVE", "sensorId": "QS-3A" }
+        "qualitySensor": {
+          "turbidity": 1.2,
+          "pH": 7.3,
+          "chlorine": 0.8,
+          "TDS": 320,
+          "status": "ACTIVE",
+          "sensorId": "QS-3A"
+        }
       },
       "outlet": {
         "flowSensor": { "value": 51, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-3B" },
         "pressureSensor": { "value": 3.7, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-3B" },
-        "qualitySensor": { "turbidity": 1.3, "pH": 7.25, "chlorine": 0.78, "TDS": 322, "status": "ACTIVE", "sensorId": "QS-3B" }
+        "qualitySensor": {
+          "turbidity": 1.3,
+          "pH": 7.25,
+          "chlorine": 0.78,
+          "TDS": 322,
+          "status": "ACTIVE",
+          "sensorId": "QS-3B"
+        }
       },
       "estimatedLeakage": 1,
       "flowLoss": 1,
@@ -154,12 +196,26 @@
       "inlet": {
         "flowSensor": { "value": 0, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-4A" },
         "pressureSensor": { "value": 0, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-4A" },
-        "qualitySensor": { "turbidity": 1.2, "pH": 7.3, "chlorine": 0.8, "TDS": 320, "status": "ACTIVE", "sensorId": "QS-4A" }
+        "qualitySensor": {
+          "turbidity": 1.2,
+          "pH": 7.3,
+          "chlorine": 0.8,
+          "TDS": 320,
+          "status": "ACTIVE",
+          "sensorId": "QS-4A"
+        }
       },
       "outlet": {
         "flowSensor": { "value": 0, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-4B" },
         "pressureSensor": { "value": 0, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-4B" },
-        "qualitySensor": { "turbidity": 1.2, "pH": 7.3, "chlorine": 0.8, "TDS": 320, "status": "ACTIVE", "sensorId": "QS-4B" }
+        "qualitySensor": {
+          "turbidity": 1.2,
+          "pH": 7.3,
+          "chlorine": 0.8,
+          "TDS": 320,
+          "status": "ACTIVE",
+          "sensorId": "QS-4B"
+        }
       },
       "estimatedLeakage": 0,
       "flowLoss": 0,
@@ -177,12 +233,26 @@
       "inlet": {
         "flowSensor": { "value": 48, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-5A" },
         "pressureSensor": { "value": 3.8, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-5A" },
-        "qualitySensor": { "turbidity": 1.2, "pH": 7.3, "chlorine": 0.8, "TDS": 320, "status": "ACTIVE", "sensorId": "QS-5A" }
+        "qualitySensor": {
+          "turbidity": 1.2,
+          "pH": 7.3,
+          "chlorine": 0.8,
+          "TDS": 320,
+          "status": "ACTIVE",
+          "sensorId": "QS-5A"
+        }
       },
       "outlet": {
         "flowSensor": { "value": 35, "unit": "L/min", "status": "ACTIVE", "sensorId": "FS-5B" },
         "pressureSensor": { "value": 2.8, "unit": "bar", "status": "ACTIVE", "sensorId": "PS-5B" },
-        "qualitySensor": { "turbidity": 2.1, "pH": 6.9, "chlorine": 0.65, "TDS": 345, "status": "ACTIVE", "sensorId": "QS-5B" }
+        "qualitySensor": {
+          "turbidity": 2.1,
+          "pH": 6.9,
+          "chlorine": 0.65,
+          "TDS": 345,
+          "status": "ACTIVE",
+          "sensorId": "QS-5B"
+        }
       },
       "estimatedLeakage": 13,
       "flowLoss": 13,

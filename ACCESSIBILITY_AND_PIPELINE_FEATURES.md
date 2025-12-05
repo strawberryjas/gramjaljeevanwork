@@ -3,11 +3,13 @@
 ## ✅ Accessibility Features (Fully Functional)
 
 ### Location
+
 **Sidebar → "Accessibility" Button** (amber colored button at bottom of sidebar)
 
 ### Features Implemented
 
 #### 1. **Text Size Control** ✅
+
 - **Options**: Small, Normal, Large, XL
 - **How it works**: Changes the base font size across the entire application
 - **Classes Applied**:
@@ -18,34 +20,38 @@
 - **Scope**: Affects all text in the application
 
 #### 2. **Dark Mode** ✅
+
 - **Toggle**: On/Off switch
-- **How it works**: 
+- **How it works**:
   - Changes background from white/gray-50 to gray-900
   - Changes text from gray-900 to white
   - Updates sidebar colors
   - Updates card backgrounds
   - Inverts color scheme throughout
-- **Implementation**: 
+- **Implementation**:
   ```jsx
-  darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
+  darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900';
   ```
 
 #### 3. **High Contrast Mode** ✅
+
 - **Toggle**: On/Off switch
 - **How it works**: Increases color contrast by 150%
 - **Implementation**: Applies `contrast-150` CSS filter
 - **Effect**: Makes colors more vivid and easier to distinguish
 
 #### 4. **Reduced Motion** ✅
+
 - **Toggle**: On/Off switch
 - **How it works**: Disables all animations and transitions
-- **Implementation**: 
+- **Implementation**:
   ```jsx
-  reducedMotion ? '[&_*]:transition-none [&_*]:animate-none' : ''
+  reducedMotion ? '[&_*]:transition-none [&_*]:animate-none' : '';
   ```
 - **Benefit**: Helps users with motion sensitivity or vestibular disorders
 
 ### Accessibility Panel Design
+
 - **Modal overlay** with backdrop blur
 - **Green border** (4px) for government branding
 - **Blue header** with amber accent
@@ -55,6 +61,7 @@
 - **Smooth animations** (unless reduced motion is on)
 
 ### How to Test
+
 1. Login to the application
 2. Click "Accessibility" button in sidebar (amber colored)
 3. Try each feature:
@@ -69,9 +76,11 @@
 ## ✅ Pipeline Mapping Features (Fully Restored)
 
 ### Location
+
 **GIS Tab** in sidebar → Opens Pipeline Network View
 
 ### Technology Stack
+
 - **Leaflet.js**: Interactive map library
 - **Google Satellite Tiles**: High-quality satellite imagery
 - **GeoJSON**: Pipeline and infrastructure data format
@@ -80,13 +89,16 @@
 ### Features Implemented
 
 #### 1. **Interactive Pipeline Map** ✅
+
 - **Location**: Padur, Chennai (12.9150°N, 80.2250°E)
 - **Base Map**: Google Satellite imagery
 - **Zoom**: 14 (adjustable)
 - **Interactive**: Click on pipelines and infrastructure for details
 
 #### 2. **Pipeline Visualization** ✅
+
 **5 Pipeline Segments**:
+
 1. **Main Transmission Line** (P-001)
    - Diameter: 300mm
    - Material: DI (Ductile Iron)
@@ -119,6 +131,7 @@
    - Alert: Low pressure detected
 
 **Color Coding**:
+
 - 🔵 Blue (4px): Operational
 - 🟠 Orange (5px): Warning
 - 🔴 Red (6px): Critical
@@ -170,7 +183,9 @@
    - Time: 2024-01-15 10:30
 
 #### 4. **Layer Controls** ✅
+
 **Toggle Layers On/Off**:
+
 - ☑️ Pipelines
 - ☑️ Sensors
 - ☑️ Pumps
@@ -182,7 +197,9 @@
 **Design**: White panel with green border, checkboxes
 
 #### 5. **Feature Details Panel** ✅
+
 **Appears when clicking on any feature**:
+
 - Shows detailed information
 - Pipeline: Name, Type, Diameter, Pressure, Material, Status
 - Infrastructure: Name, Type, Status, Readings, Battery
@@ -192,7 +209,9 @@
 - **Close**: X button
 
 #### 6. **Legend** ✅
+
 **Status Colors**:
+
 - 🔵 Blue: Operational
 - 🟠 Orange: Warning
 - 🔴 Red: Critical
@@ -201,6 +220,7 @@
 **Design**: White panel with green border
 
 #### 7. **Interactive Features** ✅
+
 - **Hover**: Shows tooltip with basic info
 - **Click Pipeline**: Shows detailed pipeline info
 - **Click Infrastructure**: Shows detailed infrastructure info
@@ -210,11 +230,12 @@
 ### Data Structure
 
 #### Pipeline GeoJSON
+
 ```javascript
 {
   type: "Feature",
   properties: {
-    id, name, type, diameter, material, 
+    id, name, type, diameter, material,
     pressure, status, installDate
   },
   geometry: {
@@ -225,11 +246,12 @@
 ```
 
 #### Infrastructure GeoJSON
+
 ```javascript
 {
   type: "Feature",
   properties: {
-    id, name, type, capacity, status, 
+    id, name, type, capacity, status,
     currentLevel, value, unit, battery
   },
   geometry: {
@@ -242,6 +264,7 @@
 ### Files Created/Modified
 
 #### New Files:
+
 1. **`src/data/samplePipelineData.js`**
    - Contains pipeline GeoJSON data
    - Contains infrastructure point data
@@ -257,6 +280,7 @@
    - Interactive tooltips
 
 #### Modified Files:
+
 1. **`src/App.jsx`**
    - Added accessibility state management
    - Added accessibility panel
@@ -270,6 +294,7 @@
 ### How to Use
 
 #### Pipeline Map:
+
 1. Login to application
 2. Click **"GIS"** tab in sidebar
 3. Map loads with all features visible
@@ -280,6 +305,7 @@
 8. **Pan and zoom** to explore
 
 #### Accessibility:
+
 1. Click **"Accessibility"** button in sidebar
 2. Adjust settings as needed:
    - Text size for readability
@@ -290,18 +316,21 @@
 4. Reset anytime with "Reset to Defaults"
 
 ### Browser Compatibility
+
 - ✅ Chrome/Edge (latest)
 - ✅ Firefox (latest)
 - ✅ Safari (latest)
 - ✅ Mobile browsers
 
 ### Performance
+
 - **Lazy Loading**: Leaflet loads on demand
 - **Efficient Rendering**: Only visible features rendered
 - **Smooth Interactions**: Hardware-accelerated animations
 - **Responsive**: Works on all screen sizes
 
 ### Accessibility Compliance
+
 - ✅ **WCAG 2.1 AA** compliant
 - ✅ Keyboard navigation support
 - ✅ Screen reader friendly
@@ -311,6 +340,7 @@
 - ✅ Color blind friendly (status icons + colors)
 
 ### Future Enhancements (Not Yet Implemented)
+
 - Real-time data updates
 - Historical data playback
 - Advanced filtering
@@ -325,6 +355,7 @@
 ## Summary
 
 ### ✅ What's Working:
+
 1. **Accessibility Panel** - Fully functional with 4 features
 2. **Text Size Control** - Changes all text sizes
 3. **Dark Mode** - Complete color scheme inversion
@@ -339,6 +370,7 @@
 12. **Tooltips** - Hover for quick info
 
 ### 🎯 Key Benefits:
+
 - **Inclusive**: Accessible to users with disabilities
 - **Professional**: Government-standard design
 - **Interactive**: Rich user experience
@@ -347,10 +379,10 @@
 - **Modern**: Latest web technologies
 
 ### 📝 Notes:
+
 - All features are production-ready
 - No external API keys required (uses public tiles)
 - Fully integrated with existing app
 - Maintains government color scheme
 - Smooth animations (unless disabled)
 - Clean, maintainable code
-

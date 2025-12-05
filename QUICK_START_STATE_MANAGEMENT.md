@@ -6,13 +6,13 @@ Your Gram Jal Jeevan application now has **centralized global state management**
 
 ## ✅ What Problems This Solves
 
-| Problem | Solution |
-|---------|----------|
-| Language/theme props passed through 4+ component levels | ✅ Use `useLanguage()` hook directly |
-| State changes not synchronized across app | ✅ Single source of truth in context |
-| Adding new global state breaks many components | ✅ Just add state to context & create hook |
-| Difficult to scale to 20+ components | ✅ Hooks scale effortlessly |
-| Offline status tracking fragmented | ✅ Centralized with network listeners |
+| Problem                                                 | Solution                                   |
+| ------------------------------------------------------- | ------------------------------------------ |
+| Language/theme props passed through 4+ component levels | ✅ Use `useLanguage()` hook directly       |
+| State changes not synchronized across app               | ✅ Single source of truth in context       |
+| Adding new global state breaks many components          | ✅ Just add state to context & create hook |
+| Difficult to scale to 20+ components                    | ✅ Hooks scale effortlessly                |
+| Offline status tracking fragmented                      | ✅ Centralized with network listeners      |
 
 ## 🚀 Quick Start - Using Global State
 
@@ -23,7 +23,7 @@ import { useAuth } from '../hooks/useAppState';
 
 function MyComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
-  
+
   return (
     <>
       {isAuthenticated && <p>Welcome, {user.name}!</p>}
@@ -34,6 +34,7 @@ function MyComponent() {
 ```
 
 **Available Methods:**
+
 ```javascript
 const {
   user,              // { name, role }
@@ -56,7 +57,7 @@ import { TRANSLATIONS } from '../constants/translations';
 function MyComponent() {
   const { language, changeLanguage } = useLanguage();
   const t = TRANSLATIONS[language];
-  
+
   return (
     <>
       <p>{t.console}</p>
@@ -70,6 +71,7 @@ function MyComponent() {
 ```
 
 **Available Methods:**
+
 ```javascript
 const {
   language,          // Current language string
@@ -84,7 +86,7 @@ import { useOffline } from '../hooks/useAppState';
 
 function SyncIndicator() {
   const { offlineMode, lastSync } = useOffline();
-  
+
   return (
     <div>
       {offlineMode ? (
@@ -98,6 +100,7 @@ function SyncIndicator() {
 ```
 
 **Available Methods:**
+
 ```javascript
 const {
   offlineMode,       // true when offline, false when online
@@ -113,17 +116,18 @@ import { useNotifications } from '../hooks/useAppState';
 
 function SaveButton() {
   const { addNotification } = useNotifications();
-  
+
   const handleSave = async () => {
     // Save logic...
     addNotification('✅ Saved successfully!', 'success', 3000);
   };
-  
+
   return <button onClick={handleSave}>Save</button>;
 }
 ```
 
 **Available Methods:**
+
 ```javascript
 const {
   notifications,     // Array of notification objects
@@ -158,6 +162,7 @@ src/
 ## 🔄 Refactoring Guide
 
 ### Before (Props Drilling)
+
 ```jsx
 // App.jsx - Passes 15+ props down
 <MainDashboard language={language} offlineMode={offlineMode} ... />
@@ -172,6 +177,7 @@ function GuestDashboard({ language, offlineMode, ... }) {
 ```
 
 ### After (Context Hooks)
+
 ```jsx
 // App.jsx - No props for global state
 <MainDashboard data={data} user={user} />
@@ -214,38 +220,46 @@ function GuestDashboard() {
 ## 📚 All Available Hooks
 
 ### useAppState() - Root Hook
+
 Access entire context (rarely needed):
+
 ```javascript
 const appState = useAppState();
 // All state and methods available
 ```
 
 ### useAuth() - Authentication
+
 ```javascript
 const { user, isAuthenticated, authLoading, authError, login, logout } = useAuth();
 ```
 
 ### useLanguage() - Language
+
 ```javascript
 const { language, changeLanguage } = useLanguage();
 ```
 
 ### useTheme() - Theme (Extensible)
+
 ```javascript
 const { theme, toggleTheme, setThemedMode } = useTheme();
 ```
 
 ### useOffline() - Network Status
+
 ```javascript
 const { offlineMode, lastSync, setLastSync } = useOffline();
 ```
 
 ### useNotifications() - Toasts
+
 ```javascript
 const { notifications, addNotification, removeNotification } = useNotifications();
 ```
 
 ### useSidebar() - Mobile Menu
+
 ```javascript
 const { sidebarOpen, toggleSidebar, closeSidebar } = useSidebar();
 ```
@@ -253,12 +267,14 @@ const { sidebarOpen, toggleSidebar, closeSidebar } = useSidebar();
 ## 🛠️ Common Tasks
 
 ### Task 1: Add Global Counter State
+
 1. Edit `src/context/AppContext.jsx`:
+
 ```jsx
 const [counter, setCounter] = useState(0);
 
 const incrementCounter = useCallback(() => {
-  setCounter(prev => prev + 1);
+  setCounter((prev) => prev + 1);
 }, []);
 
 // Add to contextValue:
@@ -270,6 +286,7 @@ const contextValue = {
 ```
 
 2. Create hook in `src/hooks/useAppState.js`:
+
 ```jsx
 export const useCounter = () => {
   const context = useAppState();
@@ -281,6 +298,7 @@ export const useCounter = () => {
 ```
 
 3. Use in component:
+
 ```jsx
 function MyComponent() {
   const { counter, incrementCounter } = useCounter();
@@ -289,33 +307,36 @@ function MyComponent() {
 ```
 
 ### Task 2: Listen to Language Changes
+
 ```jsx
 function MyComponent() {
   const { language } = useLanguage();
   const translations = TRANSLATIONS[language];
-  
+
   // Automatically re-renders when language changes
   return <div>{translations.hello}</div>;
 }
 ```
 
 ### Task 3: Conditional Rendering Based on Auth
+
 ```jsx
 function AdminPanel() {
   const { user, isAuthenticated } = useAuth();
-  
+
   if (!isAuthenticated) return <p>Please login</p>;
   if (user.role !== 'technician') return <p>Access denied</p>;
-  
+
   return <div>Admin Controls</div>;
 }
 ```
 
 ### Task 4: Show Notification on Action
+
 ```jsx
 function ImportButton() {
   const { addNotification } = useNotifications();
-  
+
   const handleImport = async () => {
     try {
       // Import logic...
@@ -324,7 +345,7 @@ function ImportButton() {
       addNotification('❌ Import failed!', 'error', 5000);
     }
   };
-  
+
   return <button onClick={handleImport}>Import</button>;
 }
 ```
@@ -332,6 +353,7 @@ function ImportButton() {
 ## ⚠️ Common Mistakes
 
 ### ❌ Calling hook outside component
+
 ```jsx
 // WRONG
 const { user } = useAuth(); // This is outside a component!
@@ -348,6 +370,7 @@ function MyComponent() {
 ```
 
 ### ❌ Forgetting to wrap with provider
+
 ```jsx
 // WRONG
 import App from './App';
@@ -367,6 +390,7 @@ export default function Root() {
 ```
 
 ### ❌ Using stale props instead of hooks
+
 ```jsx
 // WRONG
 function Dashboard({ language, offlineMode }) {
@@ -384,21 +408,25 @@ function Dashboard() {
 ## 🎓 Key Concepts
 
 ### Single Source of Truth
+
 - Global state lives in `AppContext`
 - All components access same state via hooks
 - Changes automatically propagate to all components
 
 ### Memoization
+
 - All context methods use `useCallback`
 - Prevents unnecessary re-renders
 - Improves performance for large apps
 
 ### Persistence
+
 - All state saved to localStorage automatically via `useStickyState`
 - Survives page refresh
 - User preferences preserved
 
 ### Network Awareness
+
 - Automatic offline detection
 - Last sync timestamp tracked
 - Ready for sync when connection returns
@@ -420,6 +448,7 @@ function Dashboard() {
 ## 🚀 You're Ready!
 
 The global state management is fully implemented and tested. Start using the hooks in your components and enjoy:
+
 - ✅ Cleaner code
 - ✅ No props drilling
 - ✅ Easier maintenance

@@ -11,7 +11,7 @@ export const getA11yButtonAttrs = (disabled = false, ariaLabel = null) => ({
   disabled,
   ...(ariaLabel && { 'aria-label': ariaLabel }),
   role: 'button',
-})
+});
 
 /**
  * Generate accessible live region attributes for notifications
@@ -20,7 +20,7 @@ export const getA11yLiveRegionAttrs = (politeness = 'polite') => ({
   role: 'status',
   'aria-live': politeness,
   'aria-atomic': 'true',
-})
+});
 
 /**
  * Generate accessible modal dialog attributes
@@ -30,7 +30,7 @@ export const getA11yModalAttrs = (isOpen, id) => ({
   'aria-modal': 'true',
   'aria-labelledby': `${id}-title`,
   'aria-describedby': `${id}-description`,
-})
+});
 
 /**
  * Generate accessible form field attributes
@@ -40,7 +40,7 @@ export const getA11yFormFieldAttrs = (fieldId, errorMessage = null, required = f
   'aria-invalid': !!errorMessage,
   'aria-describedby': errorMessage ? `${fieldId}-error` : undefined,
   'aria-required': required,
-})
+});
 
 /**
  * Skip to main content link for keyboard navigation
@@ -52,14 +52,12 @@ export const SkipToMainContent = ({ mainId = 'main-content' }) => (
   >
     Skip to main content
   </a>
-)
+);
 
 /**
  * Screen reader only text
  */
-export const SROnly = ({ children }) => (
-  <span className="sr-only">{children}</span>
-)
+export const SROnly = ({ children }) => <span className="sr-only">{children}</span>;
 
 /**
  * Close button with proper a11y
@@ -72,7 +70,7 @@ export const A11yCloseButton = ({ onClose, label = 'Close' }) => (
   >
     ×
   </button>
-)
+);
 
 /**
  * Accessible tooltip component
@@ -88,7 +86,7 @@ export const A11yTooltip = ({ children, tooltip, id }) => (
       {tooltip}
     </div>
   </div>
-)
+);
 
 /**
  * Skip list for keyboard navigation
@@ -97,27 +95,27 @@ export const useKeyboardNavigation = (itemCount) => {
   const handleKeyDown = (e, index, onSelect) => {
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault()
-        onSelect((index + 1) % itemCount)
-        break
+        e.preventDefault();
+        onSelect((index + 1) % itemCount);
+        break;
       case 'ArrowUp':
-        e.preventDefault()
-        onSelect((index - 1 + itemCount) % itemCount)
-        break
+        e.preventDefault();
+        onSelect((index - 1 + itemCount) % itemCount);
+        break;
       case 'Home':
-        e.preventDefault()
-        onSelect(0)
-        break
+        e.preventDefault();
+        onSelect(0);
+        break;
       case 'End':
-        e.preventDefault()
-        onSelect(itemCount - 1)
-        break
+        e.preventDefault();
+        onSelect(itemCount - 1);
+        break;
       default:
-        break
+        break;
     }
-  }
-  return { handleKeyDown }
-}
+  };
+  return { handleKeyDown };
+};
 
 /**
  * Color contrast checker (helper for manual review)
@@ -125,14 +123,14 @@ export const useKeyboardNavigation = (itemCount) => {
 export const isContrastAdequate = (foreground, background) => {
   // Simplified checker - for production, use dedicated library
   const getLuminance = (rgb) => {
-    const [r, g, b] = rgb.match(/\d+/g).map(Number)
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  }
-  const l1 = getLuminance(foreground)
-  const l2 = getLuminance(background)
-  const contrast = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-  return contrast >= 4.5 // WCAG AA standard
-}
+    const [r, g, b] = rgb.match(/\d+/g).map(Number);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  };
+  const l1 = getLuminance(foreground);
+  const l2 = getLuminance(background);
+  const contrast = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  return contrast >= 4.5; // WCAG AA standard
+};
 
 export default {
   getA11yButtonAttrs,
@@ -145,4 +143,4 @@ export default {
   A11yTooltip,
   useKeyboardNavigation,
   isContrastAdequate,
-}
+};

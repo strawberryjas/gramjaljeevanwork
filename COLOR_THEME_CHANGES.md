@@ -3,6 +3,7 @@
 ## Applied Color Scheme
 
 ### Primary Colors
+
 - **Deep Navy Blue** (`blue-900`, `blue-950`, `slate-900`)
   - Used for: Headers, sidebar header, main navigation
   - Example: Sidebar header background, top navigation bar
@@ -16,6 +17,7 @@
   - Example: Language text in header, accent borders, report format selection
 
 ### Secondary/Accent Colors
+
 - **Soft Gray** (`gray-50`, `gray-100`, `gray-200`)
   - Used for: Background sections, inactive states
   - Example: Sidebar footer, card backgrounds
@@ -28,6 +30,7 @@
   - Used for: Occasional section backgrounds (legacy)
 
 ### Text Colors
+
 - **Deep Navy/Black** (`blue-950`, `gray-900`)
   - Used for: Primary headings, important text
   - Example: Login page heading, form labels
@@ -43,6 +46,7 @@
 ## Changes Made
 
 ### Login Page (`src/components/auth/LoginScreen.jsx`)
+
 1. Background: Changed from gradient to solid white
 2. Left panel: Deep navy blue gradient (`blue-900` → `blue-950` → `slate-900`)
 3. Subtitle text: Changed to saffron (`amber-300`)
@@ -53,6 +57,7 @@
 8. Link colors: Changed to deep navy with amber hover (`blue-900` → `amber-600`)
 
 ### Main Application (`src/App.jsx`)
+
 1. **Sidebar Header**
    - Background: Deep navy gradient with amber border
    - Text: Amber for labels, white for content
@@ -91,23 +96,24 @@
 
 ## Color Mapping Reference
 
-| Old Color | New Color | Usage |
-|-----------|-----------|-------|
-| `bg-blue-600` | `bg-green-600` | Primary buttons |
-| `bg-blue-50` | `bg-green-50` | Active sidebar items |
-| `text-blue-700` | `text-green-800` | Active text |
-| `text-blue-600` | `text-amber-600` | Accent text |
-| `border-blue-500` | `border-green-600` | Active borders |
-| `bg-blue-100` | `bg-green-100` | Light backgrounds |
-| `focus:ring-blue-500` | `focus:ring-green-600` | Focus states |
+| Old Color             | New Color              | Usage                |
+| --------------------- | ---------------------- | -------------------- |
+| `bg-blue-600`         | `bg-green-600`         | Primary buttons      |
+| `bg-blue-50`          | `bg-green-50`          | Active sidebar items |
+| `text-blue-700`       | `text-green-800`       | Active text          |
+| `text-blue-600`       | `text-amber-600`       | Accent text          |
+| `border-blue-500`     | `border-green-600`     | Active borders       |
+| `bg-blue-100`         | `bg-green-100`         | Light backgrounds    |
+| `focus:ring-blue-500` | `focus:ring-green-600` | Focus states         |
 
 ## Files Modified
+
 - `src/components/auth/LoginScreen.jsx` - Login page colors
 - `src/App.jsx` - Main application colors
 
 ## Notes
+
 - All changes follow GIGW 3.0 (Guidelines for Indian Government Websites)
 - Color contrast ratios meet WCAG 2.0 AA standards
 - Maintains consistency with Ministry of Jal Shakti branding
 - Preserves existing functionality while updating visual appearance
-

@@ -41,23 +41,25 @@ This system provides realistic real-time simulation of a water distribution netw
 
 ### Core Files
 
-| File | Purpose |
-|------|---------|
+| File                                 | Purpose                                                  |
+| ------------------------------------ | -------------------------------------------------------- |
 | `src/data/infrastructure_state.json` | Global infrastructure model (tank, MCU, pump, pipelines) |
-| `src/data/realtime_data.json` | Sample time-series data (50 entries) |
-| `src/utils/simulationEngine.js` | Simulation engine with hydraulic logic |
-| `src/hooks/useSimulationData.js` | React hook for live UI updates |
-| `src/examples/SimulationExample.jsx` | Example components showing usage |
+| `src/data/realtime_data.json`        | Sample time-series data (50 entries)                     |
+| `src/utils/simulationEngine.js`      | Simulation engine with hydraulic logic                   |
+| `src/hooks/useSimulationData.js`     | React hook for live UI updates                           |
+| `src/examples/SimulationExample.jsx` | Example components showing usage                         |
 
 ## Infrastructure Model
 
 ### Overhead Tank
+
 - Tank level (%)
 - Tank capacity (liters)
 - Inlet/Outlet valve status
 - Water quality (turbidity, pH, chlorine, TDS)
 
 ### Control Unit (MCU)
+
 - Pump relay status
 - Valve relays (5 pipelines)
 - Sensor status (quality, pressure, flow)
@@ -65,6 +67,7 @@ This system provides realistic real-time simulation of a water distribution netw
 - Network status
 
 ### Pump House
+
 - Pump status (ON/OFF)
 - Flow output (L/min)
 - Pressure output (bar)
@@ -73,7 +76,9 @@ This system provides realistic real-time simulation of a water distribution netw
 - Motor temperature
 
 ### Pipelines (5 units)
+
 Each pipeline has:
+
 - Inlet sensors (flow, pressure, quality)
 - Outlet sensors (flow, pressure, quality)
 - Valve status
@@ -84,33 +89,39 @@ Each pipeline has:
 ## Simulation Behavior
 
 ### When Pump = ON
+
 - Flow rate increases through open pipelines
 - Pressure increases
 - Tank level decreases
 - Power consumption increases
 
 ### When Pump = OFF
+
 - Flow drops to zero
 - Pressure drops to idle
 - Tank level stays constant
 - Power consumption minimal (standby)
 
 ### When Valve = CLOSED
+
 - No flow through that pipeline
 - Pressure = 0
 - Leakage probability = 0
 
 ### Leakage Detection
+
 - Calculated from flow/pressure mismatch
 - Higher leakage = more pressure drop, flow loss
 - Alerts generated when probability > 40%
 
 ### Water Quality
+
 - Tank quality drifts slowly over time
 - Pipeline outlet quality deviates based on leakage
 - Quality alerts when deviation > 10%
 
 ### Safety Features
+
 - Auto-shutoff when tank level < 15%
 - MCU rejects unsafe commands
 - All commands logged
@@ -123,13 +134,13 @@ Each pipeline has:
 import { useSimulationData } from '../hooks/useSimulationData';
 
 function MyComponent() {
-  const { 
-    state,           // Full system state
-    tankLevel,       // Quick access to tank level
-    pumpStatus,      // Quick access to pump status
-    togglePump,      // Control function
-    toggleValve,     // Control function
-    isLive           // Whether simulation is running
+  const {
+    state, // Full system state
+    tankLevel, // Quick access to tank level
+    pumpStatus, // Quick access to pump status
+    togglePump, // Control function
+    toggleValve, // Control function
+    isLive, // Whether simulation is running
   } = useSimulationData();
 
   return (
@@ -177,28 +188,32 @@ const { health, commandsExecuted, networkStatus } = useMCU();
 ## Control Functions
 
 ### Pump Control
+
 ```javascript
-togglePump()        // Toggle ON/OFF
-setPumpStatus('ON') // Set specific status
+togglePump(); // Toggle ON/OFF
+setPumpStatus('ON'); // Set specific status
 ```
 
 ### Valve Control
+
 ```javascript
-toggleValve(pipelineId)           // Toggle specific pipeline valve
-setValveStatus(pipelineId, 'OPEN') // Set specific status
-toggleTankInlet()                  // Toggle tank inlet valve
-toggleTankOutlet()                 // Toggle tank outlet valve
+toggleValve(pipelineId); // Toggle specific pipeline valve
+setValveStatus(pipelineId, 'OPEN'); // Set specific status
+toggleTankInlet(); // Toggle tank inlet valve
+toggleTankOutlet(); // Toggle tank outlet valve
 ```
 
 ### Alert Management
+
 ```javascript
-acknowledgeAlert(alertId)  // Mark alert as seen
-clearAlerts()              // Clear all alerts
+acknowledgeAlert(alertId); // Mark alert as seen
+clearAlerts(); // Clear all alerts
 ```
 
 ## Simulation Engine API
 
 ### State Access
+
 ```javascript
 import { getSystemState, getLiveState } from '../utils/simulationEngine';
 
@@ -209,6 +224,7 @@ console.log(state.pipelines[0].inlet.flowSensor.value);
 ```
 
 ### Simulation Control
+
 ```javascript
 import { startSimulation, stopSimulation, subscribe } from '../utils/simulationEngine';
 
@@ -227,6 +243,7 @@ stopSimulation();
 ```
 
 ### MCU Commands
+
 ```javascript
 import { sendMCUCommand } from '../utils/simulationEngine';
 
@@ -274,4 +291,3 @@ sendMCUCommand('VALVE', 'CLOSED', { pipelineId: 2 });
 - Last 60 real-time entries kept in history
 - Last 50 MCU commands kept in log
 - Last 100 alerts kept in memory
-

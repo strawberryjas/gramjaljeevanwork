@@ -24,9 +24,7 @@ class ServiceRequestService {
   static async getRequests(filters = {}) {
     try {
       const queryString = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(
-        `/service-requests?${queryString}`
-      );
+      const response = await apiClient.get(`/service-requests?${queryString}`);
       return response;
     } catch (error) {
       throw error;
@@ -50,10 +48,7 @@ class ServiceRequestService {
    */
   static async updateRequest(requestId, updateData) {
     try {
-      const response = await apiClient.put(
-        `/service-requests/${requestId}`,
-        updateData
-      );
+      const response = await apiClient.put(`/service-requests/${requestId}`, updateData);
       return response;
     } catch (error) {
       throw error;
@@ -65,10 +60,10 @@ class ServiceRequestService {
    */
   static async updateStatus(requestId, status, notes = '') {
     try {
-      const response = await apiClient.patch(
-        `/service-requests/${requestId}/status`,
-        { status, notes }
-      );
+      const response = await apiClient.patch(`/service-requests/${requestId}/status`, {
+        status,
+        notes,
+      });
       return response;
     } catch (error) {
       throw error;
@@ -80,10 +75,9 @@ class ServiceRequestService {
    */
   static async assignTechnician(requestId, technicianId) {
     try {
-      const response = await apiClient.post(
-        `/service-requests/${requestId}/assign`,
-        { technicianId }
-      );
+      const response = await apiClient.post(`/service-requests/${requestId}/assign`, {
+        technicianId,
+      });
       return response;
     } catch (error) {
       throw error;
@@ -95,10 +89,7 @@ class ServiceRequestService {
    */
   static async addComment(requestId, comment) {
     try {
-      const response = await apiClient.post(
-        `/service-requests/${requestId}/comments`,
-        { comment }
-      );
+      const response = await apiClient.post(`/service-requests/${requestId}/comments`, { comment });
       return response;
     } catch (error) {
       throw error;
@@ -139,10 +130,10 @@ class ServiceRequestService {
    */
   static async rateRequest(requestId, rating, feedback) {
     try {
-      const response = await apiClient.post(
-        `/service-requests/${requestId}/rate`,
-        { rating, feedback }
-      );
+      const response = await apiClient.post(`/service-requests/${requestId}/rate`, {
+        rating,
+        feedback,
+      });
       return response;
     } catch (error) {
       throw error;
@@ -155,9 +146,7 @@ class ServiceRequestService {
   static async getStatistics(filters = {}) {
     try {
       const queryString = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(
-        `/service-requests/statistics?${queryString}`
-      );
+      const response = await apiClient.get(`/service-requests/statistics?${queryString}`);
       return response;
     } catch (error) {
       throw error;
@@ -170,9 +159,7 @@ class ServiceRequestService {
   static async exportRequests(filters = {}) {
     try {
       const queryString = new URLSearchParams(filters).toString();
-      const response = await apiClient.get(
-        `/service-requests/export/csv?${queryString}`
-      );
+      const response = await apiClient.get(`/service-requests/export/csv?${queryString}`);
       return response;
     } catch (error) {
       throw error;

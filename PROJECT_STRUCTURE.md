@@ -62,17 +62,21 @@ gramjaljeevanwork/
 ## 🎯 Component Architecture
 
 ### **Authentication Layer**
+
 - `LoginScreen.jsx` - Handles user authentication and role selection
 
 ### **Dashboard Layer (Role-Based)**
+
 - `GuestDashboard.jsx` - Limited read-only view for public users
 - `TechnicianDashboard.jsx` - Full operational control for technicians
 - `ResearcherDashboard.jsx` - Advanced analytics for researchers
 
 ### **Shared Components**
+
 Reusable UI components used across different dashboards
 
 ### **GIS/Mapping**
+
 - `PipelineMapViewer.jsx` - Interactive map with Leaflet.js
 
 ## 📊 Data Flow
@@ -131,6 +135,7 @@ npm run preview
 ## 🔐 Access Control
 
 Access is controlled at the component level based on `user.role`:
+
 - Guest → `GuestDashboard`
 - Technician → `TechnicianDashboard` + all tabs
 - Researcher → `ResearcherDashboard` + analytics tools
@@ -138,4 +143,3 @@ Access is controlled at the component level based on `user.role`:
 ## 📦 Build Output
 
 Production build creates optimized files in `dist/` directory.
-

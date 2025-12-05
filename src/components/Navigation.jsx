@@ -40,11 +40,17 @@ export const Navigation = ({
               <div className="hidden xl:flex flex-col bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border-l-4 border-amber-500 shadow-lg">
                 <div className="flex items-center gap-2">
                   <IconImage name="landmark.svg" className="h-9 w-9" aria-hidden="true" />
-                  <div className="text-[10px] font-black text-amber-400 uppercase tracking-widest" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  <div
+                    className="text-[10px] font-black text-amber-400 uppercase tracking-widest"
+                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                  >
                     Gram Panchayat
                   </div>
                 </div>
-                <div className="text-sm font-bold text-white leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                <div
+                  className="text-sm font-bold text-white leading-tight"
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                >
                   Shivpur
                 </div>
               </div>
@@ -53,9 +59,19 @@ export const Navigation = ({
             {/* Center Section: Primary Navigation (Desktop) */}
             <nav className="hidden lg:flex items-center gap-2 flex-1 justify-center max-w-4xl">
               {isPublicUser ? (
-                <PublicNavigation activeTab={activeTab} setActiveTab={setActiveTab} setMobileMenuOpen={setMobileMenuOpen} t={t} />
+                <PublicNavigation
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  setMobileMenuOpen={setMobileMenuOpen}
+                  t={t}
+                />
               ) : (
-                <TechnicianNavigation activeTab={activeTab} setActiveTab={setActiveTab} setMobileMenuOpen={setMobileMenuOpen} t={t} />
+                <TechnicianNavigation
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  setMobileMenuOpen={setMobileMenuOpen}
+                  t={t}
+                />
               )}
             </nav>
 
@@ -120,7 +136,7 @@ const PublicNavigation = ({ activeTab, setActiveTab, setMobileMenuOpen, t }) => 
 
   return (
     <>
-      {navItems.map(item => (
+      {navItems.map((item) => (
         <NavButton
           key={item.id}
           isActive={activeTab === item.id}
@@ -146,7 +162,7 @@ const TechnicianNavigation = ({ activeTab, setActiveTab, setMobileMenuOpen, t })
 
   return (
     <>
-      {navItems.map(item => (
+      {navItems.map((item) => (
         <NavButton
           key={item.id}
           isActive={activeTab === item.id}
@@ -195,15 +211,22 @@ const UserMenuDropdown = ({
     <div className="bg-white border-b border-gray-200 shadow-lg">
       <div className="p-6">
         <div className="mb-4 pb-4 border-b border-gray-200">
-          <p className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p
+            className="font-black text-gray-900 text-lg"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
             {user?.name}
           </p>
           <p className="text-sm text-gray-500">{user?.role}</p>
         </div>
 
         <div className="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
-          <label className="block text-xs font-black text-blue-950 uppercase mb-2 tracking-widest flex items-center gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-            <IconImage name="language-icon.svg" className="h-8 w-8" aria-hidden="true" /> {t('language.selectorLabel')}
+          <label
+            className="block text-xs font-black text-blue-950 uppercase mb-2 tracking-widest flex items-center gap-2"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            <IconImage name="language-icon.svg" className="h-8 w-8" aria-hidden="true" />{' '}
+            {t('language.selectorLabel')}
           </label>
           <LanguageSelector size="sm" hideLabel={false} />
         </div>
@@ -216,7 +239,10 @@ const UserMenuDropdown = ({
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all duration-300 transform hover:scale-105 mt-4"
         >
           <IconImage name="settings-gear.svg" className="h-8 w-8" aria-hidden="true" />
-          <span className="text-sm font-bold text-amber-900 uppercase tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <span
+            className="text-sm font-bold text-amber-900 uppercase tracking-wide"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
             {t('accessibility.button')}
           </span>
         </button>
@@ -236,7 +262,8 @@ const UserMenuDropdown = ({
           className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black uppercase tracking-widest transition-all duration-300 transform hover:scale-105 shadow-xl mt-4"
           style={{ fontFamily: "'Montserrat', sans-serif" }}
         >
-          <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" /> {t('nav.logout')}
+          <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />{' '}
+          {t('nav.logout')}
         </button>
       </div>
     </div>
@@ -268,7 +295,7 @@ const MobileNavigation = ({
   return (
     <div className="lg:hidden border-t border-gray-200 bg-white">
       <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
-        {getMenuItems().map(item => {
+        {getMenuItems().map((item) => {
           const Icon = item.icon;
           return (
             <button
@@ -291,7 +318,8 @@ const MobileNavigation = ({
           onClick={handleLogout}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all mt-4"
         >
-          <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" /> {t('nav.logout')}
+          <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />{' '}
+          {t('nav.logout')}
         </button>
       </div>
     </div>

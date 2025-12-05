@@ -11,6 +11,7 @@
 - [ ] Test bundle size in production build
 
 **Action Items:**
+
 ```bash
 npm run build
 npm run analyze
@@ -25,13 +26,14 @@ npm run analyze
 - [ ] Add error boundaries for failed lazy loads
 
 **Example:**
+
 ```javascript
-import { createLazyComponent } from './utils/lazyLoading'
+import { createLazyComponent } from './utils/lazyLoading';
 
 const LazyTechnicianDashboard = createLazyComponent(
   () => import('./components/dashboards/TechnicianDashboard'),
   'TechnicianDashboard'
-)
+);
 ```
 
 ### Image & Asset Optimization
@@ -50,6 +52,7 @@ const LazyTechnicianDashboard = createLazyComponent(
 - [ ] Check for duplicate styles across components
 
 **Verify:**
+
 ```bash
 npm run build
 # Check dist/style.*.css file size in build output
@@ -82,8 +85,9 @@ npm run build
 - [ ] Ensure logical tab order
 
 **Check:**
+
 ```javascript
-import { useKeyboardNavigation } from './utils/a11y'
+import { useKeyboardNavigation } from './utils/a11y';
 ```
 
 ### ARIA & Semantic HTML
@@ -153,6 +157,7 @@ import { useKeyboardNavigation } from './utils/a11y'
 - [ ] Aim for 80%+ code coverage
 
 **Run:**
+
 ```bash
 npm run test
 npm run test:coverage
@@ -192,6 +197,7 @@ npm run test:coverage
 - [ ] Run security audit (npm audit)
 
 **Trigger:**
+
 ```bash
 git push origin feature-branch
 ```
@@ -207,6 +213,7 @@ git push origin feature-branch
 - [ ] Keep dependencies updated
 
 **Check:**
+
 ```bash
 npm audit
 npm audit fix
@@ -230,6 +237,7 @@ npm audit fix
 - [ ] Document environment variables in .env.example
 
 **Storybook:**
+
 ```bash
 npm run storybook
 ```
@@ -251,9 +259,10 @@ npm run storybook
 - [ ] Test error capture with sample error
 
 **Initialize in main.jsx:**
+
 ```javascript
-import { initSentry } from './utils/sentry'
-initSentry()
+import { initSentry } from './utils/sentry';
+initSentry();
 ```
 
 ### User Analytics

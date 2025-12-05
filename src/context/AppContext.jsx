@@ -1,11 +1,7 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
 import { useStickyState } from '../hooks/useStickyState';
 import i18n from '../i18n';
-import {
-  LEGACY_LANGUAGE_MAP,
-  SUPPORTED_LANGUAGE_CODES,
-  getLanguageLabel,
-} from '../i18n/languages';
+import { LEGACY_LANGUAGE_MAP, SUPPORTED_LANGUAGE_CODES, getLanguageLabel } from '../i18n/languages';
 
 /**
  * AppContext - Global State Management
@@ -29,9 +25,9 @@ export const AppContextProvider = ({ children }) => {
     localStorage.setItem('gjj_language', 'en');
     return 'en';
   };
-  
+
   const [language, setLanguage] = useStickyState(getInitialLanguage(), 'gjj_language');
-  
+
   // Ensure language is always valid - this runs after initial render
   useEffect(() => {
     const stored = localStorage.getItem('gjj_language');
@@ -94,7 +90,7 @@ export const AppContextProvider = ({ children }) => {
   const addNotification = useCallback((message, type = 'info', duration = 3000) => {
     const id = Date.now();
     const notification = { id, message, type };
-    setNotifications(prev => [...prev, notification]);
+    setNotifications((prev) => [...prev, notification]);
 
     if (duration > 0) {
       setTimeout(() => {
@@ -104,25 +100,28 @@ export const AppContextProvider = ({ children }) => {
   }, []);
 
   const removeNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
   // ============ AUTH METHODS ============
-  const login = useCallback((userData, lang = 'en') => {
-    setAuthLoading(true);
-    setAuthError(null);
-    
-    // Simulate auth API call
-    setTimeout(() => {
-      setUser(userData);
-      setIsAuthenticated(true);
-      const nextLang = SUPPORTED_LANGUAGE_CODES.includes(lang) ? lang : 'en';
-      setLanguage(nextLang);
-      i18n.changeLanguage(nextLang);
-      setAuthLoading(false);
-      addNotification('Login successful', 'success', 3000);
-    }, 500);
-  }, [setUser, setLanguage]);
+  const login = useCallback(
+    (userData, lang = 'en') => {
+      setAuthLoading(true);
+      setAuthError(null);
+
+      // Simulate auth API call
+      setTimeout(() => {
+        setUser(userData);
+        setIsAuthenticated(true);
+        const nextLang = SUPPORTED_LANGUAGE_CODES.includes(lang) ? lang : 'en';
+        setLanguage(nextLang);
+        i18n.changeLanguage(nextLang);
+        setAuthLoading(false);
+        addNotification('Login successful', 'success', 3000);
+      }, 500);
+    },
+    [setUser, setLanguage]
+  );
 
   const logout = useCallback(() => {
     setUser(null);
@@ -132,45 +131,54 @@ export const AppContextProvider = ({ children }) => {
     addNotification('Logged out successfully', 'info', 2000);
   }, [setUser]);
 
-  const updateUser = useCallback((updates) => {
-    setUser(prev => prev ? { ...prev, ...updates } : null);
-  }, [setUser]);
+  const updateUser = useCallback(
+    (updates) => {
+      setUser((prev) => (prev ? { ...prev, ...updates } : null));
+    },
+    [setUser]
+  );
 
   const setLoginError = useCallback((error) => {
     setAuthError(error);
   }, []);
 
   // ============ LANGUAGE METHODS ============
-  const changeLanguage = useCallback((newLanguage) => {
-    console.log('🌍 Language Change Requested:', newLanguage);
-    console.log('📍 Current language:', language);
-    console.log('✅ Is supported?', SUPPORTED_LANGUAGE_CODES.includes(newLanguage));
-    
-    const nextLanguage = SUPPORTED_LANGUAGE_CODES.includes(newLanguage) ? newLanguage : 'en';
-    console.log('🎯 Changing to:', nextLanguage);
-    
-    setLanguage(nextLanguage);
-    i18n.changeLanguage(nextLanguage).then(() => {
-      console.log('✨ i18n language updated to:', i18n.language);
-      console.log('🔄 Components using useTranslation() will now re-render');
-    });
-    
-    const langLabel = getLanguageLabel(nextLanguage);
-    addNotification(`🌍 Language changed to ${langLabel}`, 'success', 3000);
-  }, [setLanguage, addNotification, language]);
+  const changeLanguage = useCallback(
+    (newLanguage) => {
+      console.log('🌍 Language Change Requested:', newLanguage);
+      console.log('📍 Current language:', language);
+      console.log('✅ Is supported?', SUPPORTED_LANGUAGE_CODES.includes(newLanguage));
+
+      const nextLanguage = SUPPORTED_LANGUAGE_CODES.includes(newLanguage) ? newLanguage : 'en';
+      console.log('🎯 Changing to:', nextLanguage);
+
+      setLanguage(nextLanguage);
+      i18n.changeLanguage(nextLanguage).then(() => {
+        console.log('✨ i18n language updated to:', i18n.language);
+        console.log('🔄 Components using useTranslation() will now re-render');
+      });
+
+      const langLabel = getLanguageLabel(nextLanguage);
+      addNotification(`🌍 Language changed to ${langLabel}`, 'success', 3000);
+    },
+    [setLanguage, addNotification, language]
+  );
 
   // ============ THEME METHODS ============
   const toggleTheme = useCallback(() => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   }, [setTheme]);
 
-  const setThemedMode = useCallback((mode) => {
-    setTheme(mode);
-  }, [setTheme]);
+  const setThemedMode = useCallback(
+    (mode) => {
+      setTheme(mode);
+    },
+    [setTheme]
+  );
 
   // ============ SIDEBAR METHODS ============
   const toggleSidebar = useCallback(() => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen((prev) => !prev);
   }, []);
 
   const closeSidebar = useCallback(() => {
@@ -214,9 +222,5 @@ export const AppContextProvider = ({ children }) => {
     closeSidebar,
   };
 
-  return (
-    <AppContext.Provider value={contextValue}>
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };

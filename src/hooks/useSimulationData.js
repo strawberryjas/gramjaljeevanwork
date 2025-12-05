@@ -1,6 +1,6 @@
 /**
  * React Hook for Live Water Supply Simulation Data
- * 
+ *
  * Provides real-time access to the simulation engine state.
  * All UI components should use this hook to get live data.
  */
@@ -22,7 +22,7 @@ import {
   isSimulationRunning,
   setPumpTimer,
   schedulePumpStop,
-  cancelPumpSchedule
+  cancelPumpSchedule,
 } from '../utils/simulationEngine';
 
 /**
@@ -138,7 +138,7 @@ export function useSimulationData(autoStart = true) {
     // Live state
     state,
     isLive,
-    
+
     // Convenience accessors
     tank: state.overheadTank,
     pump: state.pumpHouse,
@@ -148,14 +148,14 @@ export function useSimulationData(autoStart = true) {
     alerts: state.systemMetrics?.alerts || [],
     systemStatus: state.systemStatus,
     pumpSchedule: state.pumpSchedule,
-    
+
     // Quick access values
     tankLevel: state.overheadTank?.tankLevel || 0,
     pumpStatus: state.pumpHouse?.pumpStatus || 'OFF',
     totalFlow: state.systemMetrics?.totalFlowRate || 0,
     avgPressure: state.systemMetrics?.averagePressure || 0,
     efficiency: state.systemMetrics?.systemEfficiency || 0,
-    
+
     // Control functions
     togglePump: handleTogglePump,
     toggleValve: handleToggleValve,
@@ -166,15 +166,15 @@ export function useSimulationData(autoStart = true) {
     schedulePumpTimer: handleSetPumpTimer,
     schedulePumpStop: handleSchedulePumpStop,
     cancelPumpSchedule: handleCancelPumpSchedule,
-    
+
     // Simulation control
     startSimulation: start,
     stopSimulation: stop,
     refresh,
     getHistory,
-    
+
     // Raw access
-    getLiveState
+    getLiveState,
   };
 }
 
@@ -184,9 +184,9 @@ export function useSimulationData(autoStart = true) {
  */
 export function usePipeline(pipelineId) {
   const { state, toggleValve } = useSimulationData();
-  
-  const pipeline = state.pipelines?.find(p => p.pipelineId === pipelineId) || null;
-  
+
+  const pipeline = state.pipelines?.find((p) => p.pipelineId === pipelineId) || null;
+
   const toggle = useCallback(() => {
     return toggleValve(pipelineId);
   }, [pipelineId, toggleValve]);
@@ -200,7 +200,7 @@ export function usePipeline(pipelineId) {
     outletPressure: pipeline?.outlet?.pressureSensor?.value || 0,
     leakageProbability: pipeline?.leakageProbability || 0,
     qualityDeviation: pipeline?.qualityDeviation || 0,
-    toggleValve: toggle
+    toggleValve: toggle,
   };
 }
 
@@ -209,7 +209,7 @@ export function usePipeline(pipelineId) {
  */
 export function useTank() {
   const { tank, toggleTankInlet, toggleTankOutlet } = useSimulationData();
-  
+
   return {
     level: tank?.tankLevel || 0,
     capacity: tank?.tankCapacity || 50000,
@@ -221,7 +221,7 @@ export function useTank() {
     fillRate: tank?.fillRate || 0,
     drainRate: tank?.drainRate || 0,
     toggleInlet: toggleTankInlet,
-    toggleOutlet: toggleTankOutlet
+    toggleOutlet: toggleTankOutlet,
   };
 }
 
@@ -230,7 +230,7 @@ export function useTank() {
  */
 export function usePump() {
   const { pump, togglePump } = useSimulationData();
-  
+
   return {
     status: pump?.pumpStatus || 'OFF',
     flowOutput: pump?.pumpFlowOutput || 0,
@@ -242,7 +242,7 @@ export function usePump() {
     vibration: pump?.vibrationLevel || 0,
     voltage: pump?.operatingVoltage || 0,
     current: pump?.operatingCurrent || 0,
-    toggle: togglePump
+    toggle: togglePump,
   };
 }
 
@@ -251,16 +251,17 @@ export function usePump() {
  */
 export function useWaterQuality() {
   const { tank, pipelines } = useSimulationData();
-  
+
   const tankQuality = tank?.waterQuality || {};
-  
-  const pipelineQualities = pipelines?.map(p => ({
-    pipelineId: p.pipelineId,
-    pipelineName: p.pipelineName,
-    inlet: p.inlet?.qualitySensor || {},
-    outlet: p.outlet?.qualitySensor || {},
-    deviation: p.qualityDeviation || 0
-  })) || [];
+
+  const pipelineQualities =
+    pipelines?.map((p) => ({
+      pipelineId: p.pipelineId,
+      pipelineName: p.pipelineName,
+      inlet: p.inlet?.qualitySensor || {},
+      outlet: p.outlet?.qualitySensor || {},
+      deviation: p.qualityDeviation || 0,
+    })) || [];
 
   return {
     tankQuality,
@@ -268,7 +269,7 @@ export function useWaterQuality() {
     pH: tankQuality.pH || 7,
     chlorine: tankQuality.chlorine || 0,
     TDS: tankQuality.TDS || 0,
-    pipelineQualities
+    pipelineQualities,
   };
 }
 
@@ -277,11 +278,11 @@ export function useWaterQuality() {
  */
 export function useAlerts() {
   const { alerts, acknowledgeAlert, clearAlerts } = useSimulationData();
-  
-  const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL' && !a.acknowledged);
-  const warningAlerts = alerts.filter(a => a.severity === 'WARNING' && !a.acknowledged);
-  const infoAlerts = alerts.filter(a => a.severity === 'INFO' && !a.acknowledged);
-  const unacknowledgedCount = alerts.filter(a => !a.acknowledged).length;
+
+  const criticalAlerts = alerts.filter((a) => a.severity === 'CRITICAL' && !a.acknowledged);
+  const warningAlerts = alerts.filter((a) => a.severity === 'WARNING' && !a.acknowledged);
+  const infoAlerts = alerts.filter((a) => a.severity === 'INFO' && !a.acknowledged);
+  const unacknowledgedCount = alerts.filter((a) => !a.acknowledged).length;
 
   return {
     all: alerts,
@@ -290,7 +291,7 @@ export function useAlerts() {
     info: infoAlerts,
     unacknowledgedCount,
     acknowledge: acknowledgeAlert,
-    clear: clearAlerts
+    clear: clearAlerts,
   };
 }
 
@@ -299,7 +300,7 @@ export function useAlerts() {
  */
 export function useMCU() {
   const { mcu } = useSimulationData();
-  
+
   return {
     health: mcu?.MCUHealth || 0,
     uptime: mcu?.MCUUptime || 0,
@@ -312,7 +313,7 @@ export function useMCU() {
     executedCommands: mcu?.executedCommands || [],
     pendingCommands: mcu?.pendingCommands || [],
     pumpRelay: mcu?.pumpRelayStatus || 'OFF',
-    valveRelays: mcu?.valveRelays || {}
+    valveRelays: mcu?.valveRelays || {},
   };
 }
 
@@ -321,7 +322,7 @@ export function useMCU() {
  */
 export function useSystemMetrics() {
   const { metrics, systemStatus } = useSimulationData();
-  
+
   return {
     status: systemStatus,
     totalFlow: metrics?.totalFlowRate || 0,
@@ -330,10 +331,9 @@ export function useSystemMetrics() {
     totalLeakage: metrics?.totalLeakage || 0,
     avgQualityDeviation: metrics?.averageQualityDeviation || 0,
     householdsServed: metrics?.totalHouseholdsServed || 0,
-    dailyWaterSupplied: metrics?.dailyWaterSupplied || 0
+    dailyWaterSupplied: metrics?.dailyWaterSupplied || 0,
   };
 }
 
 // Default export
 export default useSimulationData;
-

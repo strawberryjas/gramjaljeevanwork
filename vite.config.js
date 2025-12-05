@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   server: {
     host: '127.0.0.1',
-    port: 5178
+    port: 5178,
   },
   build: {
     chunkSizeWarningLimit: 1200,
@@ -19,11 +19,11 @@ export default defineConfig({
           react: ['react', 'react-dom'],
           recharts: ['recharts'],
           i18n: ['i18next', 'react-i18next'],
-          ui: ['lucide-react']
-        }
-      }
-    }
+          ui: ['lucide-react'],
+        },
+      },
+    },
   },
   // Ensure service worker is copied to dist
   publicDir: 'public',
-})
+});

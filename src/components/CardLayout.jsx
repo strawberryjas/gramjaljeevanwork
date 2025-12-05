@@ -7,12 +7,7 @@ import React, { useState } from 'react';
  * - Clean, modern tab design
  * - Mobile responsive
  */
-export const TabbedPanel = ({
-  tabs,
-  defaultTab = 0,
-  onTabChange,
-  className = '',
-}) => {
+export const TabbedPanel = ({ tabs, defaultTab = 0, onTabChange, className = '' }) => {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   const handleTabClick = (index) => {
@@ -21,7 +16,9 @@ export const TabbedPanel = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}>
+    <div
+      className={`bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}
+    >
       {/* Tab Headers */}
       <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
         {tabs.map((tab, index) => {
@@ -56,9 +53,7 @@ export const TabbedPanel = ({
       </div>
 
       {/* Tab Content */}
-      <div className="p-6 lg:p-8 animate-fadeIn">
-        {tabs[activeTab].content}
-      </div>
+      <div className="p-6 lg:p-8 animate-fadeIn">{tabs[activeTab].content}</div>
     </div>
   );
 };
@@ -85,7 +80,9 @@ export const CardSection = ({
     >
       {/* Header */}
       {title && (
-        <div className={`px-6 lg:px-8 py-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-750 dark:to-slate-800 ${headerClassName}`}>
+        <div
+          className={`px-6 lg:px-8 py-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-750 dark:to-slate-800 ${headerClassName}`}
+        >
           <div className="flex items-start gap-3">
             {Icon && (
               <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex-shrink-0">
@@ -97,9 +94,7 @@ export const CardSection = ({
                 {title}
               </h3>
               {description && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  {description}
-                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{description}</p>
               )}
             </div>
           </div>
@@ -107,9 +102,7 @@ export const CardSection = ({
       )}
 
       {/* Content */}
-      <div className="px-6 lg:px-8 py-6">
-        {children}
-      </div>
+      <div className="px-6 lg:px-8 py-6">{children}</div>
 
       {/* Footer */}
       {footer && (
@@ -146,11 +139,31 @@ export const MetricCard = ({
   };
 
   const colorClasses = {
-    blue: { icon: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-400' },
-    amber: { icon: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-600 dark:text-amber-400' },
-    green: { icon: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-600 dark:text-green-400' },
-    red: { icon: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-600 dark:text-red-400' },
-    purple: { icon: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-600 dark:text-purple-400' },
+    blue: {
+      icon: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      text: 'text-blue-600 dark:text-blue-400',
+    },
+    amber: {
+      icon: 'text-amber-500',
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      text: 'text-amber-600 dark:text-amber-400',
+    },
+    green: {
+      icon: 'text-green-500',
+      bg: 'bg-green-50 dark:bg-green-900/20',
+      text: 'text-green-600 dark:text-green-400',
+    },
+    red: {
+      icon: 'text-red-500',
+      bg: 'bg-red-50 dark:bg-red-900/20',
+      text: 'text-red-600 dark:text-red-400',
+    },
+    purple: {
+      icon: 'text-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-900/20',
+      text: 'text-purple-600 dark:text-purple-400',
+    },
   };
 
   const colors = colorClasses[color] || colorClasses.blue;
@@ -186,11 +199,13 @@ export const MetricCard = ({
 
       {/* Trend indicator */}
       {trend && (
-        <div className={`flex items-center gap-1 text-sm font-semibold ${
-          trendDirection === 'up'
-            ? 'text-green-600 dark:text-green-400'
-            : 'text-red-600 dark:text-red-400'
-        }`}>
+        <div
+          className={`flex items-center gap-1 text-sm font-semibold ${
+            trendDirection === 'up'
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-red-600 dark:text-red-400'
+          }`}
+        >
           <span>{trendDirection === 'up' ? '↑' : '↓'}</span>
           <span>{trend}</span>
         </div>

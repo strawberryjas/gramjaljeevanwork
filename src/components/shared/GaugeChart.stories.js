@@ -71,4 +71,3 @@ export const DifferentMax = {
     color: '#8B5CF6',
   },
 };
-

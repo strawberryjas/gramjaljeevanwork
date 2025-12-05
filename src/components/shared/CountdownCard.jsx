@@ -5,8 +5,12 @@ export const CountdownCard = ({ title, targetDate, icon: Icon, iconSrc }) => {
   const isUrgent = daysLeft < 3;
 
   return (
-    <div className={`p-4 rounded-xl border flex items-center gap-4 ${isUrgent ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
-      <div className={`p-3 rounded-full ${isUrgent ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+    <div
+      className={`p-4 rounded-xl border flex items-center gap-4 ${isUrgent ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}
+    >
+      <div
+        className={`p-3 rounded-full ${isUrgent ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`}
+      >
         {iconSrc ? (
           <img src={iconSrc} alt={title} className="w-5 h-5 object-contain" />
         ) : Icon ? (
@@ -22,4 +26,3 @@ export const CountdownCard = ({ title, targetDate, icon: Icon, iconSrc }) => {
     </div>
   );
 };
-

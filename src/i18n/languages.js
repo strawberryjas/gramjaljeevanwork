@@ -51,5 +51,5 @@ export const getLanguageDisplayName = (code) => {
   return `${lang.label} • ${lang.nativeLabel}`;
 };
 
-export const getLanguageLabel = (code) => LANGUAGE_METADATA[code]?.label ?? LANGUAGE_METADATA.en.label;
-
+export const getLanguageLabel = (code) =>
+  LANGUAGE_METADATA[code]?.label ?? LANGUAGE_METADATA.en.label;

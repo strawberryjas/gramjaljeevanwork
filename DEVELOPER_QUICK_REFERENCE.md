@@ -3,6 +3,7 @@
 ## 🚀 Getting Started
 
 ### First Time Setup
+
 ```bash
 # 1. Install dependencies
 npm install
@@ -18,7 +19,9 @@ npm run dev
 ```
 
 ### Environment Variables
+
 Create `.env.local` in project root:
+
 ```bash
 VITE_API_URL=http://localhost:3001/api
 VITE_USE_MSW=true              # Use mock APIs for frontend-only dev
@@ -31,6 +34,7 @@ VITE_APP_ENV=development
 ## 💻 Daily Development Commands
 
 ### Start Dev Server
+
 ```bash
 npm run dev
 # Opens http://localhost:5173
@@ -38,6 +42,7 @@ npm run dev
 ```
 
 ### View Component Stories
+
 ```bash
 npm run storybook
 # Opens http://localhost:6006
@@ -45,6 +50,7 @@ npm run storybook
 ```
 
 ### Run Tests (Watch Mode)
+
 ```bash
 npm run test
 # Press 'a' to run all tests
@@ -53,6 +59,7 @@ npm run test
 ```
 
 ### Run Tests in UI
+
 ```bash
 npm run test:ui
 # Opens interactive test UI
@@ -64,6 +71,7 @@ npm run test:ui
 ## 🧹 Code Quality
 
 ### Format Code
+
 ```bash
 # Format all files
 npm run format
@@ -73,6 +81,7 @@ npm run format:check
 ```
 
 ### Fix Lint Issues
+
 ```bash
 # Check for issues
 npm run lint
@@ -82,6 +91,7 @@ npm run lint:fix
 ```
 
 ### Combined Quality Check
+
 ```bash
 # Run all checks
 npm run lint && npm run format:check && npm run test
@@ -92,6 +102,7 @@ npm run lint && npm run format:check && npm run test
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 # Run all tests once
 npm run test
@@ -107,6 +118,7 @@ npm run test:coverage
 ```
 
 ### Component Tests
+
 ```bash
 # Run component-specific tests
 npm run test -- components
@@ -116,6 +128,7 @@ npm run test:ui
 ```
 
 ### Accessibility Audit
+
 ```bash
 # Run a11y audit (requires dev server running)
 npm run dev &
@@ -127,12 +140,14 @@ npm run a11y:audit
 ## 🏗️ Building & Deployment
 
 ### Development Build
+
 ```bash
 npm run build
 # Creates optimized build in dist/ folder
 ```
 
 ### Analyze Bundle
+
 ```bash
 npm run analyze
 # Generates interactive bundle visualization
@@ -140,6 +155,7 @@ npm run analyze
 ```
 
 ### Preview Production Build
+
 ```bash
 npm run build
 npm run preview
@@ -148,6 +164,7 @@ npm run preview
 ```
 
 ### Type Checking (if TypeScript added later)
+
 ```bash
 npm run type-check
 # Currently disabled (no TypeScript)
@@ -160,29 +177,34 @@ npm run type-check
 ### Available Guides
 
 **Backend Integration:** `BACKEND_INTEGRATION_GUIDE.md`
+
 - API endpoint specs
 - Authentication flow
 - Environment configuration
 
 **Performance & Optimization:** `FRONTEND_OPTIMIZATION_CHECKLIST.md`
+
 - Performance targets
 - Bundle optimization
 - Accessibility checklist
 - Security best practices
 
 **Testing Strategy:** `FRONTEND_TESTING_GUIDE.md`
+
 - Unit testing examples
 - Component testing patterns
 - E2E testing setup
 - Coverage goals
 
 **Security & Config:** `FRONTEND_SECURITY_CONFIG.md`
+
 - Environment variables
 - Secret management
 - XSS prevention
 - Security checklist
 
 **Implementation Summary:** `FRONTEND_IMPLEMENTATION_SUMMARY.md`
+
 - What was implemented
 - Status of all tasks
 - Quick start guide
@@ -192,6 +214,7 @@ npm run type-check
 ## 🛠️ Common Tasks
 
 ### Add New Component Story
+
 ```bash
 # Create MyComponent.stories.js in component folder
 # Example: src/components/shared/MyComponent.stories.js
@@ -213,6 +236,7 @@ export const Variant1 = {
 ```
 
 ### Add New Unit Test
+
 ```bash
 # Create test file alongside component
 # Example: src/__tests__/hooks.useMyHook.test.js
@@ -230,6 +254,7 @@ describe('useMyHook', () => {
 ```
 
 ### Add Feature Flag
+
 ```bash
 // In src/api/featureFlags.js
 MY_NEW_FEATURE: process.env.VITE_MY_NEW_FEATURE === 'true'
@@ -242,6 +267,7 @@ if (isFeatureEnabled('MY_NEW_FEATURE')) {
 ```
 
 ### Add API Endpoint
+
 ```bash
 // In src/api/myService.js
 export class MyService {
@@ -257,6 +283,7 @@ const data = await MyService.getMyData()
 ```
 
 ### Use Lazy Loading
+
 ```bash
 import { createLazyComponent } from './utils/lazyLoading'
 
@@ -274,6 +301,7 @@ const LazyMyComponent = createLazyComponent(
 ## 🔍 Debugging
 
 ### Debug in Browser DevTools
+
 ```bash
 npm run dev
 # Open DevTools (F12)
@@ -282,6 +310,7 @@ npm run dev
 ```
 
 ### Debug Tests
+
 ```bash
 npm run test:ui
 # Click test to see details
@@ -289,6 +318,7 @@ npm run test:ui
 ```
 
 ### Debug MSW (Mock APIs)
+
 ```bash
 # Check MSW is intercepting:
 # DevTools > Network tab
@@ -299,6 +329,7 @@ npm run test:ui
 ```
 
 ### Check Environment Variables
+
 ```bash
 # In browser console:
 console.log(import.meta.env)
@@ -309,6 +340,7 @@ console.log(import.meta.env)
 ## 📦 Git Workflow
 
 ### Before Committing
+
 ```bash
 # Hooks run automatically:
 # 1. ESLint --fix
@@ -321,11 +353,13 @@ git commit -m "message"
 ```
 
 ### Bypass Hooks (Not Recommended)
+
 ```bash
 git commit --no-verify
 ```
 
 ### View Git Status
+
 ```bash
 git status
 git diff                    # Show unstaged changes
@@ -337,18 +371,21 @@ git diff --cached          # Show staged changes
 ## 🚨 Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Dev server on different port
 npm run dev -- --port 3000
 ```
 
 ### Clear Cache & Reinstall
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### Reset to Clean State
+
 ```bash
 npm run format
 npm run lint:fix
@@ -357,6 +394,7 @@ npm run build
 ```
 
 ### Check for Errors
+
 ```bash
 npm run lint
 npm audit
@@ -367,14 +405,14 @@ npm run test
 
 ## 🌐 Environment Variable Cheat Sheet
 
-| Variable | Purpose | Dev Value | Prod Value |
-|----------|---------|-----------|------------|
-| `VITE_API_URL` | API base URL | http://localhost:3001/api | https://api.example.com |
-| `VITE_USE_MSW` | Enable mock APIs | true | false |
-| `VITE_DEBUG_MODE` | Enable debug logs | true | false |
-| `VITE_APP_ENV` | Environment name | development | production |
-| `VITE_BACKEND_AUTH` | Enable real auth | false | true |
-| `VITE_SENTRY_DSN` | Error tracking | (empty) | https://your-sentry-dsn |
+| Variable            | Purpose           | Dev Value                 | Prod Value              |
+| ------------------- | ----------------- | ------------------------- | ----------------------- |
+| `VITE_API_URL`      | API base URL      | http://localhost:3001/api | https://api.example.com |
+| `VITE_USE_MSW`      | Enable mock APIs  | true                      | false                   |
+| `VITE_DEBUG_MODE`   | Enable debug logs | true                      | false                   |
+| `VITE_APP_ENV`      | Environment name  | development               | production              |
+| `VITE_BACKEND_AUTH` | Enable real auth  | false                     | true                    |
+| `VITE_SENTRY_DSN`   | Error tracking    | (empty)                   | https://your-sentry-dsn |
 
 ---
 
@@ -383,17 +421,20 @@ npm run test
 ### Common Issues
 
 **"Module not found" error**
+
 ```bash
 npm install
 # Restart dev server
 ```
 
 **Tests not running**
+
 ```bash
 npm run test -- --clearCache
 ```
 
 **Build fails**
+
 ```bash
 npm run lint:fix
 npm run format
@@ -401,12 +442,14 @@ npm run build
 ```
 
 **Port in use**
+
 ```bash
 # Kill process on port 5173
 lsof -ti:5173 | xargs kill -9
 ```
 
 ### Check Logs
+
 - Browser console (F12)
 - Terminal output
 - DevTools Network tab
@@ -449,18 +492,21 @@ npm audit
 ## 🎯 Performance Tips
 
 ### Dev Mode
+
 - Use `npm run dev` with MSW mock APIs
 - Enable React DevTools Profiler
 - Check Network tab for slow requests
 - Monitor bundle size with `npm run analyze`
 
 ### Production
+
 - Always run `npm run build` before deployment
 - Test with `npm run preview`
 - Monitor with Sentry dashboard
 - Check Core Web Vitals in production
 
 ### Bundle Size
+
 ```bash
 npm run analyze
 # Look for large dependencies
@@ -495,18 +541,18 @@ npm run analyze
 
 ## 📋 Command Cheat Sheet
 
-| Task | Command |
-|------|---------|
-| Start dev | `npm run dev` |
-| Run tests | `npm run test` |
-| Fix lint | `npm run lint:fix` |
-| Format code | `npm run format` |
-| Build | `npm run build` |
-| Preview build | `npm run preview` |
-| View stories | `npm run storybook` |
-| Analyze bundle | `npm run analyze` |
+| Task            | Command                 |
+| --------------- | ----------------------- |
+| Start dev       | `npm run dev`           |
+| Run tests       | `npm run test`          |
+| Fix lint        | `npm run lint:fix`      |
+| Format code     | `npm run format`        |
+| Build           | `npm run build`         |
+| Preview build   | `npm run preview`       |
+| View stories    | `npm run storybook`     |
+| Analyze bundle  | `npm run analyze`       |
 | Coverage report | `npm run test:coverage` |
-| A11y audit | `npm run a11y:audit` |
+| A11y audit      | `npm run a11y:audit`    |
 
 ---
 

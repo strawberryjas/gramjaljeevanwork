@@ -4,7 +4,7 @@ const fallbackEmojiMap = {
   'logout-icon': '🔒',
   'menu-bars': '☰',
   'close-x': '✖️',
-  'landmark': '🏛️',
+  landmark: '🏛️',
   'pump-machine': '🛠️',
   'water-droplet': '💧',
   'pipeline-pipe': '🛤️',
@@ -14,7 +14,7 @@ const fallbackEmojiMap = {
   'chevron-right': '›',
   'home-icon': '🏠',
   'wifi-off': '📡',
-  'clock': '⏰',
+  clock: '⏰',
   'settings-gear': '⚙️',
   'accessibility-icon': '♿',
 };
@@ -37,14 +37,23 @@ export const IconImage = ({ name, size = 36, className = '', alt = '' }) => {
   };
 
   // If caller provided Tailwind size classes (h-?/w-?) prefer them; otherwise set inline size
-  const shouldInlineSize = !className || (!/\bh-\d+\b/.test(className) && !/\bw-\d+\b/.test(className));
+  const shouldInlineSize =
+    !className || (!/\bh-\d+\b/.test(className) && !/\bw-\d+\b/.test(className));
 
   if (!showEmoji) {
-    const style = shouldInlineSize ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size, objectFit: 'contain' } : undefined;
+    const style = shouldInlineSize
+      ? {
+          width: typeof size === 'number' ? `${size}px` : size,
+          height: typeof size === 'number' ? `${size}px` : size,
+          objectFit: 'contain',
+        }
+      : undefined;
     return <img {...imgProps} style={style} />;
   }
 
-  const emojiStyle = shouldInlineSize ? { fontSize: typeof size === 'number' ? `${size}px` : size, lineHeight: 1 } : undefined;
+  const emojiStyle = shouldInlineSize
+    ? { fontSize: typeof size === 'number' ? `${size}px` : size, lineHeight: 1 }
+    : undefined;
   return (
     <span role="img" aria-label={alt || base} className={className} style={emojiStyle}>
       {emoji}

@@ -1,6 +1,7 @@
 # Service Request System Documentation
 
 ## Overview
+
 A separate **Service Request Dashboard** has been created that works like NoBrokerHood/UrbanClap for water service management. This is now a **separate tab** in the application, keeping the original overview dashboards intact.
 
 ---
@@ -10,11 +11,13 @@ A separate **Service Request Dashboard** has been created that works like NoBrok
 ### **1. Separate Dashboards**
 
 #### **Overview Dashboard** (Original - Unchanged)
+
 - **Guest**: Gamified dashboard with water scores, achievements, performance charts
 - **Technician**: Full operational dashboard with sensors, metrics, and controls
 - **Researcher**: Analytics and data export dashboard
 
 #### **Service Requests Dashboard** (New - Separate Tab)
+
 - **Guest**: Report water issues and track service requests
 - **Technician**: Manage incoming service requests, accept, and resolve issues
 - **All Users**: Access via "Service Requests" button in sidebar
@@ -24,6 +27,7 @@ A separate **Service Request Dashboard** has been created that works like NoBrok
 ## Navigation
 
 ### **Sidebar Structure**
+
 ```
 📊 Overview (Role-based dashboard)
 📋 Service Requests (New - For all users)
@@ -40,6 +44,7 @@ A separate **Service Request Dashboard** has been created that works like NoBrok
 ### **For Guests (Public Users)**
 
 #### **1. Report Issue Section**
+
 - **6 Quick Issue Types:**
   - 🔴 No Water Supply (Urgent)
   - 🟠 Low Water Pressure
@@ -57,7 +62,9 @@ A separate **Service Request Dashboard** has been created that works like NoBrok
   - Urgency level selector (Low/Medium/High)
 
 #### **2. My Service Requests**
+
 Shows all user's requests with:
+
 - Request ID (REQ-XXXX)
 - Issue type and description
 - Status badges (Pending/In Progress/Resolved)
@@ -68,6 +75,7 @@ Shows all user's requests with:
 - Rating (if resolved)
 
 **Guest Actions:**
+
 - 📞 Call Technician (if in progress)
 - 🕐 Track Status
 - ⭐ Rate Service (after resolution)
@@ -77,7 +85,9 @@ Shows all user's requests with:
 ### **For Technicians**
 
 #### **1. Active Service Requests**
+
 Shows all incoming requests with:
+
 - Request ID and urgency badge
 - Customer name and phone
 - Issue type and description
@@ -88,14 +98,17 @@ Shows all incoming requests with:
 **Technician Actions:**
 
 **Pending Requests:**
+
 - ✅ Accept Request
 
 **In Progress:**
+
 - 📞 Call Customer
 - 🗺️ Navigate to Location
 - ✅ Mark Complete
 
 #### **2. Request Management**
+
 - **Priority Sorting**: Urgent requests highlighted in red
 - **Distance Display**: Shows distance to customer location
 - **Real-time Updates**: Status changes reflected immediately
@@ -106,6 +119,7 @@ Shows all incoming requests with:
 ## User Flow
 
 ### **Guest Journey:**
+
 1. Login as Guest
 2. Click "Service Requests" in sidebar
 3. See system status and quick issue types
@@ -118,6 +132,7 @@ Shows all incoming requests with:
 10. Rate service after completion
 
 ### **Technician Journey:**
+
 1. Login as Technician
 2. Click "Service Requests" in sidebar
 3. See pending requests (with NEW badge)
@@ -151,19 +166,24 @@ src/
 ## Key Features
 
 ### **System Status Header**
+
 Displays for all users:
+
 - Water Quality: Excellent
 - Supply Status: Normal
 - Avg Response Time: 45 min
 - Customer Satisfaction: 4.8/5
 
 ### **Emergency Contact**
+
 24/7 helpline for urgent emergencies:
+
 - Burst pipes
 - Water contamination
 - Critical infrastructure failures
 
 ### **Request Tracking**
+
 - Real-time status updates
 - ETA display for in-progress requests
 - Resolution time tracking
@@ -174,17 +194,20 @@ Displays for all users:
 ## Design Principles
 
 ### **Color Coding**
+
 - 🔴 **Red**: Urgent/High priority issues
 - 🟠 **Amber**: Medium priority issues
 - 🔵 **Blue**: Normal/Low priority issues
 - 🟢 **Green**: Resolved/Completed
 
 ### **Status Badges**
+
 - **Pending**: Gray badge
 - **In Progress**: Blue badge
 - **Resolved**: Green badge
 
 ### **Responsive Design**
+
 - Mobile-friendly interface
 - Touch-optimized buttons
 - Collapsible sections
@@ -195,6 +218,7 @@ Displays for all users:
 ## Benefits
 
 ### **For Guests:**
+
 ✅ Easy issue reporting
 ✅ Real-time tracking
 ✅ Direct communication with technicians
@@ -202,6 +226,7 @@ Displays for all users:
 ✅ Rating and feedback system
 
 ### **For Technicians:**
+
 ✅ Centralized request management
 ✅ Priority-based workflow
 ✅ Customer contact info
@@ -209,6 +234,7 @@ Displays for all users:
 ✅ Performance tracking
 
 ### **For System:**
+
 ✅ Improved response times
 ✅ Better customer satisfaction
 ✅ Accountability and transparency
@@ -220,18 +246,21 @@ Displays for all users:
 ## Technical Implementation
 
 ### **Components:**
+
 - `ServiceRequestDashboard.jsx`: Main service request interface
 - Shared between guests and technicians
 - Role-based UI rendering
 - Mock data for demonstration
 
 ### **Integration:**
+
 - Added to `App.jsx` as separate tab
 - Available for all user roles
 - Sidebar button added after Overview
 - Proper routing and state management
 
 ### **Styling:**
+
 - Tailwind CSS with proper color classes
 - No dynamic class generation (fixed Tailwind JIT issue)
 - Consistent with government theme
@@ -255,17 +284,20 @@ Displays for all users:
 ## Usage
 
 ### **Access Service Requests:**
+
 1. Login to the system
 2. Click "Service Requests" button in sidebar
 3. View/manage requests based on your role
 
 ### **Report an Issue (Guest):**
+
 1. Go to Service Requests tab
 2. Click issue type or "Report an Issue"
 3. Fill the form
 4. Submit
 
 ### **Manage Requests (Technician):**
+
 1. Go to Service Requests tab
 2. View active requests
 3. Accept pending requests
@@ -285,4 +317,3 @@ For technical support or feature requests, contact the development team.
 **Last Updated**: November 26, 2024
 **Version**: 1.0.0
 **Status**: ✅ Production Ready
-

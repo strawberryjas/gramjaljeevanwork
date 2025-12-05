@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import {
-  Phone, MapPin, Clock, CheckCircle, AlertCircle, User,
-  Droplet, Gauge, Beaker, Wrench, FileText, XCircle, Search
+  Phone,
+  MapPin,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Droplet,
+  Gauge,
+  Beaker,
+  Wrench,
+  FileText,
+  XCircle,
+  Search,
 } from 'lucide-react';
 
 /**
@@ -13,14 +24,14 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
   const [activeVillage, setActiveVillage] = useState('all'); // all villages
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Sync local search with global search when global search changes
   React.useEffect(() => {
     if (globalSearchQuery) {
       setSearchQuery(globalSearchQuery);
     }
   }, [globalSearchQuery]);
-  
+
   // Use global search query if available, otherwise use local search
   const effectiveSearchQuery = globalSearchQuery || searchQuery;
 
@@ -36,10 +47,11 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       village: 'Ward 1',
       location: 'House 45, Main Distribution Area, Ward 1',
       distance: '1.2 km',
-      description: 'No water supply since morning. Tank seems full but no water coming through pipes.',
+      description:
+        'No water supply since morning. Tank seems full but no water coming through pipes.',
       submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       urgency: 'High',
-      icon: Droplet
+      icon: Droplet,
     },
     {
       id: 'REQ-1002',
@@ -51,12 +63,13 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       village: 'Ward 2',
       location: 'House 78, Secondary Line Area, Ward 2',
       distance: '2.5 km',
-      description: 'Very low water pressure in the morning hours. Takes too long to fill containers.',
+      description:
+        'Very low water pressure in the morning hours. Takes too long to fill containers.',
       submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
       assignedTo: 'Technician A',
       eta: '30 min',
       urgency: 'Medium',
-      icon: Gauge
+      icon: Gauge,
     },
     {
       id: 'REQ-1003',
@@ -71,7 +84,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       description: 'Water coming out is yellowish and has bad smell. Not safe for drinking.',
       submittedAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
       urgency: 'High',
-      icon: Beaker
+      icon: Beaker,
     },
     {
       id: 'REQ-1004',
@@ -88,7 +101,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       assignedTo: 'Technician B',
       eta: '15 min',
       urgency: 'High',
-      icon: Wrench
+      icon: Wrench,
     },
     {
       id: 'REQ-1005',
@@ -107,7 +120,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       resolutionTime: '12 hours',
       rating: 5,
       urgency: 'Low',
-      icon: FileText
+      icon: FileText,
     },
     {
       id: 'REQ-1006',
@@ -122,7 +135,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       description: 'Strange noise coming from water pipeline connection. Need inspection.',
       submittedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 min ago
       urgency: 'Medium',
-      icon: AlertCircle
+      icon: AlertCircle,
     },
     {
       id: 'REQ-1007',
@@ -137,7 +150,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       description: 'Complete water supply failure. No water for 6 hours.',
       submittedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
       urgency: 'High',
-      icon: Droplet
+      icon: Droplet,
     },
     {
       id: 'REQ-1008',
@@ -156,7 +169,7 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       resolutionTime: '10 hours',
       rating: 4,
       urgency: 'Medium',
-      icon: Gauge
+      icon: Gauge,
     },
     {
       id: 'REQ-1009',
@@ -173,57 +186,59 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       assignedTo: 'Technician D',
       eta: '45 min',
       urgency: 'High',
-      icon: Wrench
-    }
+      icon: Wrench,
+    },
   ];
 
   // Get unique villages
-  const villages = ['all', ...new Set(serviceRequests.map(req => req.village))].sort((a, b) => {
+  const villages = ['all', ...new Set(serviceRequests.map((req) => req.village))].sort((a, b) => {
     if (a === 'all') return -1;
     if (b === 'all') return 1;
     return a.localeCompare(b);
   });
 
   // Filter requests based on active filter, village, and search query
-  const filteredRequests = serviceRequests.filter(req => {
+  const filteredRequests = serviceRequests.filter((req) => {
     const statusMatch = activeFilter === 'all' || req.status === activeFilter;
     const villageMatch = activeVillage === 'all' || req.village === activeVillage;
-    
+
     // Search functionality - use effectiveSearchQuery
-    const searchMatch = effectiveSearchQuery === '' || 
+    const searchMatch =
+      effectiveSearchQuery === '' ||
       req.id.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
       req.type.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
       req.customerName.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
       req.location.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
       req.village.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
       req.description.toLowerCase().includes(effectiveSearchQuery.toLowerCase());
-    
+
     return statusMatch && villageMatch && searchMatch;
   });
 
   // Stats calculation (based on current village filter)
-  const villageRequests = activeVillage === 'all' 
-    ? serviceRequests 
-    : serviceRequests.filter(r => r.village === activeVillage);
+  const villageRequests =
+    activeVillage === 'all'
+      ? serviceRequests
+      : serviceRequests.filter((r) => r.village === activeVillage);
 
   const stats = {
     total: villageRequests.length,
-    pending: villageRequests.filter(r => r.status === 'pending').length,
-    inProgress: villageRequests.filter(r => r.status === 'in-progress').length,
-    resolved: villageRequests.filter(r => r.status === 'resolved').length,
+    pending: villageRequests.filter((r) => r.status === 'pending').length,
+    inProgress: villageRequests.filter((r) => r.status === 'in-progress').length,
+    resolved: villageRequests.filter((r) => r.status === 'resolved').length,
     avgResponseTime: '45 min',
-    satisfaction: '4.8/5'
+    satisfaction: '4.8/5',
   };
 
   // Village-wise distribution
-  const villageStats = villages.slice(1).map(village => {
-    const requests = serviceRequests.filter(r => r.village === village);
+  const villageStats = villages.slice(1).map((village) => {
+    const requests = serviceRequests.filter((r) => r.village === village);
     return {
       village,
       total: requests.length,
-      pending: requests.filter(r => r.status === 'pending').length,
-      inProgress: requests.filter(r => r.status === 'in-progress').length,
-      resolved: requests.filter(r => r.status === 'resolved').length,
+      pending: requests.filter((r) => r.status === 'pending').length,
+      inProgress: requests.filter((r) => r.status === 'in-progress').length,
+      resolved: requests.filter((r) => r.status === 'resolved').length,
     };
   });
 
@@ -241,19 +256,27 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-amber-600 bg-amber-50 border-amber-200';
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'text-gray-700 bg-gray-100';
-      case 'in-progress': return 'text-blue-700 bg-blue-100';
-      case 'resolved': return 'text-green-700 bg-green-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'pending':
+        return 'text-gray-700 bg-gray-100';
+      case 'in-progress':
+        return 'text-blue-700 bg-blue-100';
+      case 'resolved':
+        return 'text-green-700 bg-green-100';
+      default:
+        return 'text-gray-700 bg-gray-100';
     }
   };
 
@@ -279,15 +302,20 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
       <div className="border-b border-gray-200 pb-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
           <div>
-            <h2 className="text-lg md:text-2xl font-bold text-black">Service Requests & Complaints</h2>
+            <h2 className="text-lg md:text-2xl font-bold text-black">
+              Service Requests & Complaints
+            </h2>
             <p className="text-[10px] md:text-sm text-gray-600 mt-0.5 md:mt-1">
               Manage water service complaints and requests from all wards
             </p>
           </div>
-          
+
           {/* Search Bar */}
           <div className="relative w-full md:w-96">
-            <Search className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <Search
+              className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={16}
+            />
             <input
               type="text"
               placeholder="Search by ID, name, location, type..."
@@ -322,7 +350,9 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 activeVillage === stat.village ? 'border-blue-500 shadow-md' : 'border-gray-200'
               }`}
             >
-              <h4 className="font-bold text-black text-[10px] md:text-base mb-1 md:mb-2">{stat.village}</h4>
+              <h4 className="font-bold text-black text-[10px] md:text-base mb-1 md:mb-2">
+                {stat.village}
+              </h4>
               <div className="space-y-0.5 md:space-y-1 text-[9px] md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total:</span>
@@ -375,7 +405,9 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
           <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Resolved</div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-2 md:p-4">
-          <div className="text-base md:text-2xl font-bold text-blue-600">{stats.avgResponseTime}</div>
+          <div className="text-base md:text-2xl font-bold text-blue-600">
+            {stats.avgResponseTime}
+          </div>
           <div className="text-[8px] md:text-xs text-gray-600 mt-0.5 md:mt-1">Avg Response</div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -449,16 +481,24 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 {/* Header Row */}
                 <div className="flex items-start justify-between mb-2 md:mb-3">
                   <div className="flex items-start gap-2 md:gap-3 flex-1">
-                    <div className={`p-1.5 md:p-3 rounded-lg ${getPriorityColor(request.priority)}`}>
+                    <div
+                      className={`p-1.5 md:p-3 rounded-lg ${getPriorityColor(request.priority)}`}
+                    >
                       <Icon size={16} className="md:w-6 md:h-6" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1 flex-wrap">
-                        <h3 className="font-bold text-[11px] md:text-lg text-black">{request.type}</h3>
-                        <span className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getPriorityColor(request.priority)}`}>
+                        <h3 className="font-bold text-[11px] md:text-lg text-black">
+                          {request.type}
+                        </h3>
+                        <span
+                          className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getPriorityColor(request.priority)}`}
+                        >
                           {request.urgency}
                         </span>
-                        <span className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getStatusColor(request.status)}`}>
+                        <span
+                          className={`px-1 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-xs font-semibold ${getStatusColor(request.status)}`}
+                        >
                           {request.status.replace('-', ' ').toUpperCase()}
                         </span>
                       </div>
@@ -509,7 +549,8 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                 {/* Description */}
                 <div className="mb-2 md:mb-4">
                   <p className="text-[9px] md:text-sm text-gray-700">
-                    <span className="font-medium text-black">Description:</span> {request.description}
+                    <span className="font-medium text-black">Description:</span>{' '}
+                    {request.description}
                   </p>
                 </div>
 
@@ -585,7 +626,9 @@ export const ServiceRequestDashboard = ({ userRole, globalSearchQuery = '' }) =>
                       {request.rating && (
                         <div className="flex items-center gap-1">
                           {Array.from({ length: request.rating }).map((_, i) => (
-                            <span key={i} className="text-yellow-500">★</span>
+                            <span key={i} className="text-yellow-500">
+                              ★
+                            </span>
                           ))}
                         </div>
                       )}

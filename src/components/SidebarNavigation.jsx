@@ -36,6 +36,11 @@ export const SidebarNavigation = ({
   const isTechnician = user?.role === 'technician';
   const isResearcher = user?.role === 'researcher';
 
+  // Desktop auto-hide: Track mouse position and sidebar hover
+  const [isMouseNearEdge, setIsMouseNearEdge] = React.useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = React.useState(false);
+  const sidebarRef = React.useRef(null);
+
   // Open sidebar when navigation changes (so external buttons that change `activeTab` also open it)
   React.useEffect(() => {
     try {
@@ -46,6 +51,48 @@ export const SidebarNavigation = ({
       // ignore
     }
   }, [activeTab]);
+
+  // Desktop auto-hide: Mouse position tracking
+  React.useEffect(() => {
+    // Only apply auto-hide on desktop (lg: 1024px+)
+    const isDesktop = () => window.innerWidth >= 1024;
+
+    if (!isDesktop()) return;
+
+    // Initially hide sidebar on desktop
+    if (typeof setIsOpen === 'function') {
+      setIsOpen(false);
+    }
+
+    const handleMouseMove = (e) => {
+      if (!isDesktop()) return;
+
+      // Trigger zone: left 50px of screen
+      const nearLeftEdge = e.clientX < 50;
+      setIsMouseNearEdge(nearLeftEdge);
+
+      // Auto-open when mouse near edge
+      if (nearLeftEdge && typeof setIsOpen === 'function') {
+        setIsOpen(true);
+      }
+
+      // Auto-close when mouse moves away and not hovering sidebar
+      if (
+        !nearLeftEdge &&
+        !isSidebarHovered &&
+        e.clientX > 320 &&
+        typeof setIsOpen === 'function'
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isSidebarHovered, setIsOpen]);
 
   // Define navigation sections based on user role
   // Icons are names of files in `public/images/icons` (with or without extension)
@@ -94,7 +141,9 @@ export const SidebarNavigation = ({
             { id: 'quality', label: t('nav.quality'), icon: 'beaker-flask.png' },
             { id: 'maintenance', label: t('nav.maintenance'), icon: 'wrench.svg' },
             { id: 'service-requests', label: t('nav.serviceRequests'), icon: 'check-success.svg' },
-            ...(isResearcher ? [{ id: 'reports', label: t('nav.reports'), icon: 'check-success.svg' }] : []),
+            ...(isResearcher
+              ? [{ id: 'reports', label: t('nav.reports'), icon: 'check-success.svg' }]
+              : []),
           ],
         },
         {
@@ -118,7 +167,7 @@ export const SidebarNavigation = ({
       ];
 
   const toggleSection = (sectionId) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
     }));
@@ -144,21 +193,24 @@ export const SidebarNavigation = ({
 
       {/* Sidebar - Government Design System */}
       <div
-        className={`fixed lg:sticky top-0 left-0 h-screen z-50 lg:z-10 flex flex-col justify-between transition-all duration-300 ease-in-out ${
-          isOpen ? 'w-72' : 'w-0 lg:w-20'
-        } overflow-hidden lg:overflow-visible`}
-        style={{ 
+        ref={sidebarRef}
+        onMouseEnter={() => setIsSidebarHovered(true)}
+        onMouseLeave={() => setIsSidebarHovered(false)}
+        className={`fixed top-0 h-screen z-50 flex flex-col justify-between transition-all duration-300 ease-in-out ${
+          isOpen ? 'w-72 left-0' : 'w-72 -left-72 lg:-left-72'
+        } overflow-hidden`}
+        style={{
           backgroundColor: 'var(--bg-white)',
           borderRight: '1px solid var(--gray-border)',
-          boxShadow: 'var(--shadow-subtle)'
+          boxShadow: 'var(--shadow-subtle)',
         }}
       >
         {/* Header Section with Logo - Government Style */}
-        <div 
+        <div
           className="p-4"
-          style={{ 
+          style={{
             backgroundColor: 'var(--bg-white)',
-            borderBottom: '1px solid var(--gray-border)'
+            borderBottom: '1px solid var(--gray-border)',
           }}
         >
           <div className="flex items-center justify-between">
@@ -190,26 +242,34 @@ export const SidebarNavigation = ({
               aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             >
               {isOpen ? (
-                <IconImage name="close-x.svg" className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                <IconImage
+                  name="close-x.svg"
+                  className="h-5 w-5 text-blue-600"
+                  aria-hidden="true"
+                />
               ) : (
-                <IconImage name="menu-bars.svg" className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                <IconImage
+                  name="menu-bars.svg"
+                  className="h-5 w-5 text-blue-600"
+                  aria-hidden="true"
+                />
               )}
             </button>
           </div>
           {/* Location Text */}
           {isOpen && (
-            <div 
-              className="text-center mt-3 pt-3" 
-              style={{ 
-                borderTop: '3px solid var(--primary-blue)'
+            <div
+              className="text-center mt-3 pt-3"
+              style={{
+                borderTop: '3px solid var(--primary-blue)',
               }}
             >
-              <p 
-                style={{ 
-                  fontSize: 'var(--font-size-sm)', 
+              <p
+                style={{
+                  fontSize: 'var(--font-size-sm)',
                   fontWeight: 'var(--font-weight-bold)',
                   color: 'var(--gray-text-darker)',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
                 }}
               >
                 SONALUR
@@ -220,35 +280,30 @@ export const SidebarNavigation = ({
 
         {/* Status Bar - Government Style */}
         {isOpen && (
-          <div 
+          <div
             className="px-4 py-3"
             style={{
               backgroundColor: 'var(--gray-light)',
-              borderBottom: '1px solid var(--gray-border)'
+              borderBottom: '1px solid var(--gray-border)',
             }}
           >
             <div className="space-y-2" style={{ fontSize: 'var(--font-size-xs)' }}>
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <div
-                  className={`w-2 h-2 ${
-                    offlineMode ? 'bg-red-600' : 'bg-green-600'
-                  }`}
+                  className={`w-2 h-2 ${offlineMode ? 'bg-red-600' : 'bg-green-600'}`}
                   style={{ borderRadius: '50%' }}
                 />
-                <span 
-                  style={{ 
+                <span
+                  style={{
                     color: 'var(--gray-text-dark)',
-                    fontWeight: 'var(--font-weight-medium)'
+                    fontWeight: 'var(--font-weight-medium)',
                   }}
                 >
                   {offlineMode ? 'Offline Mode' : 'Connected'}
                 </span>
               </div>
               {lastSync && (
-                <div 
-                  className="flex items-center gap-2"
-                  style={{ color: 'var(--gray-text)' }}
-                >
+                <div className="flex items-center gap-2" style={{ color: 'var(--gray-text)' }}>
                   <IconImage name="clock.svg" className="h-8 w-8" aria-hidden="true" />
                   <span>Last sync: {lastSync}</span>
                 </div>
@@ -258,20 +313,20 @@ export const SidebarNavigation = ({
         )}
 
         {/* Navigation Sections - Scrollable */}
-        <nav 
+        <nav
           className="flex-1 p-3"
-          style={{ 
+          style={{
             backgroundColor: 'var(--bg-white)',
             overflowY: 'auto',
             overflowX: 'hidden',
-            maxHeight: 'calc(100vh - 350px)'
+            maxHeight: 'calc(100vh - 350px)',
           }}
         >
           <div className="space-y-2">
-            {navigationSections.map(section => {
+            {navigationSections.map((section) => {
               const isExpanded = expandedSections[section.id];
-              const hasSomeActive = section.items.some(item => item.id === activeTab);
-              const sectionHasAlert = section.items.some(item => alertBlinkTargets.has(item.id));
+              const hasSomeActive = section.items.some((item) => item.id === activeTab);
+              const sectionHasAlert = section.items.some((item) => alertBlinkTargets.has(item.id));
 
               return (
                 <div key={section.id}>
@@ -292,19 +347,21 @@ export const SidebarNavigation = ({
                       borderLeft: hasSomeActive ? '3px solid var(--primary-blue)' : 'none',
                       color: hasSomeActive ? 'var(--primary-blue)' : 'var(--gray-text-dark)',
                       fontSize: 'var(--font-size-md)',
-                      fontWeight: hasSomeActive ? 'var(--font-weight-semibold)' : 'var(--font-weight-medium)',
+                      fontWeight: hasSomeActive
+                        ? 'var(--font-weight-semibold)'
+                        : 'var(--font-weight-medium)',
                       borderRadius: 'var(--radius-none)',
                       ...(sectionHasAlert && !hasSomeActive
                         ? {
-                          borderLeft: '3px solid #f97316',
-                          backgroundColor: 'rgba(249, 115, 22, 0.08)',
-                          boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)'
-                        }
+                            borderLeft: '3px solid #f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                            boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)',
+                          }
                         : sectionHasAlert
                           ? {
-                            boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)'
-                          }
-                          : {})
+                              boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)',
+                            }
+                          : {}),
                     }}
                     onMouseEnter={(e) => {
                       if (!hasSomeActive) {
@@ -319,24 +376,30 @@ export const SidebarNavigation = ({
                     title={!isOpen ? section.label : ''}
                     aria-label={section.label}
                   >
-                      <IconImage name={section.icon} className="h-9 w-9 flex-shrink-0" aria-hidden="true" />
+                    <IconImage
+                      name={section.icon}
+                      className="h-9 w-9 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     {isOpen && (
                       <>
-                        <span className="flex-1 text-left text-sm font-bold">
-                          {section.label}
-                        </span>
-                        <IconImage name="chevron-right.svg" className={`h-9 w-9 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} aria-hidden="true" />
+                        <span className="flex-1 text-left text-sm font-bold">{section.label}</span>
+                        <IconImage
+                          name="chevron-right.svg"
+                          className={`h-9 w-9 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                          aria-hidden="true"
+                        />
                       </>
                     )}
                   </button>
 
                   {/* Section Items - Government Style */}
                   {isOpen && isExpanded && (
-                    <div 
+                    <div
                       className="ml-3 mt-1 space-y-1 pl-3"
                       style={{ borderLeft: '1px solid var(--gray-border)' }}
                     >
-                      {section.items.map(item => {
+                      {section.items.map((item) => {
                         const isActive = item.id === activeTab;
                         const isItemBlinking = alertBlinkTargets.has(item.id);
                         const itemTextColor = isActive
@@ -355,7 +418,9 @@ export const SidebarNavigation = ({
                             ? '2px solid var(--primary-blue)'
                             : 'none';
                         const itemPaddingLeft = isActive || isItemBlinking ? '14px' : '12px';
-                        const itemBoxShadow = isItemBlinking ? '0 0 12px rgba(249, 115, 22, 0.35)' : 'none';
+                        const itemBoxShadow = isItemBlinking
+                          ? '0 0 12px rgba(249, 115, 22, 0.35)'
+                          : 'none';
 
                         return (
                           <button
@@ -372,13 +437,15 @@ export const SidebarNavigation = ({
                             style={{
                               fontSize: 'var(--font-size-base)',
                               color: itemTextColor,
-                              fontWeight: isActive ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
+                              fontWeight: isActive
+                                ? 'var(--font-weight-semibold)'
+                                : 'var(--font-weight-regular)',
                               backgroundColor: itemBackground,
                               borderRadius: 'var(--radius-sm)',
                               borderLeft: itemBorderLeft,
                               paddingLeft: itemPaddingLeft,
                               textDecoration: isActive ? 'underline' : 'none',
-                              boxShadow: itemBoxShadow
+                              boxShadow: itemBoxShadow,
                             }}
                             onMouseEnter={(e) => {
                               if (!isActive) {
@@ -394,10 +461,17 @@ export const SidebarNavigation = ({
                             }}
                             aria-label={item.label}
                           >
-                            <IconImage name={item.icon} className="h-8 w-8 flex-shrink-0" aria-hidden="true" />
+                            <IconImage
+                              name={item.icon}
+                              className="h-8 w-8 flex-shrink-0"
+                              aria-hidden="true"
+                            />
                             <span className="flex-1 text-left">{item.label}</span>
                             {isItemBlinking && (
-                              <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce-slow" aria-hidden="true"></span>
+                              <span
+                                className="w-2 h-2 rounded-full bg-amber-400 animate-bounce-slow"
+                                aria-hidden="true"
+                              ></span>
                             )}
                           </button>
                         );
@@ -411,87 +485,87 @@ export const SidebarNavigation = ({
         </nav>
 
         {/* Footer - Government Style - Always at Bottom */}
-        <div 
+        <div
           className="p-4 space-y-3 mt-auto"
           style={{
             backgroundColor: 'var(--gray-light)',
-            borderTop: '1px solid var(--gray-border)'
+            borderTop: '1px solid var(--gray-border)',
           }}
         >
           {isOpen && (
             <>
-            {/* Ministry Logo - Rectangle */}
-            <div className="flex justify-center py-2">
-              <img
-                src={ministryLogoUrl}
-                alt="Ministry Logo"
-                className="h-12 w-auto object-contain"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
+              {/* Ministry Logo - Rectangle */}
+              <div className="flex justify-center py-2">
+                <img
+                  src={ministryLogoUrl}
+                  alt="Ministry Logo"
+                  className="h-12 w-auto object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
 
-            {/* Accessibility & Logout Buttons - Government Style */}
-                <div className="space-y-2">
-              <button 
-                onClick={() => {
-                  if (onAccessibility) {
-                    onAccessibility();
-                  }
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2 transition-colors"
-                style={{
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '2px solid var(--primary-blue)',
-                  backgroundColor: 'var(--bg-white)',
-                  color: 'var(--primary-blue)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-persona)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-white)';
-                }}
-                aria-label="Accessibility"
-              >
-                <IconImage name="accessibility-icon.svg" className="h-8 w-8" aria-hidden="true" />
-                <span>Accessibility</span>
-              </button>
-              <button
-                onClick={() => {
-                  console.log('Logout clicked');
-                  if (onLogout) {
-                    onLogout();
-                  } else {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.href = '/login';
-                  }
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2 transition-opacity"
-                style={{
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--primary-blue)',
-                  color: 'var(--bg-white)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                title="Click to logout"
-                aria-label="Logout"
-              >
-                <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />
-                <span>Logout</span>
-              </button>
-            </div>
+              {/* Accessibility & Logout Buttons - Government Style */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    if (onAccessibility) {
+                      onAccessibility();
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 transition-colors"
+                  style={{
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 'var(--font-weight-semibold)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '2px solid var(--primary-blue)',
+                    backgroundColor: 'var(--bg-white)',
+                    color: 'var(--primary-blue)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-persona)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-white)';
+                  }}
+                  aria-label="Accessibility"
+                >
+                  <IconImage name="accessibility-icon.svg" className="h-8 w-8" aria-hidden="true" />
+                  <span>Accessibility</span>
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Logout clicked');
+                    if (onLogout) {
+                      onLogout();
+                    } else {
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = '/login';
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 transition-opacity"
+                  style={{
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 'var(--font-weight-semibold)',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--primary-blue)',
+                    color: 'var(--bg-white)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  title="Click to logout"
+                  aria-label="Logout"
+                >
+                  <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />
+                  <span>Logout</span>
+                </button>
+              </div>
             </>
           )}
 
@@ -512,7 +586,7 @@ export const SidebarNavigation = ({
 
               {/* Icon-only buttons when closed */}
               <div className="space-y-2">
-                <button 
+                <button
                   onClick={() => {
                     if (onAccessibility) {
                       onAccessibility();
@@ -523,7 +597,7 @@ export const SidebarNavigation = ({
                     borderRadius: 'var(--radius-sm)',
                     border: '2px solid var(--primary-blue)',
                     backgroundColor: 'var(--bg-white)',
-                    color: 'var(--primary-blue)'
+                    color: 'var(--primary-blue)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-persona)';
@@ -532,7 +606,7 @@ export const SidebarNavigation = ({
                     e.currentTarget.style.backgroundColor = 'var(--bg-white)';
                   }}
                   title="Accessibility"
-                aria-label="Accessibility"
+                  aria-label="Accessibility"
                 >
                   <IconImage name="accessibility-icon.svg" className="h-8 w-8" aria-hidden="true" />
                 </button>
@@ -551,7 +625,7 @@ export const SidebarNavigation = ({
                   style={{
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--primary-blue)',
-                    color: 'var(--bg-white)'
+                    color: 'var(--bg-white)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.opacity = '0.9';
@@ -560,7 +634,7 @@ export const SidebarNavigation = ({
                     e.currentTarget.style.opacity = '1';
                   }}
                   title="Logout"
-                aria-label="Logout"
+                  aria-label="Logout"
                 >
                   <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />
                 </button>

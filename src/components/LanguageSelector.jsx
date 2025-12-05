@@ -21,7 +21,10 @@ export const LanguageSelector = ({
   return (
     <div className={`space-y-1 ${className}`}>
       {!hideLabel && (
-        <label htmlFor={id} className="block text-2xs font-black uppercase tracking-widest text-gray-900">
+        <label
+          htmlFor={id}
+          className="block text-2xs font-black uppercase tracking-widest text-gray-900"
+        >
           {label}
         </label>
       )}
@@ -45,4 +48,3 @@ export const LanguageSelector = ({
     </div>
   );
 };
-

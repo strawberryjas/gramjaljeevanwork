@@ -37,44 +37,45 @@ body {
 :root {
   /* Base Text Scale - Responsive */
   --text-scale: 1;
-  
+
   /* Mobile viewport optimization */
   font-size: 16px;
 
   /* Primary Colors */
-  --primary-blue: #003DA5;
-  --primary-blue-dark: #001F5C;
-  --primary-blue-light: #0052CC;
-  --primary-navy: #1B3A6B;
-  
+  --primary-blue: #003da5;
+  --primary-blue-dark: #001f5c;
+  --primary-blue-light: #0052cc;
+  --primary-navy: #1b3a6b;
+
   /* Grays */
-  --gray-light: #F5F5F5;
-  --gray-border: #E0E0E0;
-  --gray-border-dark: #D0D0D0;
+  --gray-light: #f5f5f5;
+  --gray-border: #e0e0e0;
+  --gray-border-dark: #d0d0d0;
   --gray-text: #666666;
   --gray-text-dark: #333333;
-  --gray-text-darker: #1A1A1A;
-  --gray-text-lighter: #AAAAAA;
-  --gray-text-light: #CCCCCC;
+  --gray-text-darker: #1a1a1a;
+  --gray-text-lighter: #aaaaaa;
+  --gray-text-light: #cccccc;
   --gray-text-medium: #555555;
-  
+
   /* Backgrounds */
-  --bg-white: #FFFFFF;
-  --bg-light: #F0F2F5;
-  --bg-gray-light: #F5F5F5;
-  --bg-footer: #1B3A6B;
+  --bg-white: #ffffff;
+  --bg-light: #f0f2f5;
+  --bg-gray-light: #f5f5f5;
+  --bg-footer: #1b3a6b;
   --bg-footer-alt: #002147;
-  --bg-persona: #E8F0FF;
-  --bg-gradient-start: #FFFFFF;
-  --bg-gradient-end: #F5F5F5;
-  
+  --bg-persona: #e8f0ff;
+  --bg-gradient-start: #ffffff;
+  --bg-gradient-end: #f5f5f5;
+
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
+
   /* Font Sizes */
   --font-size-xs: 14px;
   --font-size-sm: 15px;
@@ -85,7 +86,7 @@ body {
   --font-size-2xl: 26px;
   --font-size-3xl: 30px;
   --font-size-4xl: 34px;
-  
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -95,24 +96,24 @@ body {
   --spacing-2xl: 24px;
   --spacing-3xl: 32px;
   --spacing-4xl: 40px;
-  
+
   /* Border Radius */
   --radius-none: 0px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  
+
   /* Line Heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.6;
   --line-height-loose: 2;
-  
+
   /* Shadows - Minimal for Government Sites */
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.12);
-  
+
   /* Legacy Color Mappings */
   --color-bg-main: var(--bg-light);
   --color-bg-surface: var(--bg-white);
@@ -132,28 +133,28 @@ body {
 
 /* Dark Mode Overrides - Government Design */
 [data-theme='dark'] {
-  --primary-blue: #0052CC;
-  --primary-blue-dark: #003DA5;
-  --primary-blue-light: #1E5FD9;
+  --primary-blue: #0052cc;
+  --primary-blue-dark: #003da5;
+  --primary-blue-light: #1e5fd9;
   --primary-navy: #0a1628;
-  
+
   --gray-light: #2a2a2a;
   --gray-border: #404040;
-  --gray-text: #B0B0B0;
-  --gray-text-dark: #E0E0E0;
-  --gray-text-darker: #FFFFFF;
-  
+  --gray-text: #b0b0b0;
+  --gray-text-dark: #e0e0e0;
+  --gray-text-darker: #ffffff;
+
   --bg-white: #1a1a1a;
   --bg-light: #2a2a2a;
   --bg-gray-light: #2a2a2a;
   --bg-footer: #0a1628;
   --bg-gradient-start: #1a1a1a;
   --bg-gradient-end: #0a2540;
-  
+
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.5);
-  
+
   /* Legacy mappings for dark mode */
   --color-bg-main: var(--bg-light);
   --color-bg-surface: var(--bg-white);
@@ -200,8 +201,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--color-text-primary);
-  font-family: 'Noto Sans', Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family:
+    'Noto Sans',
+    Inter,
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Utility Classes for Theme */
@@ -405,7 +416,6 @@ body {
 
 /* Animations */
 @keyframes pulse-subtle {
-
   0%,
   100% {
     opacity: 1;
@@ -417,7 +427,6 @@ body {
 }
 
 @keyframes blink {
-
   0%,
   100% {
     opacity: 1;
@@ -429,7 +438,6 @@ body {
 }
 
 @keyframes bounce-slow {
-
   0%,
   100% {
     transform: translateY(0);
@@ -594,12 +602,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(59, 130, 246, 0.3) 20%,
-      rgba(96, 165, 250, 0.6) 50%,
-      rgba(59, 130, 246, 0.3) 80%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.3) 20%,
+    rgba(96, 165, 250, 0.6) 50%,
+    rgba(59, 130, 246, 0.3) 80%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   animation: waterFlowHorizontal 1s linear infinite;
   pointer-events: none;
@@ -617,12 +627,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(59, 130, 246, 0.3) 20%,
-      rgba(96, 165, 250, 0.6) 50%,
-      rgba(59, 130, 246, 0.3) 80%,
-      transparent 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.3) 20%,
+    rgba(96, 165, 250, 0.6) 50%,
+    rgba(59, 130, 246, 0.3) 80%,
+    transparent 100%
+  );
   background-size: 100% 200%;
   animation: waterFlowVertical 1s linear infinite;
   pointer-events: none;
@@ -634,12 +646,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(59, 130, 246, 0.4) 25%,
-      rgba(96, 165, 250, 0.7) 50%,
-      rgba(59, 130, 246, 0.4) 75%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.4) 25%,
+    rgba(96, 165, 250, 0.7) 50%,
+    rgba(59, 130, 246, 0.4) 75%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   animation: waterFlowHorizontal 0.8s linear infinite;
   pointer-events: none;
@@ -652,12 +666,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(59, 130, 246, 0.4) 25%,
-      rgba(96, 165, 250, 0.7) 50%,
-      rgba(59, 130, 246, 0.4) 75%,
-      transparent 100%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.4) 25%,
+    rgba(96, 165, 250, 0.7) 50%,
+    rgba(59, 130, 246, 0.4) 75%,
+    transparent 100%
+  );
   background-size: 100% 200%;
   animation: waterFlowVertical 0.8s linear infinite;
   pointer-events: none;
@@ -851,9 +867,16 @@ body {
 
 /* Shake Animation (for alerts) */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 .animate-shake {
@@ -862,8 +885,13 @@ body {
 
 /* Bounce Animation */
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-bounce {
@@ -872,8 +900,12 @@ body {
 
 /* Spin Animation (for loading) */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {
@@ -882,7 +914,8 @@ body {
 
 /* Pulse Animation (for important items) */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -896,7 +929,8 @@ body {
 
 /* Glow Animation */
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
   }
   50% {
@@ -1027,7 +1061,8 @@ body {
 
 /* Text Animations */
 @keyframes textGlow {
-  0%, 100% {
+  0%,
+  100% {
     color: currentColor;
     text-shadow: 0 0 0px rgba(59, 130, 246, 0);
   }
@@ -1069,22 +1104,22 @@ body {
   html {
     font-size: 14px;
   }
-  
+
   body {
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  
+
   /* Optimize card spacing */
   .space-y-6 > * + * {
     margin-top: 1rem !important;
   }
-  
+
   .space-y-4 > * + * {
     margin-top: 0.75rem !important;
   }
-  
+
   /* Make grids single column on small screens */
   .grid-cols-2,
   .grid-cols-3,
@@ -1094,18 +1129,18 @@ body {
   .xl\\:grid-cols-4 {
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
   }
-  
+
   /* Reduce chart heights on mobile */
   .recharts-wrapper {
     max-height: 200px !important;
   }
-  
+
   /* Scale down SVG visualizations */
   svg {
     max-width: 100%;
     height: auto;
   }
-  
+
   /* Optimize button sizes */
   button {
     min-height: 44px;
@@ -1113,58 +1148,74 @@ body {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
-  
+
   /* Better touch targets */
-  a, button, input, select, textarea {
+  a,
+  button,
+  input,
+  select,
+  textarea {
     min-height: 44px;
   }
-  
+
   /* Scale down large content - ONLY FOR MOBILE (removed !important to allow md: breakpoints) */
-  .text-2xl { font-size: 1.25rem; }
-  .text-3xl { font-size: 1.5rem; }
-  .text-4xl { font-size: 1.75rem; }
-  .text-5xl { font-size: 2rem; }
-  
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  .text-4xl {
+    font-size: 1.75rem;
+  }
+  .text-5xl {
+    font-size: 2rem;
+  }
+
   /* Better card layouts */
-  .rounded-2xl { border-radius: 12px !important; }
-  .rounded-xl { border-radius: 8px !important; }
-  
+  .rounded-2xl {
+    border-radius: 12px !important;
+  }
+  .rounded-xl {
+    border-radius: 8px !important;
+  }
+
   /* Prevent content overflow */
   * {
     max-width: 100%;
   }
-  
+
   img {
     max-width: 100%;
     height: auto;
   }
-  
+
   /* Scale down large visualizations */
-  .relative[style*="width: 140px"] {
+  .relative[style*='width: 140px'] {
     transform: scale(0.8);
     transform-origin: left center;
   }
-  
+
   /* Better mobile grid responsiveness */
   .grid {
     width: 100%;
   }
-  
+
   /* Fix flex wrap on mobile */
   .flex {
     flex-wrap: wrap;
   }
-  
+
   .flex-nowrap {
     flex-wrap: nowrap;
     overflow-x: auto;
   }
-  
+
   /* Responsive tables */
   table {
     font-size: 0.875rem;
   }
-  
+
   /* Mobile-friendly cards */
   .bg-white,
   .bg-gradient-to-br {
@@ -1179,7 +1230,7 @@ body {
   :root {
     font-size: 15px;
   }
-  
+
   /* Two-column grids for tablets */
   .grid-cols-3,
   .grid-cols-4 {
@@ -1199,51 +1250,80 @@ body {
   body {
     overflow-x: hidden;
   }
-  
+
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* Optimize sidebar overlay */
   .fixed.inset-0 {
     touch-action: none;
   }
-  
+
   /* Better mobile card layout */
   .rounded-2xl,
   .rounded-xl {
     border-radius: 8px !important;
   }
-  
+
   /* Optimize text sizes */
-  h1 { font-size: 1.75rem !important; line-height: 1.2 !important; }
-  h2 { font-size: 1.5rem !important; line-height: 1.3 !important; }
-  h3 { font-size: 1.25rem !important; line-height: 1.4 !important; }
-  
+  h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.3 !important;
+  }
+  h3 {
+    font-size: 1.25rem !important;
+    line-height: 1.4 !important;
+  }
+
   /* Improve padding on mobile */
-  .p-6 { padding: 1rem !important; }
-  .p-8 { padding: 1.25rem !important; }
-  .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
-  .py-6 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-  .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
-  .py-8 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
-  
+  .p-6 {
+    padding: 1rem !important;
+  }
+  .p-8 {
+    padding: 1.25rem !important;
+  }
+  .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .py-6 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .px-8 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .py-8 {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+
   /* Scale down gaps */
-  .gap-6 { gap: 1rem !important; }
-  .gap-8 { gap: 1rem !important; }
-  
+  .gap-6 {
+    gap: 1rem !important;
+  }
+  .gap-8 {
+    gap: 1rem !important;
+  }
+
   /* Better flex layouts */
   .flex-row {
     flex-direction: column !important;
   }
-  
+
   /* Prevent horizontal scroll */
   .max-w-7xl,
   .max-w-6xl,
   .max-w-5xl {
     max-width: 100% !important;
   }
-  
+
   /* Scale down container widths */
   .container {
     padding-left: 1rem !important;

@@ -23,7 +23,13 @@ export const AccessibilityPanel = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border-4 border-green-600 animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="p-6 flex items-center justify-between" style={{ backgroundColor: 'var(--primary-blue)', borderBottom: '3px solid var(--gray-border)' }}>
+        <div
+          className="p-6 flex items-center justify-between"
+          style={{
+            backgroundColor: 'var(--primary-blue)',
+            borderBottom: '3px solid var(--gray-border)',
+          }}
+        >
           <h2
             className="text-2xl font-black text-white uppercase tracking-wide flex items-center gap-3"
             style={{ fontFamily: "'Montserrat', sans-serif" }}
@@ -34,8 +40,8 @@ export const AccessibilityPanel = ({
             onClick={onClose}
             className="transition-all duration-300"
             style={{ color: 'var(--bg-white)' }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             <X size={28} />
           </button>
@@ -44,11 +50,7 @@ export const AccessibilityPanel = ({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Text Size Slider */}
-          <TextSizeControl
-            textSize={textSize}
-            setTextSize={setTextSize}
-            t={t}
-          />
+          <TextSizeControl textSize={textSize} setTextSize={setTextSize} t={t} />
 
           {/* Dark Mode Toggle */}
           <ToggleControl
@@ -75,8 +77,21 @@ export const AccessibilityPanel = ({
           />
 
           {/* Info */}
-          <div className="p-5" style={{ backgroundColor: 'var(--bg-persona)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--primary-blue)' }}>
-            <p style={{ fontSize: 'var(--font-size-base)', color: 'var(--primary-blue-dark)', fontWeight: 'var(--font-weight-semibold)' }}>
+          <div
+            className="p-5"
+            style={{
+              backgroundColor: 'var(--bg-persona)',
+              borderRadius: 'var(--radius-sm)',
+              borderLeft: '3px solid var(--primary-blue)',
+            }}
+          >
+            <p
+              style={{
+                fontSize: 'var(--font-size-base)',
+                color: 'var(--primary-blue-dark)',
+                fontWeight: 'var(--font-weight-semibold)',
+              }}
+            >
               ℹ️ {t('accessibility.info')}
             </p>
           </div>
@@ -85,13 +100,13 @@ export const AccessibilityPanel = ({
           <button
             onClick={onReset}
             className="w-full py-3 uppercase tracking-widest transition-all duration-300"
-            style={{ 
+            style={{
               fontFamily: 'var(--font-family)',
               fontWeight: 'var(--font-weight-bold)',
               backgroundColor: 'var(--gray-text-dark)',
               color: 'var(--bg-white)',
               borderRadius: 'var(--radius-md)',
-              boxShadow: 'var(--shadow-md)'
+              boxShadow: 'var(--shadow-md)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--primary-navy)';
@@ -112,20 +127,33 @@ export const AccessibilityPanel = ({
 
 const TextSizeControl = ({ textSize, setTextSize, t }) => {
   return (
-    <div className="p-5" style={{ backgroundColor: 'var(--gray-light)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-border)' }}>
+    <div
+      className="p-5"
+      style={{
+        backgroundColor: 'var(--gray-light)',
+        borderRadius: 'var(--radius-sm)',
+        border: '1px solid var(--gray-border)',
+      }}
+    >
       <div className="flex justify-between items-center mb-4">
         <label
           className="block uppercase tracking-widest"
-          style={{ 
+          style={{
             fontFamily: 'var(--font-family)',
             fontSize: 'var(--font-size-base)',
             fontWeight: 'var(--font-weight-bold)',
-            color: 'var(--gray-text-dark)'
+            color: 'var(--gray-text-dark)',
           }}
         >
           {t('accessibility.textSize')}
         </label>
-        <span style={{ fontSize: 'var(--font-size-base)', fontWeight: 'var(--font-weight-bold)', color: 'var(--gray-text-dark)' }}>
+        <span
+          style={{
+            fontSize: 'var(--font-size-base)',
+            fontWeight: 'var(--font-weight-bold)',
+            color: 'var(--gray-text-dark)',
+          }}
+        >
           {typeof textSize === 'string' ? '100%' : (textSize * 100).toFixed(0) + '%'}
         </span>
       </div>
@@ -148,15 +176,22 @@ const TextSizeControl = ({ textSize, setTextSize, t }) => {
 
 const ToggleControl = ({ label, hint, isEnabled, onChange }) => {
   return (
-    <div className="p-5 flex items-center justify-between" style={{ backgroundColor: 'var(--gray-light)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--gray-border)' }}>
+    <div
+      className="p-5 flex items-center justify-between"
+      style={{
+        backgroundColor: 'var(--gray-light)',
+        borderRadius: 'var(--radius-sm)',
+        border: '1px solid var(--gray-border)',
+      }}
+    >
       <div>
         <label
           className="block uppercase tracking-widest mb-1"
-          style={{ 
+          style={{
             fontFamily: 'var(--font-family)',
             fontSize: 'var(--font-size-base)',
             fontWeight: 'var(--font-weight-bold)',
-            color: 'var(--gray-text-dark)'
+            color: 'var(--gray-text-dark)',
           }}
         >
           {label}

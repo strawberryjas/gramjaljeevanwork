@@ -100,4 +100,3 @@ describe('QualityCard', () => {
     expect(screen.getByText(/Standard: <5.0 NTU/)).toBeInTheDocument();
   });
 });
-

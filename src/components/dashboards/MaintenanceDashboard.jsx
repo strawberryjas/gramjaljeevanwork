@@ -6,7 +6,7 @@ import MaintenanceCard from '../shared/MaintenanceCard';
 const HOUR_LIMITS = {
   day: 24,
   week: 168,
-  month: 720
+  month: 720,
 };
 
 export const MaintenanceDashboard = ({ onBack }) => {
@@ -17,20 +17,61 @@ export const MaintenanceDashboard = ({ onBack }) => {
   const quality = tank?.waterQuality || {};
 
   // Pump maintenance metrics
-  const pumpMaintenanceMetrics = useMemo(() => [
-    { label: "Operation Cycles", value: pump.operationCycles?.toLocaleString() || "0", subtext: "Total on/off cycles" },
-    { label: "Running Hours", value: `${(pump.pumpRunningHours || 0).toFixed(1)} hrs`, subtext: "Lifetime runtime" },
-    { label: "Vibration Level", value: `${pump.vibration?.toFixed(1) || "0"} mm/s`, subtext: pump.vibration > 8 ? "⚠️ High" : "✓ Normal" },
-    { label: "Motor Temperature", value: `${pump.motorTemperature?.toFixed(1) || "0"}°C`, subtext: pump.motorTemperature > 65 ? "⚠️ Hot" : "✓ Normal" }
-  ], [pump.operationCycles, pump.pumpRunningHours, pump.vibration, pump.motorTemperature]);
+  const pumpMaintenanceMetrics = useMemo(
+    () => [
+      {
+        label: 'Operation Cycles',
+        value: pump.operationCycles?.toLocaleString() || '0',
+        subtext: 'Total on/off cycles',
+      },
+      {
+        label: 'Running Hours',
+        value: `${(pump.pumpRunningHours || 0).toFixed(1)} hrs`,
+        subtext: 'Lifetime runtime',
+      },
+      {
+        label: 'Vibration Level',
+        value: `${pump.vibration?.toFixed(1) || '0'} mm/s`,
+        subtext: pump.vibration > 8 ? '⚠️ High' : '✓ Normal',
+      },
+      {
+        label: 'Motor Temperature',
+        value: `${pump.motorTemperature?.toFixed(1) || '0'}°C`,
+        subtext: pump.motorTemperature > 65 ? '⚠️ Hot' : '✓ Normal',
+      },
+    ],
+    [pump.operationCycles, pump.pumpRunningHours, pump.vibration, pump.motorTemperature]
+  );
 
   // Tank maintenance metrics
-  const tankMaintenanceMetrics = useMemo(() => [
-    { label: "Last Cleaning", value: new Date(tank.lastCleaningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }), subtext: `${Math.ceil((Date.now() - tank.lastCleaningDate) / (24 * 60 * 60 * 1000))} days ago` },
-    { label: "Tank Capacity", value: `${(tank.tankCapacity / 1000).toFixed(0)} kL`, subtext: "Maximum volume" },
-    { label: "Current Level", value: `${tank.tankLevel?.toFixed(1) || 0}%`, subtext: tank.tankLevel < 20 ? "⚠️ Low" : "✓ Good" },
-    { label: "Water Quality", value: quality.pH >= 6.5 && quality.pH <= 8.5 ? "Safe" : "Alert", subtext: `pH ${quality.pH?.toFixed(1)}` }
-  ], [tank.lastCleaningDate, tank.tankCapacity, tank.tankLevel, quality.pH]);
+  const tankMaintenanceMetrics = useMemo(
+    () => [
+      {
+        label: 'Last Cleaning',
+        value: new Date(tank.lastCleaningDate).toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+        }),
+        subtext: `${Math.ceil((Date.now() - tank.lastCleaningDate) / (24 * 60 * 60 * 1000))} days ago`,
+      },
+      {
+        label: 'Tank Capacity',
+        value: `${(tank.tankCapacity / 1000).toFixed(0)} kL`,
+        subtext: 'Maximum volume',
+      },
+      {
+        label: 'Current Level',
+        value: `${tank.tankLevel?.toFixed(1) || 0}%`,
+        subtext: tank.tankLevel < 20 ? '⚠️ Low' : '✓ Good',
+      },
+      {
+        label: 'Water Quality',
+        value: quality.pH >= 6.5 && quality.pH <= 8.5 ? 'Safe' : 'Alert',
+        subtext: `pH ${quality.pH?.toFixed(1)}`,
+      },
+    ],
+    [tank.lastCleaningDate, tank.tankCapacity, tank.tankLevel, quality.pH]
+  );
 
   return (
     <div className="space-y-6">
@@ -48,7 +89,9 @@ export const MaintenanceDashboard = ({ onBack }) => {
               <Wrench className="text-orange-600" size={28} />
               Maintenance Management
             </h2>
-            <p className="text-sm text-slate-500">Comprehensive maintenance schedules and system health monitoring</p>
+            <p className="text-sm text-slate-500">
+              Comprehensive maintenance schedules and system health monitoring
+            </p>
           </div>
         </div>
         {isLive && (
@@ -64,7 +107,9 @@ export const MaintenanceDashboard = ({ onBack }) => {
         {/* Total Systems */}
         <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border-2 border-blue-200 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">Total Systems</h3>
+            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">
+              Total Systems
+            </h3>
             <Wrench size={24} className="md:w-8 md:h-8 text-blue-600" />
           </div>
           <p className="text-4xl md:text-4xl font-black text-blue-600">2</p>
@@ -74,13 +119,23 @@ export const MaintenanceDashboard = ({ onBack }) => {
         {/* Upcoming Maintenance */}
         <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-6 border-2 border-amber-200 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">Next Scheduled</h3>
+            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">
+              Next Scheduled
+            </h3>
             <Calendar size={24} className="md:w-8 md:h-8 text-amber-600" />
           </div>
           <p className="text-4xl md:text-4xl font-black text-amber-600">
             {Math.min(
-              pump.nextMaintenanceDate ? Math.ceil((new Date(pump.nextMaintenanceDate) - Date.now()) / (24 * 60 * 60 * 1000)) : 999,
-              tank.nextMaintenanceDate ? Math.ceil((new Date(tank.nextMaintenanceDate) - Date.now()) / (24 * 60 * 60 * 1000)) : 999
+              pump.nextMaintenanceDate
+                ? Math.ceil(
+                    (new Date(pump.nextMaintenanceDate) - Date.now()) / (24 * 60 * 60 * 1000)
+                  )
+                : 999,
+              tank.nextMaintenanceDate
+                ? Math.ceil(
+                    (new Date(tank.nextMaintenanceDate) - Date.now()) / (24 * 60 * 60 * 1000)
+                  )
+                : 999
             )}
           </p>
           <p className="text-xs md:text-base text-slate-500 mt-1">days away</p>
@@ -89,7 +144,9 @@ export const MaintenanceDashboard = ({ onBack }) => {
         {/* System Health */}
         <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border-2 border-green-200 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">System Health</h3>
+            <h3 className="text-sm md:text-lg font-semibold text-slate-600 uppercase">
+              System Health
+            </h3>
             <CheckCircle size={24} className="md:w-8 md:h-8 text-green-600" />
           </div>
           <p className="text-4xl md:text-6xl font-black text-green-600">Good</p>
@@ -125,7 +182,7 @@ export const MaintenanceDashboard = ({ onBack }) => {
           <AlertTriangle size={24} className="text-orange-600" />
           Maintenance Best Practices
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-lg p-4 border border-slate-200">
             <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">

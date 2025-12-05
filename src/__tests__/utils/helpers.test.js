@@ -3,27 +3,28 @@ import { getNextDistributionTime } from '../../utils/helpers';
 
 describe('Helper Utilities', () => {
   describe('getNextDistributionTime', () => {
-    it('calculates next distribution time correctly', () => {
-      const result = getNextDistributionTime('06:00');
-      expect(result).toMatch(/^\d{2}:\d{2}$/);
+    it('returns a valid distribution time string', () => {
+      const result = getNextDistributionTime();
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result.length).toBeGreaterThan(0);
     });
 
-    it('returns a valid time format', () => {
-      const result = getNextDistributionTime('12:00');
-      const [hours, minutes] = result.split(':');
-      expect(Number(hours)).toBeGreaterThanOrEqual(0);
-      expect(Number(hours)).toBeLessThan(24);
-      expect(Number(minutes)).toBeGreaterThanOrEqual(0);
-      expect(Number(minutes)).toBeLessThan(60);
+    it('returns one of the expected time formats', () => {
+      const result = getNextDistributionTime();
+      const validFormats = [
+        'Today, 06:00 AM',
+        'Live Now (Ends 09:00 AM)',
+        'Today, 05:00 PM',
+        'Live Now (Ends 07:00 PM)',
+        'Tomorrow, 06:00 AM',
+      ];
+      expect(validFormats).toContain(result);
     });
 
-    it('handles different input times', () => {
-      const times = ['06:00', '12:00', '18:00', '00:00'];
-      times.forEach((time) => {
-        const result = getNextDistributionTime(time);
-        expect(result).toMatch(/^\d{2}:\d{2}$/);
-      });
+    it('always returns a string value', () => {
+      const result = getNextDistributionTime();
+      expect(typeof result).toBe('string');
     });
   });
 });
-

@@ -1,22 +1,77 @@
 import React, { Suspense, lazy, useEffect, useState, useRef, useMemo } from 'react';
 import {
-  Activity, Droplet, AlertTriangle, Wind, Zap, Clipboard,
-  LogOut, MapPin, Clock, WifiOff,
-  Server, Layers, ClipboardList, PenTool, Wrench, DollarSign,
-  FlaskConical, Beaker, Microscope, TrendingUp,
-  CalendarClock, Calendar, AlertCircle,
-  Users, Star, FileCheck, LayoutDashboard, Table, FileText,
-  Thermometer, Power, Map,
-  Ticket, CheckSquare, Filter, PlusCircle, X, Languages,
-  Landmark, Play, Square, Settings,
-  Download, FileBarChart, Upload, Share2, Leaf, Sun, Gauge, BarChart3,
-  PieChart as PieChartIcon, Menu, Search
+  Activity,
+  Droplet,
+  AlertTriangle,
+  Wind,
+  Zap,
+  Clipboard,
+  LogOut,
+  MapPin,
+  Clock,
+  WifiOff,
+  Server,
+  Layers,
+  ClipboardList,
+  PenTool,
+  Wrench,
+  DollarSign,
+  FlaskConical,
+  Beaker,
+  Microscope,
+  TrendingUp,
+  CalendarClock,
+  Calendar,
+  AlertCircle,
+  Users,
+  Star,
+  FileCheck,
+  LayoutDashboard,
+  Table,
+  FileText,
+  Thermometer,
+  Power,
+  Map,
+  Ticket,
+  CheckSquare,
+  Filter,
+  PlusCircle,
+  X,
+  Languages,
+  Landmark,
+  Play,
+  Square,
+  Settings,
+  Download,
+  FileBarChart,
+  Upload,
+  Share2,
+  Leaf,
+  Sun,
+  Gauge,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Menu,
+  Search,
 } from 'lucide-react';
 import {
-  LineChart, Line, AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, ComposedChart, Legend, Scatter,
-  PieChart, Pie, Cell
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  ComposedChart,
+  Legend,
+  Scatter,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 
 // Import shared components
@@ -33,56 +88,67 @@ import MaintenanceCard from './components/shared/MaintenanceCard';
 import { SidebarNavigation } from './components/SidebarNavigation';
 import IconImage from './components/IconImage';
 import { TabbedPanel, CardSection, MetricCard } from './components/CardLayout';
-import { NotificationContainer, ConfirmationDialog, RecentActionsLog, useNotifications, useActionLog } from './components/ActionFeedback';
+import {
+  NotificationContainer,
+  ConfirmationDialog,
+  RecentActionsLog,
+  useNotifications,
+  useActionLog,
+} from './components/ActionFeedback';
 import { PumpToggle, ValveToggle, TankValveToggle, ToggleSwitch } from './components/ToggleSwitch';
-import { AnimatedButton, InteractiveCard, StatusBadge, AnimatedProgressBar } from './components/AnimatedInteractions';
+import {
+  AnimatedButton,
+  InteractiveCard,
+  StatusBadge,
+  AnimatedProgressBar,
+} from './components/AnimatedInteractions';
 const GuestDashboard = lazy(() =>
-  import('./components/dashboards/GuestDashboard').then(module => ({
+  import('./components/dashboards/GuestDashboard').then((module) => ({
     default: module.GuestDashboard,
   }))
 );
 const TechnicianDashboard = lazy(() =>
-  import('./components/dashboards/TechnicianDashboard').then(module => ({
+  import('./components/dashboards/TechnicianDashboard').then((module) => ({
     default: module.TechnicianDashboard,
   }))
 );
 const ResearcherDashboard = lazy(() =>
-  import('./components/dashboards/ResearcherDashboard').then(module => ({
+  import('./components/dashboards/ResearcherDashboard').then((module) => ({
     default: module.ResearcherDashboard,
   }))
 );
 const ServiceRequestDashboard = lazy(() =>
-  import('./components/dashboards/ServiceRequestDashboard').then(module => ({
+  import('./components/dashboards/ServiceRequestDashboard').then((module) => ({
     default: module.ServiceRequestDashboard,
   }))
 );
 const MaintenanceDashboard = lazy(() =>
-  import('./components/dashboards/MaintenanceDashboard').then(module => ({
+  import('./components/dashboards/MaintenanceDashboard').then((module) => ({
     default: module.default,
   }))
 );
 const PumpDetails = lazy(() =>
-  import('./components/dashboards/PumpDetails').then(module => ({
+  import('./components/dashboards/PumpDetails').then((module) => ({
     default: module.PumpDetails,
   }))
 );
 const PipelineDetails = lazy(() =>
-  import('./components/dashboards/PipelineDetails').then(module => ({
+  import('./components/dashboards/PipelineDetails').then((module) => ({
     default: module.PipelineDetails,
   }))
 );
 const WaterTankDetails = lazy(() =>
-  import('./components/dashboards/WaterTankDetails').then(module => ({
+  import('./components/dashboards/WaterTankDetails').then((module) => ({
     default: module.WaterTankDetails,
   }))
 );
 const PipelinesOverview = lazy(() =>
-  import('./components/dashboards/PipelinesOverview').then(module => ({
+  import('./components/dashboards/PipelinesOverview').then((module) => ({
     default: module.PipelinesOverview,
   }))
 );
 const ValvesDashboard = lazy(() =>
-  import('./components/dashboards/ValvesDashboard').then(module => ({
+  import('./components/dashboards/ValvesDashboard').then((module) => ({
     default: module.ValvesDashboard,
   }))
 );
@@ -90,7 +156,12 @@ const ValvesDashboard = lazy(() =>
 // Import utilities and constants
 import { HAZARD_LOGS } from './constants/mockData';
 import { LANGUAGES } from './constants/translations';
-import { transformStateToData, toLocalInputString, formatMetric, formatDurationLabel } from './utils/appUtils';
+import {
+  transformStateToData,
+  toLocalInputString,
+  formatMetric,
+  formatDurationLabel,
+} from './utils/appUtils';
 import { getNextDistributionTime } from './utils/helpers';
 import { samplePipelineData, sampleInfrastructureData } from './data/samplePipelineData';
 
@@ -110,7 +181,7 @@ const ALERT_TYPE_TO_TAB = {
   TANK_LOW: 'water-tank',
   TANK_FULL: 'water-tank',
   TANK_OVERFLOW: 'water-tank',
-  PUMP_OVERHEAT: 'pump-station'
+  PUMP_OVERHEAT: 'pump-station',
 };
 
 /**
@@ -119,11 +190,22 @@ const ALERT_TYPE_TO_TAB = {
  * Features: Modular dashboard components, separated concerns, optimized rendering
  */
 
-const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onToggleValve, onSchedulePumpTimer, onSchedulePumpStop, onCancelPumpSchedule }) => {
+const InfrastructureDashboard = ({
+  data,
+  history,
+  systemState,
+  onTogglePump,
+  onToggleValve,
+  onSchedulePumpTimer,
+  onSchedulePumpStop,
+  onCancelPumpSchedule,
+}) => {
   const [selectedPump, setSelectedPump] = useState('primary');
   const [confirmPump, setConfirmPump] = useState(null);
   const [pumpTimerMinutes, setPumpTimerMinutes] = useState(30);
-  const [pumpStopAt, setPumpStopAt] = useState(() => toLocalInputString(new Date(Date.now() + 60 * 60 * 1000)));
+  const [pumpStopAt, setPumpStopAt] = useState(() =>
+    toLocalInputString(new Date(Date.now() + 60 * 60 * 1000))
+  );
 
   // Use live system state from simulation engine
   const pumpStatus = systemState?.pumpHouse?.pumpStatus || data?.pumpStatus || 'OFF';
@@ -133,8 +215,8 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
   const pipelineSegments = systemState?.pipelines?.map((p, idx) => {
     const inletFlow = p.inlet?.flowSensor?.value || 0;
     const inletPressure = p.inlet?.pressureSensor?.value || 0;
-    const status = p.leakageProbability > 40 ? 'critical' :
-      p.leakageProbability > 20 ? 'warning' : 'normal';
+    const status =
+      p.leakageProbability > 40 ? 'critical' : p.leakageProbability > 20 ? 'warning' : 'normal';
     return {
       id: `pipeline-${p.pipelineId}`,
       label: p.pipelineName || `Pipeline ${p.pipelineId}`,
@@ -146,14 +228,20 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
       leakage: p.leakageProbability,
     };
   }) || [
-      { id: 'intake', label: 'Raw Water Intake', pressure: 4.2, flow: 420, status: 'normal' },
-      { id: 'treatment', label: 'Treatment Plant', pressure: 3.6, flow: 400, status: 'normal' },
-      { id: 'transmission', label: 'Transmission Main', pressure: 3.1, flow: 380, status: 'warning' },
-      { id: 'distribution', label: 'Distribution Ring', pressure: 2.4, flow: 360, status: 'critical' },
-    ];
+    { id: 'intake', label: 'Raw Water Intake', pressure: 4.2, flow: 420, status: 'normal' },
+    { id: 'treatment', label: 'Treatment Plant', pressure: 3.6, flow: 400, status: 'normal' },
+    { id: 'transmission', label: 'Transmission Main', pressure: 3.1, flow: 380, status: 'warning' },
+    {
+      id: 'distribution',
+      label: 'Distribution Ring',
+      pressure: 2.4,
+      flow: 360,
+      status: 'critical',
+    },
+  ];
 
   // Get valves from digital twin pipelines
-  const valves = systemState?.pipelines?.map(p => ({
+  const valves = systemState?.pipelines?.map((p) => ({
     id: `V-${p.pipelineId}`,
     location: p.pipelineName?.replace(/.*- /, '') || `Ward ${p.pipelineId}`,
     state: p.valveStatus,
@@ -161,87 +249,119 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
     lastAction: 'Just now',
     pipelineId: p.pipelineId,
   })) || [
-      { id: 'V-01', location: 'Ward 1', state: 'OPEN', automation: 'Auto', lastAction: '10 min ago' },
-      { id: 'V-05', location: 'Ward 5', state: 'CLOSED', automation: 'Manual', lastAction: '1 hr ago' },
-      { id: 'V-12', location: 'Elevated Tank', state: 'OPEN', automation: 'Auto', lastAction: '5 min ago' },
-      { id: 'V-17', location: 'Booster Line', state: 'CLOSED', automation: 'Manual', lastAction: '2 hrs ago' },
-    ];
+    { id: 'V-01', location: 'Ward 1', state: 'OPEN', automation: 'Auto', lastAction: '10 min ago' },
+    {
+      id: 'V-05',
+      location: 'Ward 5',
+      state: 'CLOSED',
+      automation: 'Manual',
+      lastAction: '1 hr ago',
+    },
+    {
+      id: 'V-12',
+      location: 'Elevated Tank',
+      state: 'OPEN',
+      automation: 'Auto',
+      lastAction: '5 min ago',
+    },
+    {
+      id: 'V-17',
+      location: 'Booster Line',
+      state: 'CLOSED',
+      automation: 'Manual',
+      lastAction: '2 hrs ago',
+    },
+  ];
 
   // Get sensors from digital twin - Main tank sensors + pipeline sensors
-  const sensors = systemState ? [
-    // Main Tank Sensors
-    {
-      id: 'S-TANK-LEVEL',
-      type: 'Level',
-      location: 'Main Tank',
-      battery: 95,
-      lastSeen: 'Just now',
-      value: `${systemState.overheadTank?.tankLevel?.toFixed(1)}%`,
-      status: systemState.overheadTank?.tankLevel > 30 ? 'ACTIVE' : 'WARNING'
-    },
-    {
-      id: 'S-TANK-PH',
-      type: 'Water Quality (pH)',
-      location: 'Main Tank',
-      battery: 92,
-      lastSeen: 'Just now',
-      value: systemState.overheadTank?.waterQuality?.pH?.toFixed(2),
-      status: 'ACTIVE'
-    },
-    {
-      id: 'S-TANK-TURB',
-      type: 'Water Quality (Turbidity)',
-      location: 'Main Tank',
-      battery: 90,
-      lastSeen: 'Just now',
-      value: `${systemState.overheadTank?.waterQuality?.turbidity?.toFixed(2)} NTU`,
-      status: 'ACTIVE'
-    },
-    // Pipeline Sensors (from each pipeline)
-    ...(systemState.pipelines?.flatMap(p => [
-      {
-        id: `S-P${p.pipelineId}-INLET-FLOW`,
-        type: 'Flow',
-        location: `${p.pipelineName} - Inlet`,
-        battery: 88,
-        lastSeen: 'Just now',
-        value: `${p.inlet?.flowSensor?.value || 0} L/min`,
-        status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE'
-      },
-      {
-        id: `S-P${p.pipelineId}-INLET-PRESSURE`,
-        type: 'Pressure',
-        location: `${p.pipelineName} - Inlet`,
-        battery: 85,
-        lastSeen: 'Just now',
-        value: `${p.inlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
-        status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE'
-      },
-      {
-        id: `S-P${p.pipelineId}-OUTLET-FLOW`,
-        type: 'Flow',
-        location: `${p.pipelineName} - Outlet`,
-        battery: 82,
-        lastSeen: 'Just now',
-        value: `${p.outlet?.flowSensor?.value || 0} L/min`,
-        status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE'
-      },
-      {
-        id: `S-P${p.pipelineId}-OUTLET-PRESSURE`,
-        type: 'Pressure',
-        location: `${p.pipelineName} - Outlet`,
-        battery: 80,
-        lastSeen: 'Just now',
-        value: `${p.outlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
-        status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE'
-      },
-    ]) || [])
-  ] : [
-    { id: 'S-101', type: 'Pressure', location: 'Ward 3', battery: 92, lastSeen: '2 mins ago' },
-    { id: 'S-204', type: 'Flow', location: 'Ward 5', battery: 68, lastSeen: '12 mins ago' },
-    { id: 'S-307', type: 'Water Quality', location: 'Tank Zone', battery: 54, lastSeen: '5 mins ago' },
-    { id: 'S-415', type: 'Level', location: 'Ground Reservoir', battery: 87, lastSeen: 'Just now' },
-  ];
+  const sensors = systemState
+    ? [
+        // Main Tank Sensors
+        {
+          id: 'S-TANK-LEVEL',
+          type: 'Level',
+          location: 'Main Tank',
+          battery: 95,
+          lastSeen: 'Just now',
+          value: `${systemState.overheadTank?.tankLevel?.toFixed(1)}%`,
+          status: systemState.overheadTank?.tankLevel > 30 ? 'ACTIVE' : 'WARNING',
+        },
+        {
+          id: 'S-TANK-PH',
+          type: 'Water Quality (pH)',
+          location: 'Main Tank',
+          battery: 92,
+          lastSeen: 'Just now',
+          value: systemState.overheadTank?.waterQuality?.pH?.toFixed(2),
+          status: 'ACTIVE',
+        },
+        {
+          id: 'S-TANK-TURB',
+          type: 'Water Quality (Turbidity)',
+          location: 'Main Tank',
+          battery: 90,
+          lastSeen: 'Just now',
+          value: `${systemState.overheadTank?.waterQuality?.turbidity?.toFixed(2)} NTU`,
+          status: 'ACTIVE',
+        },
+        // Pipeline Sensors (from each pipeline)
+        ...(systemState.pipelines?.flatMap((p) => [
+          {
+            id: `S-P${p.pipelineId}-INLET-FLOW`,
+            type: 'Flow',
+            location: `${p.pipelineName} - Inlet`,
+            battery: 88,
+            lastSeen: 'Just now',
+            value: `${p.inlet?.flowSensor?.value || 0} L/min`,
+            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
+          },
+          {
+            id: `S-P${p.pipelineId}-INLET-PRESSURE`,
+            type: 'Pressure',
+            location: `${p.pipelineName} - Inlet`,
+            battery: 85,
+            lastSeen: 'Just now',
+            value: `${p.inlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
+            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
+          },
+          {
+            id: `S-P${p.pipelineId}-OUTLET-FLOW`,
+            type: 'Flow',
+            location: `${p.pipelineName} - Outlet`,
+            battery: 82,
+            lastSeen: 'Just now',
+            value: `${p.outlet?.flowSensor?.value || 0} L/min`,
+            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
+          },
+          {
+            id: `S-P${p.pipelineId}-OUTLET-PRESSURE`,
+            type: 'Pressure',
+            location: `${p.pipelineName} - Outlet`,
+            battery: 80,
+            lastSeen: 'Just now',
+            value: `${p.outlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
+            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
+          },
+        ]) || []),
+      ]
+    : [
+        { id: 'S-101', type: 'Pressure', location: 'Ward 3', battery: 92, lastSeen: '2 mins ago' },
+        { id: 'S-204', type: 'Flow', location: 'Ward 5', battery: 68, lastSeen: '12 mins ago' },
+        {
+          id: 'S-307',
+          type: 'Water Quality',
+          location: 'Tank Zone',
+          battery: 54,
+          lastSeen: '5 mins ago',
+        },
+        {
+          id: 'S-415',
+          type: 'Level',
+          location: 'Ground Reservoir',
+          battery: 87,
+          lastSeen: 'Just now',
+        },
+      ];
 
   // Get tank data from digital twin
   const tankCapacity = systemState?.overheadTank?.tankCapacity || 50000;
@@ -250,8 +370,10 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
   const inflow = systemState?.pumpHouse?.pumpFlowOutput || data?.pumpFlowRate || 0;
   const totalOutflow = systemState?.systemMetrics?.totalFlowRate || 0;
   const outflow = totalOutflow || Math.max(320, inflow - 40);
-  const predictedEmptyHours = outflow > inflow ? ((currentVolume) / (outflow - inflow)).toFixed(1) : 'Stable';
-  const predictedFillHours = inflow > outflow ? ((tankCapacity - currentVolume) / (inflow - outflow)).toFixed(1) : 'N/A';
+  const predictedEmptyHours =
+    outflow > inflow ? (currentVolume / (outflow - inflow)).toFixed(1) : 'Stable';
+  const predictedFillHours =
+    inflow > outflow ? ((tankCapacity - currentVolume) / (inflow - outflow)).toFixed(1) : 'N/A';
 
   const handlePumpToggle = (id) => {
     if (id === 'primary' && onTogglePump) {
@@ -312,27 +434,34 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             <h3 className="font-bold text-black flex items-center gap-2">
               <Power size={18} /> Main Pump Station
             </h3>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${isPumpOn ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-gray-100 text-gray-600'}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold ${isPumpOn ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-gray-100 text-gray-600'}`}
+            >
               {isPumpOn ? '● RUNNING' : '○ STOPPED'}
             </span>
           </div>
 
           {/* Pump Visual - Realistic Industrial Design */}
-          <div className={`relative p-6 rounded-2xl border-2 mb-4 transition-all duration-500 ${isPumpOn ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-50' : 'border-gray-200 bg-gray-50'}`}>
+          <div
+            className={`relative p-6 rounded-2xl border-2 mb-4 transition-all duration-500 ${isPumpOn ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-50' : 'border-gray-200 bg-gray-50'}`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Realistic Pump Motor Assembly */}
                 <div className="relative" style={{ width: '140px', height: '160px' }}>
                   {/* Mounting Base */}
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-gradient-to-b from-stone-600 to-stone-800 rounded-sm border-2 border-stone-900"
-                    style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}>
+                  <div
+                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-gradient-to-b from-stone-600 to-stone-800 rounded-sm border-2 border-stone-900"
+                    style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}
+                  >
                     {/* Bolt Holes */}
                     <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
                     <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
                   </div>
 
                   {/* Motor Housing (Cylindrical Body) */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-28 rounded-lg overflow-hidden"
+                  <div
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-28 rounded-lg overflow-hidden"
                     style={{
                       background: isPumpOn
                         ? 'linear-gradient(90deg, #334155 0%, #475569 20%, #64748b 50%, #475569 80%, #334155 100%)'
@@ -340,14 +469,17 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                       boxShadow: isPumpOn
                         ? '0 8px 25px rgba(34, 197, 94, 0.3), inset -4px 0 8px rgba(0,0,0,0.3), inset 4px 0 8px rgba(255,255,255,0.1)'
                         : '0 8px 25px rgba(0,0,0,0.5), inset -4px 0 8px rgba(0,0,0,0.4), inset 4px 0 8px rgba(255,255,255,0.05)',
-                      border: '3px solid #1e293b'
-                    }}>
-
+                      border: '3px solid #1e293b',
+                    }}
+                  >
                     {/* Cooling Fins (Horizontal Lines) */}
                     <div className="absolute inset-0">
                       {[...Array(8)].map((_, i) => (
-                        <div key={i} className="absolute left-0 right-0 h-0.5 bg-slate-900/40"
-                          style={{ top: `${12 + i * 10}%` }}></div>
+                        <div
+                          key={i}
+                          className="absolute left-0 right-0 h-0.5 bg-slate-900/40"
+                          style={{ top: `${12 + i * 10}%` }}
+                        ></div>
                       ))}
                     </div>
 
@@ -359,36 +491,49 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                     {/* Ventilation Grills */}
                     <div className="absolute bottom-2 left-2 right-2 flex gap-1">
                       {[...Array(6)].map((_, i) => (
-                        <div key={i} className="flex-1 h-3 bg-slate-900/60 rounded-sm border border-slate-700"></div>
+                        <div
+                          key={i}
+                          className="flex-1 h-3 bg-slate-900/60 rounded-sm border border-slate-700"
+                        ></div>
                       ))}
                     </div>
                   </div>
 
                   {/* Pump Head (Front Casing) */}
-                  <div className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
+                  <div
+                    className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
                     style={{
-                      background: 'linear-gradient(135deg, #ffffffff 0%, #000000ff 50%, #ffffffff 100%)',
-                      boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
-                      border: '2px solid #0a3a5a'
-                    }}>
-
+                      background:
+                        'linear-gradient(135deg, #ffffffff 0%, #000000ff 50%, #ffffffff 100%)',
+                      boxShadow:
+                        'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
+                      border: '2px solid #0a3a5a',
+                    }}
+                  >
                     {/* Impeller Housing (Circular) */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-4 border-sky-900/50"
+                    <div
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-4 border-sky-900/50"
                       style={{
-                        background: 'radial-gradient(circle, #0369a1 0%, #075985 50%, #0c4a6e 100%)',
-                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.6)'
-                      }}>
-
+                        background:
+                          'radial-gradient(circle, #0369a1 0%, #075985 50%, #0c4a6e 100%)',
+                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.6)',
+                      }}
+                    >
                       {/* Rotating Impeller */}
-                      <div className={`absolute inset-0 ${isPumpOn ? 'animate-spin' : ''}`}
-                        style={{ animationDuration: '1.5s' }}>
+                      <div
+                        className={`absolute inset-0 ${isPumpOn ? 'animate-spin' : ''}`}
+                        style={{ animationDuration: '1.5s' }}
+                      >
                         {/* Impeller Blades */}
                         {[...Array(6)].map((_, i) => (
-                          <div key={i} className="absolute top-1/2 left-1/2 w-1 h-5 bg-cyan-400/70 rounded"
+                          <div
+                            key={i}
+                            className="absolute top-1/2 left-1/2 w-1 h-5 bg-cyan-400/70 rounded"
                             style={{
                               transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-8px)`,
-                              transformOrigin: 'center'
-                            }}></div>
+                              transformOrigin: 'center',
+                            }}
+                          ></div>
                         ))}
                         {/* Center Hub */}
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-600"></div>
@@ -396,8 +541,10 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                     </div>
 
                     {/* Outlet Flange */}
-                    <div className="absolute top-0 right-0 w-6 h-8 bg-gradient-to-r from-sky-800 to-sky-900 border-2 border-sky-950 rounded-r"
-                      style={{ boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.5)' }}>
+                    <div
+                      className="absolute top-0 right-0 w-6 h-8 bg-gradient-to-r from-sky-800 to-sky-900 border-2 border-sky-950 rounded-r"
+                      style={{ boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.5)' }}
+                    >
                       {/* Bolt Holes on Flange */}
                       <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
                       <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
@@ -405,27 +552,34 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                   </div>
 
                   {/* Status Indicator Light */}
-                  <div className={`absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-white ${isPumpOn
-                    ? 'bg-green-400 shadow-lg shadow-green-400/80 animate-pulse'
-                    : 'bg-red-500 shadow-lg shadow-red-500/50'
+                  <div
+                    className={`absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-white ${
+                      isPumpOn
+                        ? 'bg-green-400 shadow-lg shadow-green-400/80 animate-pulse'
+                        : 'bg-red-500 shadow-lg shadow-red-500/50'
                     }`}
                     style={{
                       boxShadow: isPumpOn
                         ? '0 0 15px rgba(34, 197, 94, 0.8), inset 0 1px 2px rgba(255,255,255,0.5)'
-                        : '0 0 10px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(0,0,0,0.3)'
-                    }}>
-                  </div>
+                        : '0 0 10px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(0,0,0,0.3)',
+                    }}
+                  ></div>
 
                   {/* Vibration Effect when Running */}
                   {isPumpOn && (
-                    <div className="absolute inset-0 animate-pulse opacity-30 pointer-events-none"
+                    <div
+                      className="absolute inset-0 animate-pulse opacity-30 pointer-events-none"
                       style={{
-                        background: 'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)'
-                      }}></div>
+                        background:
+                          'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)',
+                      }}
+                    ></div>
                   )}
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-black">{isPumpOn ? 'RUNNING' : 'STOPPED'}</p>
+                  <p className="text-2xl font-black text-black">
+                    {isPumpOn ? 'RUNNING' : 'STOPPED'}
+                  </p>
                   <p className="text-sm text-gray-500">Primary Pump • Kirloskar 7.5HP</p>
                 </div>
               </div>
@@ -436,7 +590,10 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                   <div className="w-40 h-6 bg-gray-300 rounded-full relative overflow-hidden border border-gray-400">
                     {isPumpOn && (
                       <div className="absolute inset-0">
-                        <div className="h-full bg-blue-500/70 animate-flow-right" style={{ width: '40%' }}></div>
+                        <div
+                          className="h-full bg-blue-500/70 animate-flow-right"
+                          style={{ width: '40%' }}
+                        ></div>
                       </div>
                     )}
                   </div>
@@ -448,19 +605,27 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             {/* Pump Metrics */}
             <div className="grid grid-cols-4 gap-3 mt-6">
               <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-blue-600">{(systemState?.pumpHouse?.pumpFlowOutput || 0).toFixed(0)}</p>
+                <p className="text-2xl font-black text-blue-600">
+                  {(systemState?.pumpHouse?.pumpFlowOutput || 0).toFixed(0)}
+                </p>
                 <p className="text-xs text-gray-500">L/min Flow</p>
               </div>
               <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-emerald-600">{(systemState?.pumpHouse?.pumpPressureOutput || 0).toFixed(1)}</p>
+                <p className="text-2xl font-black text-emerald-600">
+                  {(systemState?.pumpHouse?.pumpPressureOutput || 0).toFixed(1)}
+                </p>
                 <p className="text-xs text-gray-500">Bar Pressure</p>
               </div>
               <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-amber-600">{(systemState?.pumpHouse?.powerConsumption || 0).toFixed(1)}</p>
+                <p className="text-2xl font-black text-amber-600">
+                  {(systemState?.pumpHouse?.powerConsumption || 0).toFixed(1)}
+                </p>
                 <p className="text-xs text-gray-500">kW Power</p>
               </div>
               <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-purple-600">{(systemState?.pumpHouse?.pumpRunningHours || 0).toFixed(1)}</p>
+                <p className="text-2xl font-black text-purple-600">
+                  {(systemState?.pumpHouse?.pumpRunningHours || 0).toFixed(1)}
+                </p>
                 <p className="text-xs text-gray-500">Hours Run</p>
               </div>
             </div>
@@ -468,7 +633,9 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             {/* Motor Temperature */}
             <div className="mt-4 p-3 bg-white rounded-lg border flex items-center justify-between">
               <span className="text-sm text-gray-600">Motor Temperature</span>
-              <span className={`text-lg font-bold ${(systemState?.pumpHouse?.motorTemperature || 25) > 55 ? 'text-red-600' : 'text-green-600'}`}>
+              <span
+                className={`text-lg font-bold ${(systemState?.pumpHouse?.motorTemperature || 25) > 55 ? 'text-red-600' : 'text-green-600'}`}
+              >
                 {(systemState?.pumpHouse?.motorTemperature || 25).toFixed(1)}°C
               </span>
             </div>
@@ -477,10 +644,11 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
           {/* Pump Control Button */}
           <button
             onClick={() => handlePumpToggle('primary')}
-            className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${isPumpOn
-              ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200'
-              : 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200'
-              }`}
+            className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
+              isPumpOn
+                ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200'
+                : 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200'
+            }`}
           >
             {isPumpOn ? <Square size={20} /> : <Play size={20} />}
             {isPumpOn ? 'STOP PUMP' : 'START PUMP'}
@@ -489,10 +657,14 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
           {/* Open Pipelines Count */}
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
             <p className="text-sm text-blue-700">
-              <strong>{systemState?.pipelines?.filter(p => p.valveStatus === 'OPEN').length || 0}</strong> of 5 pipelines open
-              {isPumpOn && systemState?.pipelines?.filter(p => p.valveStatus === 'OPEN').length === 0 && (
-                <span className="ml-2 text-green-600 font-bold">• Tank Filling</span>
-              )}
+              <strong>
+                {systemState?.pipelines?.filter((p) => p.valveStatus === 'OPEN').length || 0}
+              </strong>{' '}
+              of 5 pipelines open
+              {isPumpOn &&
+                systemState?.pipelines?.filter((p) => p.valveStatus === 'OPEN').length === 0 && (
+                  <span className="ml-2 text-green-600 font-bold">• Tank Filling</span>
+                )}
             </p>
           </div>
 
@@ -540,9 +712,14 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
-              <span>Next auto-stop: {scheduleMode === 'TIMER' ? scheduleCountdown : scheduleStopTime}</span>
+              <span>
+                Next auto-stop: {scheduleMode === 'TIMER' ? scheduleCountdown : scheduleStopTime}
+              </span>
               <span>Failsafe: Tank 100% cutoff active</span>
-              <button onClick={clearPumpSchedule} className="text-rose-600 font-bold hover:underline">
+              <button
+                onClick={clearPumpSchedule}
+                className="text-rose-600 font-bold hover:underline"
+              >
                 Clear schedule
               </button>
             </div>
@@ -575,10 +752,11 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
               {/* Water Level */}
               <div className="absolute inset-0 flex flex-col justify-end">
                 <div
-                  className={`w-full transition-all duration-1000 ${systemState?.overheadTank?.isFilling
-                    ? 'bg-gradient-to-t from-blue-600 via-blue-400 to-cyan-300'
-                    : 'bg-gradient-to-t from-blue-500 via-blue-400 to-blue-300'
-                    }`}
+                  className={`w-full transition-all duration-1000 ${
+                    systemState?.overheadTank?.isFilling
+                      ? 'bg-gradient-to-t from-blue-600 via-blue-400 to-cyan-300'
+                      : 'bg-gradient-to-t from-blue-500 via-blue-400 to-blue-300'
+                  }`}
                   style={{ height: `${Math.max(0, Math.min(100, tankLevel))}%` }}
                 >
                   {/* Wave Animation when filling */}
@@ -601,7 +779,7 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                         left: `${15 + i * 15}%`,
                         bottom: '10%',
                         animationDelay: `${i * 0.3}s`,
-                        animationDuration: '2s'
+                        animationDuration: '2s',
                       }}
                     ></div>
                   ))}
@@ -613,11 +791,17 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                 <div className="flex justify-between text-xs font-bold text-slate-500">
                   <span>100%</span>
                   <span className="text-white bg-black/30 px-2 py-0.5 rounded">
-                    {systemState?.overheadTank?.isFilling ? '▲ Filling' : inflow < outflow ? '▼ Draining' : '— Stable'}
+                    {systemState?.overheadTank?.isFilling
+                      ? '▲ Filling'
+                      : inflow < outflow
+                        ? '▼ Draining'
+                        : '— Stable'}
                   </span>
                 </div>
                 <div className="text-center text-white drop-shadow-lg">
-                  <p className="text-4xl font-black">{Math.max(0, Math.min(100, tankLevel)).toFixed(1)}%</p>
+                  <p className="text-4xl font-black">
+                    {Math.max(0, Math.min(100, tankLevel)).toFixed(1)}%
+                  </p>
                   <p className="text-sm uppercase tracking-wide font-bold">
                     {currentVolume.toLocaleString()} / {tankCapacity.toLocaleString()} L
                   </p>
@@ -630,19 +814,27 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             {systemState?.overheadTank?.waterQuality && (
               <div className="grid grid-cols-4 gap-2 text-xs">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-blue-700">{systemState.overheadTank.waterQuality.pH.toFixed(2)}</p>
+                  <p className="font-bold text-blue-700">
+                    {systemState.overheadTank.waterQuality.pH.toFixed(2)}
+                  </p>
                   <p className="text-blue-500">pH</p>
                 </div>
                 <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-cyan-700">{systemState.overheadTank.waterQuality.turbidity.toFixed(2)}</p>
+                  <p className="font-bold text-cyan-700">
+                    {systemState.overheadTank.waterQuality.turbidity.toFixed(2)}
+                  </p>
                   <p className="text-cyan-500">NTU</p>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-green-700">{systemState.overheadTank.waterQuality.chlorine.toFixed(2)}</p>
+                  <p className="font-bold text-green-700">
+                    {systemState.overheadTank.waterQuality.chlorine.toFixed(2)}
+                  </p>
                   <p className="text-green-500">Cl mg/L</p>
                 </div>
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-purple-700">{systemState.overheadTank.waterQuality.TDS.toFixed(0)}</p>
+                  <p className="font-bold text-purple-700">
+                    {systemState.overheadTank.waterQuality.TDS.toFixed(0)}
+                  </p>
                   <p className="text-purple-500">TDS</p>
                 </div>
               </div>
@@ -650,19 +842,27 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
 
             {/* Flow Metrics */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className={`border rounded-xl p-3 ${inflow > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div
+                className={`border rounded-xl p-3 ${inflow > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}
+              >
                 <p className="text-gray-500 flex items-center gap-1">
                   <span className={inflow > 0 ? 'text-green-500' : ''}>↓</span> Inflow Rate
                 </p>
-                <p className={`text-xl font-bold ${inflow > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                <p
+                  className={`text-xl font-bold ${inflow > 0 ? 'text-green-600' : 'text-gray-600'}`}
+                >
                   {inflow.toFixed(0)} L/min
                 </p>
               </div>
-              <div className={`border rounded-xl p-3 ${outflow > 0 ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div
+                className={`border rounded-xl p-3 ${outflow > 0 ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}
+              >
                 <p className="text-gray-500 flex items-center gap-1">
                   <span className={outflow > 0 ? 'text-amber-500' : ''}>↑</span> Outflow Rate
                 </p>
-                <p className={`text-xl font-bold ${outflow > 0 ? 'text-amber-600' : 'text-gray-600'}`}>
+                <p
+                  className={`text-xl font-bold ${outflow > 0 ? 'text-amber-600' : 'text-gray-600'}`}
+                >
                   {outflow.toFixed(0)} L/min
                 </p>
               </div>
@@ -671,7 +871,9 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             {/* Valve Controls */}
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => onToggleValve && systemState?.pipelines?.forEach((_, i) => onToggleValve(i + 1))}
+                onClick={() =>
+                  onToggleValve && systemState?.pipelines?.forEach((_, i) => onToggleValve(i + 1))
+                }
                 className="py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-all"
               >
                 Toggle All Valves
@@ -691,14 +893,20 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             <h3 className="font-bold text-green-900 flex items-center gap-2">
               <PenTool size={18} /> Valve Control Matrix
             </h3>
-            <span className="text-xs font-semibold text-green-700">{valves.filter(v => v.state === 'OPEN').length} OPEN / {valves.length} TOTAL</span>
+            <span className="text-xs font-semibold text-green-700">
+              {valves.filter((v) => v.state === 'OPEN').length} OPEN / {valves.length} TOTAL
+            </span>
           </div>
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            {valves.map(valve => (
+            {valves.map((valve) => (
               <div key={valve.id} className="p-3 rounded-xl border">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-semibold text-black">{valve.id}</p>
-                  <span className={`text-2xs px-2 py-0.5 rounded-full font-bold ${valve.state === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-black'}`}>{valve.state}</span>
+                  <span
+                    className={`text-2xs px-2 py-0.5 rounded-full font-bold ${valve.state === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-black'}`}
+                  >
+                    {valve.state}
+                  </span>
                 </div>
                 <p className="text-xs text-gray-500">{valve.location}</p>
                 <p className="text-2xs text-gray-400 mt-1">Mode: {valve.automation}</p>
@@ -706,14 +914,17 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => handleValveToggle(valve)}
-                    className={`flex-1 text-2xs py-1.5 rounded-lg border font-bold ${valve.state === 'OPEN'
-                      ? 'bg-red-50 border-red-200 text-red-700'
-                      : 'bg-green-50 border-green-200 text-green-700'
-                      }`}
+                    className={`flex-1 text-2xs py-1.5 rounded-lg border font-bold ${
+                      valve.state === 'OPEN'
+                        ? 'bg-red-50 border-red-200 text-red-700'
+                        : 'bg-green-50 border-green-200 text-green-700'
+                    }`}
                   >
                     {valve.state === 'OPEN' ? 'Close Valve' : 'Open Valve'}
                   </button>
-                  <button className="flex-1 text-2xs py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">View Details</button>
+                  <button className="flex-1 text-2xs py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">
+                    View Details
+                  </button>
                 </div>
               </div>
             ))}
@@ -724,35 +935,60 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             <h3 className="font-bold text-emerald-900 flex items-center gap-2">
               <Microscope size={18} /> Sensor Health Dashboard
             </h3>
-            <span className="text-xs font-semibold text-emerald-600">Avg Battery: {Math.round(sensors.reduce((acc, s) => acc + s.battery, 0) / sensors.length)}%</span>
+            <span className="text-xs font-semibold text-emerald-600">
+              Avg Battery:{' '}
+              {Math.round(sensors.reduce((acc, s) => acc + s.battery, 0) / sensors.length)}%
+            </span>
           </div>
           <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-            {sensors.map(sensor => (
-              <div key={sensor.id} className={`flex items-center justify-between rounded-xl border p-3 ${sensor.status === 'WARNING' ? 'border-amber-300 bg-amber-50' :
-                sensor.status === 'INACTIVE' ? 'border-gray-200 bg-gray-50' :
-                  'border-emerald-200 bg-emerald-50'
-                }`}>
+            {sensors.map((sensor) => (
+              <div
+                key={sensor.id}
+                className={`flex items-center justify-between rounded-xl border p-3 ${
+                  sensor.status === 'WARNING'
+                    ? 'border-amber-300 bg-amber-50'
+                    : sensor.status === 'INACTIVE'
+                      ? 'border-gray-200 bg-gray-50'
+                      : 'border-emerald-200 bg-emerald-50'
+                }`}
+              >
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-black">{sensor.id} • {sensor.type}</p>
+                  <p className="text-sm font-bold text-black">
+                    {sensor.id} • {sensor.type}
+                  </p>
                   <p className="text-xs text-gray-500">{sensor.location}</p>
                   {sensor.value && (
                     <p className="text-xs font-bold text-blue-600 mt-1">Current: {sensor.value}</p>
                   )}
-                  <p className="text-2xs text-gray-400 mt-1">Last transmission: {sensor.lastSeen}</p>
+                  <p className="text-2xs text-gray-400 mt-1">
+                    Last transmission: {sensor.lastSeen}
+                  </p>
                   {sensor.status && (
-                    <span className={`text-2xs px-2 py-0.5 rounded-full font-bold mt-1 inline-block ${sensor.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                      sensor.status === 'WARNING' ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
+                    <span
+                      className={`text-2xs px-2 py-0.5 rounded-full font-bold mt-1 inline-block ${
+                        sensor.status === 'ACTIVE'
+                          ? 'bg-green-100 text-green-700'
+                          : sensor.status === 'WARNING'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
                       {sensor.status}
                     </span>
                   )}
                 </div>
                 <div className="text-right ml-4">
                   <p className="text-xs text-gray-500">Battery</p>
-                  <p className={`text-lg font-bold ${sensor.battery < 50 ? 'text-red-600' : 'text-green-600'}`}>{sensor.battery}%</p>
+                  <p
+                    className={`text-lg font-bold ${sensor.battery < 50 ? 'text-red-600' : 'text-green-600'}`}
+                  >
+                    {sensor.battery}%
+                  </p>
                   <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                    <div className={`h-full ${sensor.battery < 50 ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${sensor.battery}%` }}></div>
+                    <div
+                      className={`h-full ${sensor.battery < 50 ? 'bg-red-500' : 'bg-emerald-500'}`}
+                      style={{ width: `${sensor.battery}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -772,12 +1008,33 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             <ComposedChart data={history}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="time" hide />
-              <YAxis yAxisId="left" label={{ value: 'Flow (L/m)', angle: -90, position: 'insideLeft' }} />
-              <YAxis yAxisId="right" orientation="right" label={{ value: 'Pressure (Bar)', angle: 90, position: 'insideRight' }} />
+              <YAxis
+                yAxisId="left"
+                label={{ value: 'Flow (L/m)', angle: -90, position: 'insideLeft' }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                label={{ value: 'Pressure (Bar)', angle: 90, position: 'insideRight' }}
+              />
               <Tooltip />
               <Legend />
-              <Area yAxisId="left" type="monotone" dataKey="pumpFlowRate" fill="#dbeafe" stroke="#3b82f6" name="Flow Rate" />
-              <Line yAxisId="right" type="monotone" dataKey="pipePressure" stroke="#ef4444" strokeWidth={2} name="Pipe Pressure" />
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="pumpFlowRate"
+                fill="#dbeafe"
+                stroke="#3b82f6"
+                name="Flow Rate"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="pipePressure"
+                stroke="#ef4444"
+                strokeWidth={2}
+                name="Pipe Pressure"
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -789,17 +1046,29 @@ const InfrastructureDashboard = ({ data, history, systemState, onTogglePump, onT
             <div className="p-5 border-b bg-amber-50 flex items-center gap-3">
               <AlertTriangle size={20} className="text-amber-600" />
               <div>
-                <p className="text-sm font-bold text-amber-700 uppercase tracking-wide">Confirm Action</p>
+                <p className="text-sm font-bold text-amber-700 uppercase tracking-wide">
+                  Confirm Action
+                </p>
                 <p className="text-xs text-amber-600">Pump {confirmPump.toUpperCase()}</p>
               </div>
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-black">
-                Are you sure you want to {data.pumpStatus === 'RUNNING' ? 'stop' : 'start'} the <strong>{confirmPump} pump</strong>? This will update the live infrastructure status and may affect current supply schedule.
+                Are you sure you want to {data.pumpStatus === 'RUNNING' ? 'stop' : 'start'} the{' '}
+                <strong>{confirmPump} pump</strong>? This will update the live infrastructure status
+                and may affect current supply schedule.
               </p>
               <div className="flex gap-3">
-                <button onClick={() => setConfirmPump(null)} className="flex-1 py-2 rounded-xl border text-black font-bold">Cancel</button>
-                <button onClick={confirmPumpToggle} className={`flex-1 py-2 rounded-xl font-bold text-white ${data.pumpStatus === 'RUNNING' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}>
+                <button
+                  onClick={() => setConfirmPump(null)}
+                  className="flex-1 py-2 rounded-xl border text-black font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmPumpToggle}
+                  className={`flex-1 py-2 rounded-xl font-bold text-white ${data.pumpStatus === 'RUNNING' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}
+                >
                   Confirm
                 </button>
               </div>
@@ -834,7 +1103,10 @@ const DailyOperationDashboard = ({ data, user, logInspection, history }) => {
             <h3 className="font-bold text-teal-800 flex items-center gap-2">
               <PenTool size={20} /> 1. Daily Routine Checks
             </h3>
-            <button onClick={handleInspection} className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-colors">
+            <button
+              onClick={handleInspection}
+              className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-colors"
+            >
               <Clipboard size={14} /> Log Inspection
             </button>
           </div>
@@ -870,7 +1142,9 @@ const DailyOperationDashboard = ({ data, user, logInspection, history }) => {
             </div>
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200 shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer">
               <div className="text-xs text-gray-500 uppercase mb-1">Monthly O&M</div>
-              <div className="text-2xl font-bold text-blue-600">₹{monthlyProjection.toFixed(0)}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                ₹{monthlyProjection.toFixed(0)}
+              </div>
               <div className="text-xs text-gray-400">Projected</div>
             </div>
           </div>
@@ -891,27 +1165,27 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
   };
   const wqi = Math.round(
     (tankQuality.pH >= 6.5 && tankQuality.pH <= 8.5 ? 25 : 0) +
-    (tankQuality.turbidity <= 5 ? 25 : 0) +
-    (tankQuality.chlorine >= 0.2 && tankQuality.chlorine <= 1.0 ? 25 : 0) +
-    (tankQuality.TDS <= 500 ? 15 : 0) +
-    (data.qualityHardness <= 300 ? 10 : 0) +
-    (data.qualityEC <= 750 ? 10 : 0)
+      (tankQuality.turbidity <= 5 ? 25 : 0) +
+      (tankQuality.chlorine >= 0.2 && tankQuality.chlorine <= 1.0 ? 25 : 0) +
+      (tankQuality.TDS <= 500 ? 15 : 0) +
+      (data.qualityHardness <= 300 ? 10 : 0) +
+      (data.qualityEC <= 750 ? 10 : 0)
   );
 
   const avgPipelineDeviation = pipelineQualities.length
     ? formatMetric(
-      pipelineQualities.reduce((sum, pq) => sum + pq.deviation, 0) / pipelineQualities.length,
-      1,
-      0
-    )
+        pipelineQualities.reduce((sum, pq) => sum + pq.deviation, 0) / pipelineQualities.length,
+        1,
+        0
+      )
     : 0;
   const highestDeviationPipeline = pipelineQualities.reduce(
     (prev, curr) => (curr.deviation > (prev?.deviation ?? -Infinity) ? curr : prev),
     null
   );
-  const pipelinesNeedingAttention = pipelineQualities.filter(p => p.deviation > 10).length;
+  const pipelinesNeedingAttention = pipelineQualities.filter((p) => p.deviation > 10).length;
 
-  const pipelineChartData = pipelineQualities.map(pq => ({
+  const pipelineChartData = pipelineQualities.map((pq) => ({
     pipeline: pq.shortName || pq.pipelineName,
     tankPH: formatMetric(tankQuality.pH, 2, 0),
     pipelinePH: pq.outlet.pH,
@@ -921,7 +1195,7 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
     pipelineChlorine: pq.outlet.chlorine,
   }));
 
-  const deviationChartData = pipelineQualities.map(pq => ({
+  const deviationChartData = pipelineQualities.map((pq) => ({
     pipeline: pq.shortName || pq.pipelineName,
     deviation: pq.deviation,
   }));
@@ -935,16 +1209,58 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
   };
 
   const schedule = [
-    { type: 'Field Test', test: 'Chlorine Residual', frequency: 'Daily 6:00 AM', last: 'Today 06:05', next: 'Tomorrow' },
-    { type: 'Lab Test', test: 'Complete Potable Panel', frequency: 'Weekly Monday', last: 'Mon 18 Nov', next: 'Mon 25 Nov' },
-    { type: 'External Lab', test: 'Microbiological', frequency: 'Monthly 1st week', last: '05 Nov', next: '05 Dec' },
+    {
+      type: 'Field Test',
+      test: 'Chlorine Residual',
+      frequency: 'Daily 6:00 AM',
+      last: 'Today 06:05',
+      next: 'Tomorrow',
+    },
+    {
+      type: 'Lab Test',
+      test: 'Complete Potable Panel',
+      frequency: 'Weekly Monday',
+      last: 'Mon 18 Nov',
+      next: 'Mon 25 Nov',
+    },
+    {
+      type: 'External Lab',
+      test: 'Microbiological',
+      frequency: 'Monthly 1st week',
+      last: '05 Nov',
+      next: '05 Dec',
+    },
   ];
 
   const labResults = [
-    { id: 'LAB-241118A', date: '18 Nov 2024', parameter: 'pH', result: 7.4, status: 'Within Range' },
-    { id: 'LAB-241118B', date: '18 Nov 2024', parameter: 'Turbidity', result: 2.1, status: 'Within Range' },
-    { id: 'LAB-241118C', date: '18 Nov 2024', parameter: 'Chlorine', result: 0.15, status: 'Low - Dose' },
-    { id: 'LAB-241018D', date: '10 Oct 2024', parameter: 'Hardness', result: 180, status: 'Compliant' },
+    {
+      id: 'LAB-241118A',
+      date: '18 Nov 2024',
+      parameter: 'pH',
+      result: 7.4,
+      status: 'Within Range',
+    },
+    {
+      id: 'LAB-241118B',
+      date: '18 Nov 2024',
+      parameter: 'Turbidity',
+      result: 2.1,
+      status: 'Within Range',
+    },
+    {
+      id: 'LAB-241118C',
+      date: '18 Nov 2024',
+      parameter: 'Chlorine',
+      result: 0.15,
+      status: 'Low - Dose',
+    },
+    {
+      id: 'LAB-241018D',
+      date: '10 Oct 2024',
+      parameter: 'Hardness',
+      result: 180,
+      status: 'Compliant',
+    },
     { id: 'LAB-241018E', date: '10 Oct 2024', parameter: 'EC', result: 450, status: 'Compliant' },
   ];
 
@@ -963,9 +1279,13 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           <h2 className="text-3xl font-bold text-black flex items-center gap-3">
             <FlaskConical size={32} className="text-purple-600" /> Water Quality Intelligence
           </h2>
-          <p className="text-sm text-gray-500">Continuous monitoring, compliance tracking, lab records & escalation</p>
+          <p className="text-sm text-gray-500">
+            Continuous monitoring, compliance tracking, lab records & escalation
+          </p>
         </div>
-        <div className={`px-5 py-3 rounded-2xl font-bold text-lg border-2 ${wqi >= 80 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+        <div
+          className={`px-5 py-3 rounded-2xl font-bold text-lg border-2 ${wqi >= 80 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}
+        >
           WQI Score: {wqi}/100
         </div>
       </div>
@@ -976,16 +1296,60 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           <h3 className="font-bold text-purple-900 flex items-center gap-2">
             <Beaker size={18} /> Core Parameters & Acceptable Ranges
           </h3>
-          <button onClick={() => logWaterTest('Manual Sample Collected')} className="text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-xl">Record Field Test</button>
+          <button
+            onClick={() => logWaterTest('Manual Sample Collected')}
+            className="text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-xl"
+          >
+            Record Field Test
+          </button>
         </div>
         <div className="p-2 md:p-6 grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
-          <QualityCard label="pH Level" value={data.qualityPH} unit="pH" safeMin={6.5} safeMax={8.5} icon={Beaker} />
-          <QualityCard label="Turbidity" value={data.qualityTurbidity} unit="NTU" safeMax={5} icon={Wind} />
-          <QualityCard label="Chlorine" value={data.qualityChlorine} unit="mg/L" safeMin={0.2} safeMax={1.0} icon={Droplet} />
+          <QualityCard
+            label="pH Level"
+            value={data.qualityPH}
+            unit="pH"
+            safeMin={6.5}
+            safeMax={8.5}
+            icon={Beaker}
+          />
+          <QualityCard
+            label="Turbidity"
+            value={data.qualityTurbidity}
+            unit="NTU"
+            safeMax={5}
+            icon={Wind}
+          />
+          <QualityCard
+            label="Chlorine"
+            value={data.qualityChlorine}
+            unit="mg/L"
+            safeMin={0.2}
+            safeMax={1.0}
+            icon={Droplet}
+          />
           <QualityCard label="TDS" value={data.qualityTDS} unit="ppm" safeMax={500} icon={Layers} />
-          <QualityCard label="Temperature" value={data.qualityTemperature || 25} unit="°C" safeMin={10} safeMax={30} icon={Thermometer} />
-          <QualityCard label="Hardness" value={data.qualityHardness || 180} unit="mg/L" safeMax={300} icon={Beaker} />
-          <QualityCard label="EC" value={data.qualityEC || 450} unit="µS/cm" safeMax={750} icon={Activity} />
+          <QualityCard
+            label="Temperature"
+            value={data.qualityTemperature || 25}
+            unit="°C"
+            safeMin={10}
+            safeMax={30}
+            icon={Thermometer}
+          />
+          <QualityCard
+            label="Hardness"
+            value={data.qualityHardness || 180}
+            unit="mg/L"
+            safeMax={300}
+            icon={Beaker}
+          />
+          <QualityCard
+            label="EC"
+            value={data.qualityEC || 450}
+            unit="µS/cm"
+            safeMax={750}
+            icon={Activity}
+          />
         </div>
       </div>
 
@@ -996,15 +1360,23 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
           <div className="grid grid-cols-3 md:grid-cols-3 gap-1 md:gap-4">
             <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border md:border-2 border-emerald-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
-                <p className="text-[7px] md:text-xs font-bold text-emerald-700 uppercase tracking-tight md:tracking-wide leading-tight">Avg Deviation</p>
+                <p className="text-[7px] md:text-xs font-bold text-emerald-700 uppercase tracking-tight md:tracking-wide leading-tight">
+                  Avg Deviation
+                </p>
                 <TrendingUp size={10} className="text-emerald-600 hidden md:block md:w-5 md:h-5" />
               </div>
-              <p className="text-base md:text-4xl font-black text-emerald-700 mb-0 md:mb-1">{avgPipelineDeviation}%</p>
-              <p className="text-[6px] md:text-xs text-emerald-600 font-semibold leading-tight">vs tank</p>
+              <p className="text-base md:text-4xl font-black text-emerald-700 mb-0 md:mb-1">
+                {avgPipelineDeviation}%
+              </p>
+              <p className="text-[6px] md:text-xs text-emerald-600 font-semibold leading-tight">
+                vs tank
+              </p>
             </div>
             <div className="bg-gradient-to-br from-amber-50 to-amber-100 border md:border-2 border-amber-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
-                <p className="text-[7px] md:text-xs font-bold text-amber-700 uppercase tracking-tight md:tracking-wide leading-tight">Highest</p>
+                <p className="text-[7px] md:text-xs font-bold text-amber-700 uppercase tracking-tight md:tracking-wide leading-tight">
+                  Highest
+                </p>
                 <AlertCircle size={10} className="text-amber-600 hidden md:block md:w-5 md:h-5" />
               </div>
               <p className="text-[10px] md:text-2xl font-black text-amber-700 mb-0 md:mb-1">
@@ -1016,11 +1388,17 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
             </div>
             <div className="bg-gradient-to-br from-red-50 to-red-100 border md:border-2 border-red-300 rounded-md md:rounded-2xl p-1.5 md:p-5 shadow-lg">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-0.5 md:mb-2">
-                <p className="text-[7px] md:text-xs font-bold text-red-700 uppercase tracking-tight md:tracking-wide leading-tight">Attention</p>
+                <p className="text-[7px] md:text-xs font-bold text-red-700 uppercase tracking-tight md:tracking-wide leading-tight">
+                  Attention
+                </p>
                 <AlertTriangle size={10} className="text-red-600 hidden md:block md:w-5 md:h-5" />
               </div>
-              <p className="text-base md:text-4xl font-black text-red-700 mb-0 md:mb-1">{pipelinesNeedingAttention}</p>
-              <p className="text-[6px] md:text-xs text-red-600 font-semibold leading-tight">&gt;10% dev</p>
+              <p className="text-base md:text-4xl font-black text-red-700 mb-0 md:mb-1">
+                {pipelinesNeedingAttention}
+              </p>
+              <p className="text-[6px] md:text-xs text-red-600 font-semibold leading-tight">
+                &gt;10% dev
+              </p>
             </div>
           </div>
 
@@ -1031,18 +1409,22 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                 <h3 className="font-black text-white flex items-center gap-1 md:gap-3 text-sm md:text-xl">
                   <Layers size={16} className="md:w-6 md:h-6" /> Pipeline Quality Breakdown
                 </h3>
-                <p className="text-indigo-100 text-[9px] md:text-sm mt-0.5 md:mt-1">Detailed water quality parameters across distribution network</p>
+                <p className="text-indigo-100 text-[9px] md:text-sm mt-0.5 md:mt-1">
+                  Detailed water quality parameters across distribution network
+                </p>
               </div>
               <span className="px-2 py-1 md:px-4 md:py-2 bg-white/20 backdrop-blur-sm rounded-full text-[8px] md:text-xs text-white font-bold border border-white/30">
                 {pipelineQualities.length} Active Pipelines
               </span>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-slate-100 to-slate-50">
                   <tr className="border-b md:border-b-2 border-slate-200">
-                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">Pipeline</th>
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
+                      Pipeline
+                    </th>
                     <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
                       <div className="flex items-center gap-0.5 md:gap-2">
                         <Droplet size={10} className="md:w-3.5 md:h-3.5" /> pH
@@ -1058,8 +1440,12 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                         <Layers size={10} className="md:w-3.5 md:h-3.5" /> TDS
                       </div>
                     </th>
-                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">Status</th>
-                    <th className="p-1 md:p-4 text-center font-bold text-slate-700 text-[9px] md:text-sm">Dev</th>
+                    <th className="p-1 md:p-4 text-left font-bold text-slate-700 text-[9px] md:text-sm">
+                      Status
+                    </th>
+                    <th className="p-1 md:p-4 text-center font-bold text-slate-700 text-[9px] md:text-sm">
+                      Dev
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1067,58 +1453,100 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                     const isAlert = pq.deviation > 10;
                     const isWarning = pq.deviation > 5 && pq.deviation <= 10;
                     return (
-                      <tr key={pq.pipelineId} className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <tr
+                        key={pq.pipelineId}
+                        className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
+                      >
                         <td className="p-1 md:p-4">
                           <div className="flex items-center gap-1 md:gap-3">
-                            <div className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-white text-[8px] md:text-sm ${
-                              isAlert ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
-                            }`}>
+                            <div
+                              className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex items-center justify-center font-black text-white text-[8px] md:text-sm ${
+                                isAlert
+                                  ? 'bg-red-500'
+                                  : isWarning
+                                    ? 'bg-amber-500'
+                                    : 'bg-emerald-500'
+                              }`}
+                            >
                               P{pq.pipelineId}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800 text-[9px] md:text-sm">{pq.pipelineName}</p>
+                              <p className="font-bold text-slate-800 text-[9px] md:text-sm">
+                                {pq.pipelineName}
+                              </p>
                               <p className="text-[7px] md:text-xs text-slate-500">{pq.shortName}</p>
                             </div>
                           </div>
                         </td>
                         <td className="p-1 md:p-4">
                           <div className="space-y-0 md:space-y-1">
-                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.pH)}</p>
-                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.pH)}</p>
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">
+                              {formatDisplay(pq.outlet.pH)}
+                            </p>
+                            <p className="text-[7px] md:text-xs text-slate-500">
+                              In: {formatDisplay(pq.inlet.pH)}
+                            </p>
                           </div>
                         </td>
                         <td className="p-1 md:p-4">
                           <div className="space-y-0 md:space-y-1">
-                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.turbidity)} <span className="text-[7px] md:text-xs text-slate-500">NTU</span></p>
-                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.turbidity)}</p>
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">
+                              {formatDisplay(pq.outlet.turbidity)}{' '}
+                              <span className="text-[7px] md:text-xs text-slate-500">NTU</span>
+                            </p>
+                            <p className="text-[7px] md:text-xs text-slate-500">
+                              In: {formatDisplay(pq.inlet.turbidity)}
+                            </p>
                           </div>
                         </td>
                         <td className="p-1 md:p-4">
                           <div className="space-y-0 md:space-y-1">
-                            <p className="font-bold text-slate-800 text-[9px] md:text-base">{formatDisplay(pq.outlet.TDS, 0)} <span className="text-[7px] md:text-xs text-slate-500">ppm</span></p>
-                            <p className="text-[7px] md:text-xs text-slate-500">In: {formatDisplay(pq.inlet.TDS, 0)}</p>
+                            <p className="font-bold text-slate-800 text-[9px] md:text-base">
+                              {formatDisplay(pq.outlet.TDS, 0)}{' '}
+                              <span className="text-[7px] md:text-xs text-slate-500">ppm</span>
+                            </p>
+                            <p className="text-[7px] md:text-xs text-slate-500">
+                              In: {formatDisplay(pq.inlet.TDS, 0)}
+                            </p>
                           </div>
                         </td>
                         <td className="p-1 md:p-4">
-                          <span className={`inline-flex items-center gap-0.5 md:gap-1 px-1 py-0.5 md:px-3 md:py-1 rounded-full text-[7px] md:text-xs font-bold ${
-                            isAlert ? 'bg-red-100 text-red-700 border border-red-300' :
-                            isWarning ? 'bg-amber-100 text-amber-700 border border-amber-300' :
-                            'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                          }`}>
-                            {isAlert ? '⚠' : isWarning ? '⚡' : '✓'} <span className="hidden md:inline">{isAlert ? 'Alert' : isWarning ? 'Warning' : 'Good'}</span>
+                          <span
+                            className={`inline-flex items-center gap-0.5 md:gap-1 px-1 py-0.5 md:px-3 md:py-1 rounded-full text-[7px] md:text-xs font-bold ${
+                              isAlert
+                                ? 'bg-red-100 text-red-700 border border-red-300'
+                                : isWarning
+                                  ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                                  : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                            }`}
+                          >
+                            {isAlert ? '⚠' : isWarning ? '⚡' : '✓'}{' '}
+                            <span className="hidden md:inline">
+                              {isAlert ? 'Alert' : isWarning ? 'Warning' : 'Good'}
+                            </span>
                           </span>
                         </td>
                         <td className="p-1 md:p-4 text-center">
                           <div className="flex flex-col items-center gap-0.5 md:gap-2">
-                            <span className={`text-sm md:text-2xl font-black ${
-                              isAlert ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'
-                            }`}>
+                            <span
+                              className={`text-sm md:text-2xl font-black ${
+                                isAlert
+                                  ? 'text-red-600'
+                                  : isWarning
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-600'
+                              }`}
+                            >
                               {pq.deviation}%
                             </span>
                             <div className="w-full bg-slate-200 rounded-full h-1 md:h-2 overflow-hidden">
-                              <div 
+                              <div
                                 className={`h-full rounded-full ${
-                                  isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-600' : 'bg-emerald-600'
+                                  isAlert
+                                    ? 'bg-red-600'
+                                    : isWarning
+                                      ? 'bg-amber-600'
+                                      : 'bg-emerald-600'
                                 }`}
                                 style={{ width: `${Math.min(100, pq.deviation * 5)}%` }}
                               ></div>
@@ -1138,18 +1566,26 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                 <div className="flex items-center gap-2 md:gap-6">
                   <div className="flex items-center gap-1 md:gap-2">
                     <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Good (&lt;5%)</span>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">
+                      Good (&lt;5%)
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 md:gap-2">
                     <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Warning (5-10%)</span>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">
+                      Warning (5-10%)
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 md:gap-2">
                     <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-500"></div>
-                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">Alert (&gt;10%)</span>
+                    <span className="text-[8px] md:text-xs font-semibold text-slate-600">
+                      Alert (&gt;10%)
+                    </span>
                   </div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500 italic">Deviation calculated from main tank baseline quality</p>
+                <p className="text-[8px] md:text-xs text-slate-500 italic">
+                  Deviation calculated from main tank baseline quality
+                </p>
               </div>
             </div>
           </div>
@@ -1169,13 +1605,17 @@ const WaterQualityDashboard = ({ data, logWaterTest }) => {
                 <XAxis dataKey="pipeline" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="deviation" fill="#f87171" name="Deviation (%)" radius={[6, 6, 0, 0]} />
+                <Bar
+                  dataKey="deviation"
+                  fill="#f87171"
+                  name="Deviation (%)"
+                  radius={[6, 6, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
-
     </div>
   );
 };
@@ -1237,23 +1677,32 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
                   tickLine={false}
                   axisLine={{ stroke: '#d1d5db' }}
                 />
-                <YAxis 
-                  tick={{ fontSize: 9 }} 
+                <YAxis
+                  tick={{ fontSize: 9 }}
                   tickLine={false}
                   axisLine={{ stroke: '#d1d5db' }}
                   width={35}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ fontSize: '11px', padding: '4px 8px' }}
                   labelStyle={{ fontSize: '10px' }}
                 />
-                <Legend 
-                  wrapperStyle={{ fontSize: '9px', paddingTop: '8px' }}
-                  iconSize={10}
-                />
+                <Legend wrapperStyle={{ fontSize: '9px', paddingTop: '8px' }} iconSize={10} />
                 <Area type="monotone" dataKey="avg" fill="#fae8ff" stroke="none" name="Avg" />
-                <Line type="monotone" dataKey="flow" stroke="#d946ef" strokeWidth={1.5} name="Flow" dot={false} />
-                <Scatter name="Anomaly" data={flow24h.filter(d => d.anomaly)} fill="red" shape="circle" />
+                <Line
+                  type="monotone"
+                  dataKey="flow"
+                  stroke="#d946ef"
+                  strokeWidth={1.5}
+                  name="Flow"
+                  dot={false}
+                />
+                <Scatter
+                  name="Anomaly"
+                  data={flow24h.filter((d) => d.anomaly)}
+                  fill="red"
+                  shape="circle"
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -1268,12 +1717,26 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           </div>
           <div className="p-3 md:p-6 grid grid-cols-2 gap-3 md:gap-6">
             <div className="bg-gray-50 p-2 md:p-3 rounded-lg border flex flex-col items-center">
-              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Leak Probability</div>
-              <GaugeChart value={data.predFlowDropPercent} max={100} label="% Risk" color="#ef4444" />
+              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">
+                Leak Probability
+              </div>
+              <GaugeChart
+                value={data.predFlowDropPercent}
+                max={100}
+                label="% Risk"
+                color="#ef4444"
+              />
             </div>
             <div className="bg-gray-50 p-2 md:p-3 rounded-lg border flex flex-col items-center">
-              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Pump Wear</div>
-              <GaugeChart value={data.predEnergySpikePercent} max={100} label="% Wear" color="#f59e0b" />
+              <div className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">
+                Pump Wear
+              </div>
+              <GaugeChart
+                value={data.predEnergySpikePercent}
+                max={100}
+                label="% Wear"
+                color="#f59e0b"
+              />
             </div>
           </div>
         </div>
@@ -1285,7 +1748,11 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           </div>
           <div className="p-3 md:p-6 space-y-2 md:space-y-4">
             <CountdownCard title="Pump Service" targetDate={data.nextPumpService} icon={Wrench} />
-            <CountdownCard title="Valve Service" targetDate={data.nextValveService} icon={AlertCircle} />
+            <CountdownCard
+              title="Valve Service"
+              targetDate={data.nextValveService}
+              icon={AlertCircle}
+            />
           </div>
         </div>
       </div>
@@ -1295,13 +1762,22 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           <h3 className="font-bold text-fuchsia-800 text-[11px] md:text-base flex items-center gap-1 md:gap-2">
             <TrendingUp size={14} className="md:w-[18px] md:h-[18px]" /> Predictive Insights
           </h3>
-          <p className="text-[8px] md:text-xs text-fuchsia-500 uppercase tracking-wide">Actions that protect uptime</p>
+          <p className="text-[8px] md:text-xs text-fuchsia-500 uppercase tracking-wide">
+            Actions that protect uptime
+          </p>
         </div>
         <div className="p-3 md:p-6 grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
-          {predictiveInsights.map(insight => (
-            <div key={insight.title} className="p-2 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition duration-200">
-              <p className="text-[7px] md:text-2xs text-gray-400 uppercase tracking-wider">{insight.title}</p>
-              <p className="text-base md:text-3xl font-black text-black mt-1 md:mt-2">{insight.metric}</p>
+          {predictiveInsights.map((insight) => (
+            <div
+              key={insight.title}
+              className="p-2 md:p-4 rounded-lg md:rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-lg transition duration-200"
+            >
+              <p className="text-[7px] md:text-2xs text-gray-400 uppercase tracking-wider">
+                {insight.title}
+              </p>
+              <p className="text-base md:text-3xl font-black text-black mt-1 md:mt-2">
+                {insight.metric}
+              </p>
               <p className="text-[8px] md:text-xs text-gray-500 mt-0.5 md:mt-1">{insight.detail}</p>
             </div>
           ))}
@@ -1314,9 +1790,11 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           <h3 className="font-black text-white flex items-center gap-1 md:gap-3 text-sm md:text-xl">
             <AlertTriangle size={16} className="md:w-6 md:h-6" /> Early Fault Detection System
           </h3>
-          <p className="text-red-100 text-[9px] md:text-sm mt-0.5 md:mt-1">Real-time anomaly detection across all system components</p>
+          <p className="text-red-100 text-[9px] md:text-sm mt-0.5 md:mt-1">
+            Real-time anomaly detection across all system components
+          </p>
         </div>
-        
+
         <div className="p-3 md:p-6 space-y-3 md:space-y-6">
           {/* Pump Station Health */}
           <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-slate-200 shadow-lg overflow-hidden">
@@ -1324,48 +1802,85 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
               <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
                 <Power size={14} className="md:w-[18px] md:h-[18px]" /> Pump Station Diagnostics
               </h4>
-              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pumpEfficiency > 75 ? 'bg-green-500 text-white' : data.pumpEfficiency > 50 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
-                {data.pumpEfficiency > 75 ? '✓ HEALTHY' : data.pumpEfficiency > 50 ? '⚠ MONITOR' : '✕ CRITICAL'}
+              <span
+                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pumpEfficiency > 75 ? 'bg-green-500 text-white' : data.pumpEfficiency > 50 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}
+              >
+                {data.pumpEfficiency > 75
+                  ? '✓ HEALTHY'
+                  : data.pumpEfficiency > 50
+                    ? '⚠ MONITOR'
+                    : '✕ CRITICAL'}
               </span>
             </div>
             <div className="p-2 md:p-5 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Motor Temperature</span>
-                  <span className={`text-sm md:text-lg font-black ${data.motorTemp > 65 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Motor Temperature
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.motorTemp > 65 ? 'text-red-600' : 'text-green-600'}`}
+                  >
                     {data.motorTemp || 45}°C
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.motorTemp > 65 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.motorTemp || 45) / 80 * 100)}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.motorTemp > 65 ? 'bg-red-600' : 'bg-green-600'}`}
+                    style={{ width: `${Math.min(100, ((data.motorTemp || 45) / 80) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.motorTemp > 65 ? '⚠ Overheating detected' : '✓ Normal operating range'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.motorTemp > 65 ? '⚠ Overheating detected' : '✓ Normal operating range'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Vibration Level</span>
-                  <span className={`text-sm md:text-lg font-black ${data.vibration > 8 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Vibration Level
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.vibration > 8 ? 'text-red-600' : 'text-green-600'}`}
+                  >
                     {(data.vibration || 3).toFixed(1)} mm/s
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.vibration > 8 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.vibration || 3) / 10 * 100)}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.vibration > 8 ? 'bg-red-600' : 'bg-green-600'}`}
+                    style={{ width: `${Math.min(100, ((data.vibration || 3) / 10) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.vibration > 8 ? '⚠ Bearing wear suspected' : '✓ Stable operation'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.vibration > 8 ? '⚠ Bearing wear suspected' : '✓ Stable operation'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Power Draw</span>
-                  <span className={`text-sm md:text-lg font-black ${data.powerConsumption > 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Power Draw
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.powerConsumption > 10 ? 'text-amber-600' : 'text-green-600'}`}
+                  >
                     {(data.powerConsumption || 7.5).toFixed(1)} kW
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.powerConsumption > 10 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.powerConsumption || 7.5) / 12 * 100)}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.powerConsumption > 10 ? 'bg-amber-600' : 'bg-green-600'}`}
+                    style={{
+                      width: `${Math.min(100, ((data.powerConsumption || 7.5) / 12) * 100)}%`,
+                    }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.powerConsumption > 10 ? '⚠ Efficiency drop detected' : '✓ Optimal consumption'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.powerConsumption > 10
+                    ? '⚠ Efficiency drop detected'
+                    : '✓ Optimal consumption'}
+                </p>
               </div>
             </div>
           </div>
@@ -1376,48 +1891,81 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
               <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
                 <Droplet size={14} className="md:w-[18px] md:h-[18px]" /> Water Tank Health
               </h4>
-              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.tankLevel > 30 && data.tankLevel < 95 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+              <span
+                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.tankLevel > 30 && data.tankLevel < 95 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}
+              >
                 {data.tankLevel > 30 && data.tankLevel < 95 ? '✓ OPTIMAL' : '⚠ ATTENTION'}
               </span>
             </div>
             <div className="p-2 md:p-5 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Water Level</span>
-                  <span className={`text-sm md:text-lg font-black ${data.tankLevel < 20 ? 'text-red-600' : data.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Water Level
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.tankLevel < 20 ? 'text-red-600' : data.tankLevel > 90 ? 'text-amber-600' : 'text-green-600'}`}
+                  >
                     {(data.tankLevel || 65).toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankLevel < 20 ? 'bg-red-600' : data.tankLevel > 90 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${data.tankLevel || 65}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankLevel < 20 ? 'bg-red-600' : data.tankLevel > 90 ? 'bg-amber-600' : 'bg-green-600'}`}
+                    style={{ width: `${data.tankLevel || 65}%` }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.tankLevel < 20 ? '⚠ Low water alert' : data.tankLevel > 90 ? '⚠ Near capacity' : '✓ Normal range'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.tankLevel < 20
+                    ? '⚠ Low water alert'
+                    : data.tankLevel > 90
+                      ? '⚠ Near capacity'
+                      : '✓ Normal range'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Flow Rate</span>
-                  <span className={`text-sm md:text-lg font-black ${data.pumpFlowRate < 300 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Flow Rate
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.pumpFlowRate < 300 ? 'text-red-600' : 'text-green-600'}`}
+                  >
                     {(data.pumpFlowRate || 450).toFixed(0)} L/min
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.pumpFlowRate < 300 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.pumpFlowRate || 450) / 600 * 100)}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.pumpFlowRate < 300 ? 'bg-red-600' : 'bg-green-600'}`}
+                    style={{ width: `${Math.min(100, ((data.pumpFlowRate || 450) / 600) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.pumpFlowRate < 300 ? '⚠ Possible blockage' : '✓ Normal flow'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.pumpFlowRate < 300 ? '⚠ Possible blockage' : '✓ Normal flow'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">Temperature</span>
-                  <span className={`text-sm md:text-lg font-black ${data.tankTemp > 30 ? 'text-amber-600' : 'text-green-600'}`}>
+                  <span className="text-[9px] md:text-sm font-semibold text-slate-600">
+                    Temperature
+                  </span>
+                  <span
+                    className={`text-sm md:text-lg font-black ${data.tankTemp > 30 ? 'text-amber-600' : 'text-green-600'}`}
+                  >
                     {(data.tankTemp || 26).toFixed(1)}°C
                   </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
-                  <div className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankTemp > 30 ? 'bg-amber-600' : 'bg-green-600'}`} style={{width: `${Math.min(100, (data.tankTemp || 26) / 40 * 100)}%`}}></div>
+                  <div
+                    className={`h-1.5 md:h-2 rounded-full transition-all ${data.tankTemp > 30 ? 'bg-amber-600' : 'bg-green-600'}`}
+                    style={{ width: `${Math.min(100, ((data.tankTemp || 26) / 40) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[8px] md:text-xs text-slate-500">{data.tankTemp > 30 ? '⚠ Elevated temperature' : '✓ Normal temperature'}</p>
+                <p className="text-[8px] md:text-xs text-slate-500">
+                  {data.tankTemp > 30 ? '⚠ Elevated temperature' : '✓ Normal temperature'}
+                </p>
               </div>
             </div>
           </div>
@@ -1437,19 +1985,26 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
                 { zone: 'Inlet', pressure: 2.8, threshold: 3.5 },
                 { zone: 'Pump Outlet', pressure: 4.2, threshold: 5.0 },
                 { zone: 'Distribution', pressure: 3.1, threshold: 4.0 },
-                { zone: 'Tank Inlet', pressure: 2.5, threshold: 3.0 }
+                { zone: 'Tank Inlet', pressure: 2.5, threshold: 3.0 },
               ].map((sensor, idx) => (
                 <div key={idx} className="space-y-2 bg-purple-50 rounded-lg p-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-purple-700">{sensor.zone}</span>
-                    <span className={`text-sm font-black ${sensor.pressure < sensor.threshold * 0.6 ? 'text-red-600' : 'text-green-600'}`}>
+                    <span
+                      className={`text-sm font-black ${sensor.pressure < sensor.threshold * 0.6 ? 'text-red-600' : 'text-green-600'}`}
+                    >
                       {sensor.pressure.toFixed(1)} Bar
                     </span>
                   </div>
                   <div className="w-full bg-purple-200 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full transition-all ${sensor.pressure < sensor.threshold * 0.6 ? 'bg-red-600' : 'bg-green-600'}`} style={{width: `${(sensor.pressure / sensor.threshold) * 100}%`}}></div>
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${sensor.pressure < sensor.threshold * 0.6 ? 'bg-red-600' : 'bg-green-600'}`}
+                      style={{ width: `${(sensor.pressure / sensor.threshold) * 100}%` }}
+                    ></div>
                   </div>
-                  <p className="text-2xs text-purple-600">{sensor.pressure < sensor.threshold * 0.6 ? '⚠ Low pressure' : '✓ Normal'}</p>
+                  <p className="text-2xs text-purple-600">
+                    {sensor.pressure < sensor.threshold * 0.6 ? '⚠ Low pressure' : '✓ Normal'}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1472,16 +2027,22 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
                 { name: 'Tank Inlet', status: 'OPEN', cycles: 521 },
                 { name: 'Tank Outlet', status: 'CLOSED', cycles: 467 },
                 { name: 'Distribution 1', status: 'OPEN', cycles: 234 },
-                { name: 'Distribution 2', status: 'OPEN', cycles: 198 }
+                { name: 'Distribution 2', status: 'OPEN', cycles: 198 },
               ].map((valve, idx) => (
                 <div key={idx} className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xs font-bold text-emerald-700 uppercase">{valve.name}</span>
-                    <div className={`w-3 h-3 rounded-full ${valve.status === 'OPEN' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></div>
+                    <span className="text-2xs font-bold text-emerald-700 uppercase">
+                      {valve.name}
+                    </span>
+                    <div
+                      className={`w-3 h-3 rounded-full ${valve.status === 'OPEN' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}
+                    ></div>
                   </div>
                   <p className="text-xs font-black text-slate-900">{valve.status}</p>
                   <p className="text-2xs text-slate-500 mt-1">{valve.cycles} cycles</p>
-                  <p className="text-2xs text-emerald-600 mt-1">{valve.cycles > 500 ? '⚠ Service soon' : '✓ Good condition'}</p>
+                  <p className="text-2xs text-emerald-600 mt-1">
+                    {valve.cycles > 500 ? '⚠ Service soon' : '✓ Good condition'}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1491,47 +2052,80 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
           <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-cyan-200 shadow-lg overflow-hidden">
             <div className="bg-cyan-600 px-2 md:px-4 py-2 md:py-3 flex items-center justify-between">
               <h4 className="font-bold text-white text-[10px] md:text-base flex items-center gap-1 md:gap-2">
-                <FlaskConical size={14} className="md:w-[18px] md:h-[18px]" /> Water Quality Monitoring
+                <FlaskConical size={14} className="md:w-[18px] md:h-[18px]" /> Water Quality
+                Monitoring
               </h4>
-              <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+              <span
+                className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-xs font-bold ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}
+              >
                 {data.pH >= 6.5 && data.pH <= 8.5 ? '✓ SAFE' : '⚠ CHECK'}
               </span>
             </div>
             <div className="p-2 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
                 <span className="text-[8px] md:text-xs font-bold text-cyan-700">pH Level</span>
-                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.pH || 7.2).toFixed(2)}</p>
+                <p className="text-sm md:text-2xl font-black text-slate-900">
+                  {(data.pH || 7.2).toFixed(2)}
+                </p>
                 <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
-                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.pH || 7.2) / 14) * 100}%`}}></div>
+                  <div
+                    className={`h-1 md:h-2 rounded-full transition-all ${data.pH >= 6.5 && data.pH <= 8.5 ? 'bg-green-600' : 'bg-amber-600'}`}
+                    style={{ width: `${((data.pH || 7.2) / 14) * 100}%` }}
+                  ></div>
                 </div>
-                <p className="text-[7px] md:text-2xs text-cyan-600">{data.pH >= 6.5 && data.pH <= 8.5 ? '✓ Within range' : '⚠ Out of range'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">
+                  {data.pH >= 6.5 && data.pH <= 8.5 ? '✓ Within range' : '⚠ Out of range'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
                 <span className="text-[8px] md:text-xs font-bold text-cyan-700">Turbidity</span>
-                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.turbidity || 1.2).toFixed(2)} NTU</p>
+                <p className="text-sm md:text-2xl font-black text-slate-900">
+                  {(data.turbidity || 1.2).toFixed(2)} NTU
+                </p>
                 <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
-                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.turbidity < 5 ? 'bg-green-600' : 'bg-red-600'}`} style={{width: `${Math.min(100, ((data.turbidity || 1.2) / 10) * 100)}%`}}></div>
+                  <div
+                    className={`h-1 md:h-2 rounded-full transition-all ${data.turbidity < 5 ? 'bg-green-600' : 'bg-red-600'}`}
+                    style={{ width: `${Math.min(100, ((data.turbidity || 1.2) / 10) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[7px] md:text-2xs text-cyan-600">{data.turbidity < 5 ? '✓ Excellent' : '⚠ High'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">
+                  {data.turbidity < 5 ? '✓ Excellent' : '⚠ High'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
                 <span className="text-[8px] md:text-xs font-bold text-cyan-700">Chlorine</span>
-                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.chlorine || 0.5).toFixed(2)} mg/L</p>
+                <p className="text-sm md:text-2xl font-black text-slate-900">
+                  {(data.chlorine || 0.5).toFixed(2)} mg/L
+                </p>
                 <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
-                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.chlorine >= 0.2 && data.chlorine <= 1.0 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${((data.chlorine || 0.5) / 2) * 100}%`}}></div>
+                  <div
+                    className={`h-1 md:h-2 rounded-full transition-all ${data.chlorine >= 0.2 && data.chlorine <= 1.0 ? 'bg-green-600' : 'bg-amber-600'}`}
+                    style={{ width: `${((data.chlorine || 0.5) / 2) * 100}%` }}
+                  ></div>
                 </div>
-                <p className="text-[7px] md:text-2xs text-cyan-600">{data.chlorine >= 0.2 && data.chlorine <= 1.0 ? '✓ Safe level' : '⚠ Adjust dosage'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">
+                  {data.chlorine >= 0.2 && data.chlorine <= 1.0
+                    ? '✓ Safe level'
+                    : '⚠ Adjust dosage'}
+                </p>
               </div>
-              
+
               <div className="space-y-1 md:space-y-2 bg-cyan-50 rounded-lg p-2 md:p-3">
                 <span className="text-[8px] md:text-xs font-bold text-cyan-700">TDS</span>
-                <p className="text-sm md:text-2xl font-black text-slate-900">{(data.TDS || 245).toFixed(0)} ppm</p>
+                <p className="text-sm md:text-2xl font-black text-slate-900">
+                  {(data.TDS || 245).toFixed(0)} ppm
+                </p>
                 <div className="w-full bg-cyan-200 rounded-full h-1 md:h-2">
-                  <div className={`h-1 md:h-2 rounded-full transition-all ${data.TDS < 500 ? 'bg-green-600' : 'bg-amber-600'}`} style={{width: `${Math.min(100, ((data.TDS || 245) / 1000) * 100)}%`}}></div>
+                  <div
+                    className={`h-1 md:h-2 rounded-full transition-all ${data.TDS < 500 ? 'bg-green-600' : 'bg-amber-600'}`}
+                    style={{ width: `${Math.min(100, ((data.TDS || 245) / 1000) * 100)}%` }}
+                  ></div>
                 </div>
-                <p className="text-[7px] md:text-2xs text-cyan-600">{data.TDS < 500 ? '✓ Good' : '⚠ High'}</p>
+                <p className="text-[7px] md:text-2xs text-cyan-600">
+                  {data.TDS < 500 ? '✓ Good' : '⚠ High'}
+                </p>
               </div>
             </div>
           </div>
@@ -1554,12 +2148,42 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
   const [autoSchedule, setAutoSchedule] = useState(false);
 
   const templates = [
-    { id: 'daily', title: 'Daily Operations Summary', description: 'Production, distribution and complaints snapshot', icon: Clipboard },
-    { id: 'weekly', title: 'Weekly Water Supply', description: 'Supply hours vs demand fulfilment', icon: Calendar },
-    { id: 'maintenance', title: 'Monthly Maintenance Log', description: 'Work orders and inspections', icon: Wrench },
-    { id: 'alerts', title: 'Alert Response Time', description: 'Detection to closure timeline', icon: AlertCircle },
-    { id: 'quality', title: 'Water Quality Trends', description: 'pH, turbidity and chlorine compliance', icon: Beaker },
-    { id: 'energy', title: 'Energy Consumption', description: 'kWh, peak/off-peak, cost per KL', icon: Zap },
+    {
+      id: 'daily',
+      title: 'Daily Operations Summary',
+      description: 'Production, distribution and complaints snapshot',
+      icon: Clipboard,
+    },
+    {
+      id: 'weekly',
+      title: 'Weekly Water Supply',
+      description: 'Supply hours vs demand fulfilment',
+      icon: Calendar,
+    },
+    {
+      id: 'maintenance',
+      title: 'Monthly Maintenance Log',
+      description: 'Work orders and inspections',
+      icon: Wrench,
+    },
+    {
+      id: 'alerts',
+      title: 'Alert Response Time',
+      description: 'Detection to closure timeline',
+      icon: AlertCircle,
+    },
+    {
+      id: 'quality',
+      title: 'Water Quality Trends',
+      description: 'pH, turbidity and chlorine compliance',
+      icon: Beaker,
+    },
+    {
+      id: 'energy',
+      title: 'Energy Consumption',
+      description: 'kWh, peak/off-peak, cost per KL',
+      icon: Zap,
+    },
   ];
 
   const weeklySupplyData = flow24h.slice(0, 7).map((entry, idx) => ({
@@ -1591,16 +2215,32 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
           <h2 className="text-3xl font-bold text-black flex items-center gap-3">
             <FileBarChart size={32} className="text-indigo-600" /> Reports & Analytics Studio
           </h2>
-          <p className="text-sm text-gray-500">Generate on-demand and scheduled reports with multi-format export</p>
+          <p className="text-sm text-gray-500">
+            Generate on-demand and scheduled reports with multi-format export
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <label className="text-xs text-gray-500 font-bold uppercase">Date Range</label>
           <div className="flex flex-wrap gap-2">
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="px-3 py-2 border rounded-xl text-sm" />
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3 py-2 border rounded-xl text-sm"
+            />
             <span className="text-xs text-gray-400 flex items-center">to</span>
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="px-3 py-2 border rounded-xl text-sm" />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-3 py-2 border rounded-xl text-sm"
+            />
             <label className="flex items-center gap-2 text-xs font-semibold text-black bg-gray-100 px-3 py-2 rounded-xl">
-              <input type="checkbox" checked={comparisonEnabled} onChange={(e) => setComparisonEnabled(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={comparisonEnabled}
+                onChange={(e) => setComparisonEnabled(e.target.checked)}
+              />
               Compare prev. period
             </label>
           </div>
@@ -1609,7 +2249,7 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
 
       {/* Templates */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {templates.map(template => {
+        {templates.map((template) => {
           const Icon = template.icon;
           const active = selectedReport === template.id;
           return (
@@ -1619,7 +2259,9 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
               className={`p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg ${active ? 'border-green-600 bg-green-50' : 'border-gray-100 bg-white'}`}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className={`p-2 rounded-xl ${active ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                <div
+                  className={`p-2 rounded-xl ${active ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}
+                >
                   <Icon size={18} />
                 </div>
                 <h3 className="font-bold text-black">{template.title}</h3>
@@ -1685,7 +2327,7 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
             <FileText size={18} /> Export Options
           </h3>
           <div className="grid grid-cols-3 gap-3 mb-4">
-            {['pdf', 'excel', 'csv'].map(format => (
+            {['pdf', 'excel', 'csv'].map((format) => (
               <button
                 key={format}
                 onClick={() => exportReport(format)}
@@ -1710,7 +2352,11 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
           </h3>
           <div className="space-y-3 text-sm">
             <label className="flex items-center gap-2 font-semibold">
-              <input type="checkbox" checked={autoSchedule} onChange={(e) => setAutoSchedule(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={autoSchedule}
+                onChange={(e) => setAutoSchedule(e.target.checked)}
+              />
               Enable scheduled emails
             </label>
             <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1724,10 +2370,19 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Recipients</p>
-                <input type="text" placeholder="ops@district.gov.in" className="w-full border rounded-xl px-3 py-2" />
+                <input
+                  type="text"
+                  placeholder="ops@district.gov.in"
+                  className="w-full border rounded-xl px-3 py-2"
+                />
               </div>
             </div>
-            <button onClick={saveSchedule} className="w-full py-3 rounded-full bg-green-600 text-white font-bold text-sm mt-2 hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95">Save Schedule</button>
+            <button
+              onClick={saveSchedule}
+              className="w-full py-3 rounded-full bg-green-600 text-white font-bold text-sm mt-2 hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+            >
+              Save Schedule
+            </button>
           </div>
         </div>
       </div>
@@ -1738,7 +2393,9 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
           <h3 className="font-bold text-black flex items-center gap-2">
             <LayoutDashboard size={18} /> Custom Dashboard Widgets
           </h3>
-          <button className="px-4 py-2 text-xs font-bold rounded-xl border bg-gray-50">Add Widget</button>
+          <button className="px-4 py-2 text-xs font-bold rounded-xl border bg-gray-50">
+            Add Widget
+          </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="p-4 border rounded-xl bg-gray-50">
@@ -1783,10 +2440,22 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
                 maintenanceHistory={systemState.pumpHouse.maintenanceHistory}
                 type="pump"
                 additionalMetrics={[
-                  { label: "Operation Cycles", value: systemState.pumpHouse.operationCycles?.toLocaleString() || "0" },
-                  { label: "Vibration", value: `${systemState.pumpHouse.vibration?.toFixed(1) || "0"} mm/s` },
-                  { label: "Motor Temp", value: `${systemState.pumpHouse.motorTemperature?.toFixed(1) || "0"}°C` },
-                  { label: "Efficiency", value: `${systemState.pumpHouse.pumpEfficiency?.toFixed(0) || "0"}%` }
+                  {
+                    label: 'Operation Cycles',
+                    value: systemState.pumpHouse.operationCycles?.toLocaleString() || '0',
+                  },
+                  {
+                    label: 'Vibration',
+                    value: `${systemState.pumpHouse.vibration?.toFixed(1) || '0'} mm/s`,
+                  },
+                  {
+                    label: 'Motor Temp',
+                    value: `${systemState.pumpHouse.motorTemperature?.toFixed(1) || '0'}°C`,
+                  },
+                  {
+                    label: 'Efficiency',
+                    value: `${systemState.pumpHouse.pumpEfficiency?.toFixed(0) || '0'}%`,
+                  },
                 ]}
               />
             )}
@@ -1801,10 +2470,26 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
                 maintenanceHistory={systemState.overheadTank.maintenanceHistory}
                 type="tank"
                 additionalMetrics={[
-                  { label: "Capacity", value: `${(systemState.overheadTank.tankCapacity / 1000).toFixed(0)} kL` },
-                  { label: "Current Level", value: `${systemState.overheadTank.tankLevel?.toFixed(1)}%` },
-                  { label: "Water Quality", value: systemState.overheadTank.waterQuality?.pH >= 6.5 && systemState.overheadTank.waterQuality?.pH <= 8.5 ? "Safe" : "Alert" },
-                  { label: "Temperature", value: `${systemState.overheadTank.temperature?.toFixed(1)}°C` }
+                  {
+                    label: 'Capacity',
+                    value: `${(systemState.overheadTank.tankCapacity / 1000).toFixed(0)} kL`,
+                  },
+                  {
+                    label: 'Current Level',
+                    value: `${systemState.overheadTank.tankLevel?.toFixed(1)}%`,
+                  },
+                  {
+                    label: 'Water Quality',
+                    value:
+                      systemState.overheadTank.waterQuality?.pH >= 6.5 &&
+                      systemState.overheadTank.waterQuality?.pH <= 8.5
+                        ? 'Safe'
+                        : 'Alert',
+                  },
+                  {
+                    label: 'Temperature',
+                    value: `${systemState.overheadTank.temperature?.toFixed(1)}°C`,
+                  },
                 ]}
               />
             )}
@@ -1828,10 +2513,26 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
                     maintenanceHistory={pipeline.maintenanceHistory}
                     type="pipeline"
                     additionalMetrics={[
-                      { label: "Length", value: `${pipeline.pipelineLength} m`, subtext: `${pipeline.pipelineDiameter} mm dia` },
-                      { label: "Condition Score", value: `${pipeline.pipelineConditionScore}%`, subtext: pipeline.pipelineConditionScore < 70 ? "⚠️ Fair" : "✓ Good" },
-                      { label: "Leakage Risk", value: `${pipeline.leakageProbability}%`, subtext: pipeline.leakageProbability > 10 ? "⚠️ High" : "✓ Low" },
-                      { label: "Valve Cycles", value: pipeline.valveOperationCycles?.toLocaleString(), subtext: "Operation count" }
+                      {
+                        label: 'Length',
+                        value: `${pipeline.pipelineLength} m`,
+                        subtext: `${pipeline.pipelineDiameter} mm dia`,
+                      },
+                      {
+                        label: 'Condition Score',
+                        value: `${pipeline.pipelineConditionScore}%`,
+                        subtext: pipeline.pipelineConditionScore < 70 ? '⚠️ Fair' : '✓ Good',
+                      },
+                      {
+                        label: 'Leakage Risk',
+                        value: `${pipeline.leakageProbability}%`,
+                        subtext: pipeline.leakageProbability > 10 ? '⚠️ High' : '✓ Low',
+                      },
+                      {
+                        label: 'Valve Cycles',
+                        value: pipeline.valveOperationCycles?.toLocaleString(),
+                        subtext: 'Operation count',
+                      },
                     ]}
                   />
                 ))}
@@ -1849,27 +2550,41 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {systemState.pipelines.slice(0, 3).map((pipeline) => (
                   <div key={pipeline.pipelineId} className="space-y-3">
-                    <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Pipeline {pipeline.pipelineId} Sensors</h4>
-                    
+                    <h4 className="text-sm font-bold text-gray-700 border-b pb-2">
+                      Pipeline {pipeline.pipelineId} Sensors
+                    </h4>
+
                     {/* Flow Sensor */}
                     <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">Flow Sensor (Inlet)</span>
+                        <span className="text-xs font-semibold text-gray-600">
+                          Flow Sensor (Inlet)
+                        </span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">
                           {pipeline.inlet.flowSensor.status}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.flowSensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Last Cal:</span>{' '}
+                        {new Date(pipeline.inlet.flowSensor.lastCalibrationDate).toLocaleDateString(
+                          'en-IN',
+                          { day: '2-digit', month: 'short' }
+                        )}
                       </p>
                       <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.flowSensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Next Cal:</span>{' '}
+                        {new Date(pipeline.inlet.flowSensor.nextCalibrationDate).toLocaleDateString(
+                          'en-IN',
+                          { day: '2-digit', month: 'short' }
+                        )}
                       </p>
                       <div className="mt-2">
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
+                          <div
                             className="bg-blue-500 h-full rounded-full"
-                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.flowSensor.lastCalibrationDate) / (pipeline.inlet.flowSensor.nextCalibrationDate - pipeline.inlet.flowSensor.lastCalibrationDate) * 100, 100)}%` }}
+                            style={{
+                              width: `${Math.min(((Date.now() - pipeline.inlet.flowSensor.lastCalibrationDate) / (pipeline.inlet.flowSensor.nextCalibrationDate - pipeline.inlet.flowSensor.lastCalibrationDate)) * 100, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -1878,22 +2593,32 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
                     {/* Pressure Sensor */}
                     <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">Pressure Sensor (Inlet)</span>
+                        <span className="text-xs font-semibold text-gray-600">
+                          Pressure Sensor (Inlet)
+                        </span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold">
                           {pipeline.inlet.pressureSensor.status}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.pressureSensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Last Cal:</span>{' '}
+                        {new Date(
+                          pipeline.inlet.pressureSensor.lastCalibrationDate
+                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                       <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.pressureSensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Next Cal:</span>{' '}
+                        {new Date(
+                          pipeline.inlet.pressureSensor.nextCalibrationDate
+                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                       <div className="mt-2">
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
+                          <div
                             className="bg-purple-500 h-full rounded-full"
-                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.pressureSensor.lastCalibrationDate) / (pipeline.inlet.pressureSensor.nextCalibrationDate - pipeline.inlet.pressureSensor.lastCalibrationDate) * 100, 100)}%` }}
+                            style={{
+                              width: `${Math.min(((Date.now() - pipeline.inlet.pressureSensor.lastCalibrationDate) / (pipeline.inlet.pressureSensor.nextCalibrationDate - pipeline.inlet.pressureSensor.lastCalibrationDate)) * 100, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -1902,22 +2627,32 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
                     {/* Quality Sensor */}
                     <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">Quality Sensor (Inlet)</span>
+                        <span className="text-xs font-semibold text-gray-600">
+                          Quality Sensor (Inlet)
+                        </span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">
                           {pipeline.inlet.qualitySensor.status}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span> {new Date(pipeline.inlet.qualitySensor.lastCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Last Cal:</span>{' '}
+                        {new Date(
+                          pipeline.inlet.qualitySensor.lastCalibrationDate
+                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                       <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span> {new Date(pipeline.inlet.qualitySensor.nextCalibrationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        <span className="font-semibold">Next Cal:</span>{' '}
+                        {new Date(
+                          pipeline.inlet.qualitySensor.nextCalibrationDate
+                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </p>
                       <div className="mt-2">
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div 
+                          <div
                             className="bg-emerald-500 h-full rounded-full"
-                            style={{ width: `${Math.min((Date.now() - pipeline.inlet.qualitySensor.lastCalibrationDate) / (pipeline.inlet.qualitySensor.nextCalibrationDate - pipeline.inlet.qualitySensor.lastCalibrationDate) * 100, 100)}%` }}
+                            style={{
+                              width: `${Math.min(((Date.now() - pipeline.inlet.qualitySensor.lastCalibrationDate) / (pipeline.inlet.qualitySensor.nextCalibrationDate - pipeline.inlet.qualitySensor.lastCalibrationDate)) * 100, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -1945,29 +2680,49 @@ const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState
               <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
                 <p className="text-xs text-gray-600 uppercase mb-1">Up to Date</p>
                 <p className="text-3xl font-black text-green-700">
-                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
-                    .filter(c => c.nextMaintenanceDate > Date.now() && (Date.now() - c.lastMaintenanceDate) / (24 * 60 * 60 * 1000) < (c.maintenanceIntervalDays || c.inspectionIntervalDays))
-                    .length}
+                  {
+                    [
+                      systemState.pumpHouse,
+                      systemState.overheadTank,
+                      ...(systemState.pipelines || []),
+                    ].filter(
+                      (c) =>
+                        c.nextMaintenanceDate > Date.now() &&
+                        (Date.now() - c.lastMaintenanceDate) / (24 * 60 * 60 * 1000) <
+                          (c.maintenanceIntervalDays || c.inspectionIntervalDays)
+                    ).length
+                  }
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Maintained recently</p>
               </div>
               <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
                 <p className="text-xs text-gray-600 uppercase mb-1">Due Soon</p>
                 <p className="text-3xl font-black text-yellow-700">
-                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
-                    .filter(c => {
-                      const daysUntil = Math.ceil((c.nextMaintenanceDate - Date.now()) / (24 * 60 * 60 * 1000));
+                  {
+                    [
+                      systemState.pumpHouse,
+                      systemState.overheadTank,
+                      ...(systemState.pipelines || []),
+                    ].filter((c) => {
+                      const daysUntil = Math.ceil(
+                        (c.nextMaintenanceDate - Date.now()) / (24 * 60 * 60 * 1000)
+                      );
                       return daysUntil > 0 && daysUntil <= 14;
-                    }).length}
+                    }).length
+                  }
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Within 14 days</p>
               </div>
               <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
                 <p className="text-xs text-gray-600 uppercase mb-1">Overdue</p>
                 <p className="text-3xl font-black text-red-700">
-                  {[systemState.pumpHouse, systemState.overheadTank, ...(systemState.pipelines || [])]
-                    .filter(c => c.nextMaintenanceDate < Date.now())
-                    .length}
+                  {
+                    [
+                      systemState.pumpHouse,
+                      systemState.overheadTank,
+                      ...(systemState.pipelines || []),
+                    ].filter((c) => c.nextMaintenanceDate < Date.now()).length
+                  }
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Requires attention</p>
               </div>
@@ -1993,19 +2748,31 @@ const AccountabilityDashboard = ({ data, logs, alerts, complaints, responseTimeD
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
             <div className="text-xs text-gray-500 uppercase mb-1">Water Supply</div>
-            <div className="text-2xl font-bold text-blue-700">{data.dailySupplyHours.toFixed(1)} <span className="text-sm font-normal">hrs</span></div>
+            <div className="text-2xl font-bold text-blue-700">
+              {data.dailySupplyHours.toFixed(1)} <span className="text-sm font-normal">hrs</span>
+            </div>
             <div className="text-xs text-blue-400">Target: 4.0 hrs</div>
           </div>
           <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
             <div className="text-xs text-gray-500 uppercase mb-1">Tank Status</div>
             <div className="text-2xl font-bold text-indigo-700">{data.tankLevel.toFixed(0)}%</div>
-            <div className="text-xs text-indigo-400">{data.tankLevel > 50 ? 'Good Level' : 'Needs Filling'}</div>
+            <div className="text-xs text-indigo-400">
+              {data.tankLevel > 50 ? 'Good Level' : 'Needs Filling'}
+            </div>
           </div>
-          <div className={`p-4 rounded-xl border ${isWaterSafe ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+          <div
+            className={`p-4 rounded-xl border ${isWaterSafe ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}
+          >
             <div className="text-xs text-gray-500 uppercase mb-1">Quality Status</div>
-            <div className={`text-2xl font-bold ${isWaterSafe ? 'text-emerald-700' : 'text-red-700'}`}>{isWaterSafe ? 'SAFE' : 'UNSAFE'}</div>
+            <div
+              className={`text-2xl font-bold ${isWaterSafe ? 'text-emerald-700' : 'text-red-700'}`}
+            >
+              {isWaterSafe ? 'SAFE' : 'UNSAFE'}
+            </div>
           </div>
-          <div className={`p-4 rounded-xl border ${alerts.length === 0 ? 'bg-gray-50 border-gray-200' : 'bg-orange-50 border-orange-200'}`}>
+          <div
+            className={`p-4 rounded-xl border ${alerts.length === 0 ? 'bg-gray-50 border-gray-200' : 'bg-orange-50 border-orange-200'}`}
+          >
             <div className="text-xs text-gray-500 uppercase mb-1">Active Alerts</div>
             <div className="text-2xl font-bold text-black">{alerts.length}</div>
             <div className="text-xs text-gray-500">Pending Resolution</div>
@@ -2027,7 +2794,7 @@ const AccountabilityDashboard = ({ data, logs, alerts, complaints, responseTimeD
                 </tr>
               </thead>
               <tbody>
-                {logs.slice(0, 10).map(log => (
+                {logs.slice(0, 10).map((log) => (
                   <tr key={log.id} className="border-b hover:bg-gray-50">
                     <td className="p-2 font-mono text-xs">{log.timestamp.split(',')[1]}</td>
                     <td className="p-2 font-medium text-blue-600">{log.operator}</td>
@@ -2057,7 +2824,9 @@ const GISDashboard = () => {
             <h3 className="font-bold text-emerald-800 text-sm flex items-center gap-2">
               <MapPin size={16} /> Pipeline Network View (Padur, Chennai)
             </h3>
-            <span className="text-xs bg-white px-2 py-1 rounded border text-emerald-600 font-bold">Interactive Map</span>
+            <span className="text-xs bg-white px-2 py-1 rounded border text-emerald-600 font-bold">
+              Interactive Map
+            </span>
           </div>
 
           <div className="flex-1 relative bg-slate-100">
@@ -2074,11 +2843,16 @@ const GISDashboard = () => {
             </h3>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {HAZARD_LOGS.map(hazard => (
-              <div key={hazard.id} className="p-3 border rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm">
+            {HAZARD_LOGS.map((hazard) => (
+              <div
+                key={hazard.id}
+                className="p-3 border rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-bold text-black">{hazard.type}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded font-bold ${hazard.status === 'Active' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-bold ${hazard.status === 'Active' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                  >
                     {hazard.status}
                   </span>
                 </div>
@@ -2103,7 +2877,8 @@ const EnergyDashboard = ({ data, history }) => {
   const dailyWaterLiters = Number(data.dailyWaterDistributed ?? 20000);
   const dailyEnergyCost = dailyEnergyKWh * electricityRate;
   const monthlyEnergyCost = dailyEnergyCost * 30;
-  const energyPerKL = dailyWaterLiters > 0 ? (dailyEnergyKWh / (dailyWaterLiters / 1000)).toFixed(2) : '0.00';
+  const energyPerKL =
+    dailyWaterLiters > 0 ? (dailyEnergyKWh / (dailyWaterLiters / 1000)).toFixed(2) : '0.00';
   const carbonFactor = 0.82; // kg CO2 per kWh
   const carbonFootprint = (dailyEnergyKWh * carbonFactor).toFixed(1);
 
@@ -2130,7 +2905,9 @@ const EnergyDashboard = ({ data, history }) => {
   ];
 
   const renewableContribution = {
-    solar: 18, grid: 72, generator: 10,
+    solar: 18,
+    grid: 72,
+    generator: 10,
   };
 
   return (
@@ -2140,35 +2917,63 @@ const EnergyDashboard = ({ data, history }) => {
           <h2 className="text-lg md:text-3xl font-bold text-black flex items-center gap-2 md:gap-3">
             <Zap size={20} className="text-amber-500 md:w-8 md:h-8" /> Energy & Power Intelligence
           </h2>
-          <p className="text-[10px] md:text-sm text-gray-500">Track consumption, costs, efficiency and sustainability metrics</p>
+          <p className="text-[10px] md:text-sm text-gray-500">
+            Track consumption, costs, efficiency and sustainability metrics
+          </p>
         </div>
         <div className="flex flex-wrap gap-1 md:gap-2 text-[8px] md:text-xs font-semibold">
-          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-emerald-50 text-emerald-700">Motor Efficiency {pumpEfficiency.toFixed(0)}%</span>
-          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-blue-50 text-blue-700">Power Factor {powerFactor.toFixed(2)}</span>
-          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-gray-50 text-black">Load {pumpPowerKW.toFixed(1)} kW</span>
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-emerald-50 text-emerald-700">
+            Motor Efficiency {pumpEfficiency.toFixed(0)}%
+          </span>
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-blue-50 text-blue-700">
+            Power Factor {powerFactor.toFixed(2)}
+          </span>
+          <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-gray-50 text-black">
+            Load {pumpPowerKW.toFixed(1)} kW
+          </span>
         </div>
       </div>
 
       {/* Top Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
         <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-amber-100 bg-amber-50/60">
-          <p className="text-[8px] md:text-xs text-amber-700 font-bold uppercase">Real-time Consumption</p>
-          <p className="text-base md:text-4xl font-black text-amber-600">{pumpPowerKW.toFixed(1)}<span className="text-[10px] md:text-lg font-normal"> kW</span></p>
+          <p className="text-[8px] md:text-xs text-amber-700 font-bold uppercase">
+            Real-time Consumption
+          </p>
+          <p className="text-base md:text-4xl font-black text-amber-600">
+            {pumpPowerKW.toFixed(1)}
+            <span className="text-[10px] md:text-lg font-normal"> kW</span>
+          </p>
           <p className="text-[8px] md:text-xs text-amber-700">Live motor load</p>
         </div>
         <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-green-200 bg-green-50/60">
           <p className="text-[8px] md:text-xs text-green-800 font-bold uppercase">Daily Energy</p>
-          <p className="text-base md:text-4xl font-black text-green-700">{dailyEnergyKWh.toFixed(1)}<span className="text-[10px] md:text-lg font-normal"> kWh</span></p>
-          <p className="text-[8px] md:text-xs text-green-800">₹ {dailyEnergyCost.toFixed(0)} per day</p>
+          <p className="text-base md:text-4xl font-black text-green-700">
+            {dailyEnergyKWh.toFixed(1)}
+            <span className="text-[10px] md:text-lg font-normal"> kWh</span>
+          </p>
+          <p className="text-[8px] md:text-xs text-green-800">
+            ₹ {dailyEnergyCost.toFixed(0)} per day
+          </p>
         </div>
         <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-emerald-100 bg-emerald-50/60">
-          <p className="text-[8px] md:text-xs text-emerald-700 font-bold uppercase">Energy per KL</p>
-          <p className="text-base md:text-4xl font-black text-emerald-600">{energyPerKL}<span className="text-[10px] md:text-lg font-normal"> kWh/kL</span></p>
+          <p className="text-[8px] md:text-xs text-emerald-700 font-bold uppercase">
+            Energy per KL
+          </p>
+          <p className="text-base md:text-4xl font-black text-emerald-600">
+            {energyPerKL}
+            <span className="text-[10px] md:text-lg font-normal"> kWh/kL</span>
+          </p>
           <p className="text-[8px] md:text-xs text-emerald-700">Benchmark: 0.45</p>
         </div>
         <div className="p-2 md:p-5 rounded-lg md:rounded-2xl border md:border-2 border-slate-100 bg-slate-50/60">
-          <p className="text-[8px] md:text-xs text-slate-700 font-bold uppercase">Carbon Footprint</p>
-          <p className="text-base md:text-4xl font-black text-slate-700">{carbonFootprint}<span className="text-[10px] md:text-lg font-normal"> kg CO₂</span></p>
+          <p className="text-[8px] md:text-xs text-slate-700 font-bold uppercase">
+            Carbon Footprint
+          </p>
+          <p className="text-base md:text-4xl font-black text-slate-700">
+            {carbonFootprint}
+            <span className="text-[10px] md:text-lg font-normal"> kg CO₂</span>
+          </p>
           <p className="text-[8px] md:text-xs text-slate-500">Scope-2 daily emissions</p>
         </div>
       </div>
@@ -2178,7 +2983,8 @@ const EnergyDashboard = ({ data, history }) => {
         <div className="xl:col-span-2 bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm p-3 md:p-6">
           <div className="flex items-center justify-between mb-2 md:mb-4">
             <h3 className="font-bold text-black text-[11px] md:text-base flex items-center gap-1 md:gap-2">
-              <Activity size={14} className="md:w-[18px] md:h-[18px]" /> 24h Energy Load & Peak Analysis
+              <Activity size={14} className="md:w-[18px] md:h-[18px]" /> 24h Energy Load & Peak
+              Analysis
             </h3>
             <span className="text-[9px] md:text-xs text-gray-400">kW</span>
           </div>
@@ -2190,8 +2996,22 @@ const EnergyDashboard = ({ data, history }) => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Area type="monotone" dataKey="pumpPower" stroke="#f59e0b" fillOpacity={0.3} fill="#f59e0b" name="Actual Load" />
-                <Line type="monotone" dataKey="peak" stroke="#ef4444" strokeWidth={2} name="Peak Threshold" dot={false} />
+                <Area
+                  type="monotone"
+                  dataKey="pumpPower"
+                  stroke="#f59e0b"
+                  fillOpacity={0.3}
+                  fill="#f59e0b"
+                  name="Actual Load"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="peak"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  name="Peak Threshold"
+                  dot={false}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -2218,9 +3038,12 @@ const EnergyDashboard = ({ data, history }) => {
               <Tooltip />
             </PieChart>
             <div className="flex flex-col gap-2 text-xs text-black">
-              {peakData.map(item => (
+              {peakData.map((item) => (
                 <div key={item.name} className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></span>
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  ></span>
                   <span className="font-bold">{item.name}</span> <span>{item.value}%</span>
                 </div>
               ))}
@@ -2238,25 +3061,36 @@ const EnergyDashboard = ({ data, history }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 text-[9px] md:text-sm">
             <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50">
               <p className="text-[8px] md:text-xs text-gray-500 uppercase">Daily Operating Cost</p>
-              <p className="text-base md:text-2xl font-bold text-black">₹ {dailyEnergyCost.toFixed(0)}</p>
+              <p className="text-base md:text-2xl font-bold text-black">
+                ₹ {dailyEnergyCost.toFixed(0)}
+              </p>
               <p className="text-[7px] md:text-xs text-gray-400">Based on current tariff</p>
             </div>
             <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50">
               <p className="text-[8px] md:text-xs text-gray-500 uppercase">Monthly Projection</p>
-              <p className="text-base md:text-2xl font-bold text-blue-600">₹ {monthlyEnergyCost.toLocaleString()}</p>
+              <p className="text-base md:text-2xl font-bold text-blue-600">
+                ₹ {monthlyEnergyCost.toLocaleString()}
+              </p>
               <p className="text-[7px] md:text-xs text-gray-400">At current load</p>
             </div>
             <div className="border rounded-lg md:rounded-xl p-2 md:p-4 bg-gray-50 col-span-2 md:col-span-1">
               <p className="text-[8px] md:text-xs text-gray-500 uppercase">Benchmark Comparison</p>
-              <p className="text-base md:text-2xl font-bold text-emerald-600">{energyPerKL} kWh/kL</p>
+              <p className="text-base md:text-2xl font-bold text-emerald-600">
+                {energyPerKL} kWh/kL
+              </p>
               <p className="text-[7px] md:text-xs text-emerald-600">State Avg 0.55</p>
             </div>
           </div>
           <div className="mt-3 md:mt-6">
-            <p className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">Energy-Saving Recommendations</p>
+            <p className="text-[8px] md:text-xs font-bold text-gray-500 uppercase mb-1 md:mb-2">
+              Energy-Saving Recommendations
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-[9px] md:text-sm">
-              {recommendations.map(rec => (
-                <div key={rec} className="p-2 md:p-3 rounded-lg md:rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 flex items-center gap-1 md:gap-2">
+              {recommendations.map((rec) => (
+                <div
+                  key={rec}
+                  className="p-2 md:p-3 rounded-lg md:rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 flex items-center gap-1 md:gap-2"
+                >
                   <Leaf size={12} className="md:w-4 md:h-4" /> {rec}
                 </div>
               ))}
@@ -2270,9 +3104,14 @@ const EnergyDashboard = ({ data, history }) => {
           <div className="text-[9px] md:text-xs text-gray-500">
             <p>Solar Contribution</p>
             <div className="w-full h-2 md:h-3 bg-gray-100 rounded-full overflow-hidden mt-1">
-              <div className="h-full bg-yellow-400" style={{ width: `${renewableContribution.solar}%` }}></div>
+              <div
+                className="h-full bg-yellow-400"
+                style={{ width: `${renewableContribution.solar}%` }}
+              ></div>
             </div>
-            <p className="mt-1 text-black font-bold">{renewableContribution.solar}% of daily demand</p>
+            <p className="mt-1 text-black font-bold">
+              {renewableContribution.solar}% of daily demand
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-2 md:gap-3 text-[9px] md:text-xs">
             <div className="border rounded-lg md:rounded-xl p-2 md:p-3 bg-gray-50">
@@ -2287,11 +3126,17 @@ const EnergyDashboard = ({ data, history }) => {
           <div className="text-xs text-gray-500">
             <p>Backup Readiness</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="px-2 py-1 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700">Generator - READY</span>
-              <span className="px-2 py-1 rounded-full text-2xs font-bold bg-blue-50 text-blue-700">Battery - 3.5h</span>
+              <span className="px-2 py-1 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700">
+                Generator - READY
+              </span>
+              <span className="px-2 py-1 rounded-full text-2xs font-bold bg-blue-50 text-blue-700">
+                Battery - 3.5h
+              </span>
             </div>
           </div>
-          <button className="w-full py-2 rounded-xl bg-gray-100 text-black text-xs font-bold">Download Energy Report</button>
+          <button className="w-full py-2 rounded-xl bg-gray-100 text-black text-xs font-bold">
+            Download Energy Report
+          </button>
         </div>
       </div>
 
@@ -2306,13 +3151,20 @@ const EnergyDashboard = ({ data, history }) => {
               { window: '06:00 - 07:00', impact: 'Auto start generator', status: 'Mitigated' },
               { window: '14:00 - 15:30', impact: 'Reduce booster speed', status: 'Upcoming' },
               { window: '22:00 - 23:00', impact: 'Shift flushing operations', status: 'Planned' },
-            ].map(slot => (
-              <div key={slot.window} className="p-3 rounded-xl border bg-gray-50 flex items-center justify-between">
+            ].map((slot) => (
+              <div
+                key={slot.window}
+                className="p-3 rounded-xl border bg-gray-50 flex items-center justify-between"
+              >
                 <div>
                   <p className="font-bold text-black">{slot.window}</p>
                   <p className="text-xs text-gray-500">{slot.impact}</p>
                 </div>
-                <span className={`text-2xs font-bold px-3 py-1 rounded-full ${slot.status === 'Mitigated' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{slot.status}</span>
+                <span
+                  className={`text-2xs font-bold px-3 py-1 rounded-full ${slot.status === 'Mitigated' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}
+                >
+                  {slot.status}
+                </span>
               </div>
             ))}
           </div>
@@ -2347,7 +3199,7 @@ const EnergyDashboard = ({ data, history }) => {
 
 const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
   const [filter, setFilter] = useState('All');
-  const filteredTickets = filter === 'All' ? tickets : tickets.filter(t => t.status === filter);
+  const filteredTickets = filter === 'All' ? tickets : tickets.filter((t) => t.status === filter);
 
   return (
     <div className="space-y-6">
@@ -2365,7 +3217,7 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
         <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
           <div className="bg-gray-50 p-4 border-b border-gray-200 flex gap-2 items-center">
             <Filter size={16} className="text-gray-500" />
-            {['All', 'Open', 'Resolved'].map(f => (
+            {['All', 'Open', 'Resolved'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -2389,19 +3241,23 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {filteredTickets.map(t => (
+                {filteredTickets.map((t) => (
                   <tr key={t.id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-mono text-gray-500 text-xs font-bold">{t.id}</td>
                     <td className="p-4 text-black text-xs">{t.date}</td>
                     <td className="p-4 font-medium">{t.user}</td>
                     <td className="p-4 text-black max-w-xs truncate">{t.issue}</td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-xs font-bold border ${t.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' : t.priority === 'Medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold border ${t.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' : t.priority === 'Medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}
+                      >
                         {t.priority}
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-xs font-bold border ${t.status === 'Open' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'}`}>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold border ${t.status === 'Open' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'}`}
+                      >
                         {t.status}
                       </span>
                     </td>
@@ -2430,12 +3286,20 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
             </h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
-                <span className="text-red-700 font-bold flex items-center gap-2"><AlertCircle size={16} /> Open High Priority</span>
-                <span className="text-xl font-bold text-red-800">{tickets.filter(t => t.status === 'Open' && t.priority === 'High').length}</span>
+                <span className="text-red-700 font-bold flex items-center gap-2">
+                  <AlertCircle size={16} /> Open High Priority
+                </span>
+                <span className="text-xl font-bold text-red-800">
+                  {tickets.filter((t) => t.status === 'Open' && t.priority === 'High').length}
+                </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                <span className="text-green-800 font-bold flex items-center gap-2"><Ticket size={16} /> Total Open</span>
-                <span className="text-xl font-bold text-green-900">{tickets.filter(t => t.status === 'Open').length}</span>
+                <span className="text-green-800 font-bold flex items-center gap-2">
+                  <Ticket size={16} /> Total Open
+                </span>
+                <span className="text-xl font-bold text-green-900">
+                  {tickets.filter((t) => t.status === 'Open').length}
+                </span>
               </div>
             </div>
           </div>
@@ -2445,10 +3309,21 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
               <Star size={20} /> Community Sentiment
             </h3>
             <div className="text-center py-4">
-              <div className="text-5xl font-black text-yellow-500">{data.communityFeedbackScore}</div>
+              <div className="text-5xl font-black text-yellow-500">
+                {data.communityFeedbackScore}
+              </div>
               <div className="flex justify-center gap-1 mt-2 mb-4">
-                {[1, 2, 3, 4, 5].map(s => (
-                  <Star key={s} size={24} fill={s <= Math.round(data.communityFeedbackScore) ? "#eab308" : "#e5e7eb"} className={s <= Math.round(data.communityFeedbackScore) ? "text-yellow-500" : "text-gray-200"} />
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star
+                    key={s}
+                    size={24}
+                    fill={s <= Math.round(data.communityFeedbackScore) ? '#eab308' : '#e5e7eb'}
+                    className={
+                      s <= Math.round(data.communityFeedbackScore)
+                        ? 'text-yellow-500'
+                        : 'text-gray-200'
+                    }
+                  />
                 ))}
               </div>
               <div className="text-xs text-gray-500">Based on recent ticket resolutions</div>
@@ -2462,7 +3337,35 @@ const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
 
 // --- MAIN PARENT ---
 
-const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggleValve, forceAnomaly, activeTab, setActiveTab, user, logInspection, logWaterTest, complaints, responseTimeData, tickets, resolveTicket, language, offlineMode, lastSync, systemState, onTogglePump, onToggleValve, onSchedulePumpTimer, onSchedulePumpStop, onCancelPumpSchedule, globalSearchQuery }) => {
+const MainDashboard = ({
+  data,
+  history,
+  flow24h,
+  alerts,
+  logs,
+  togglePump,
+  toggleValve,
+  forceAnomaly,
+  activeTab,
+  setActiveTab,
+  user,
+  logInspection,
+  logWaterTest,
+  complaints,
+  responseTimeData,
+  tickets,
+  resolveTicket,
+  language,
+  offlineMode,
+  lastSync,
+  systemState,
+  onTogglePump,
+  onToggleValve,
+  onSchedulePumpTimer,
+  onSchedulePumpStop,
+  onCancelPumpSchedule,
+  globalSearchQuery,
+}) => {
   const { t } = useTranslation();
   const userRole = user?.role || 'technician';
 
@@ -2477,10 +3380,12 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
   }
 
   if (activeTab === 'pipeline') {
-    return <PipelinesOverview
-      onBack={() => setActiveTab('infrastructure')}
-      onNavigateToPipeline={(tab) => setActiveTab(tab)}
-    />;
+    return (
+      <PipelinesOverview
+        onBack={() => setActiveTab('infrastructure')}
+        onNavigateToPipeline={(tab) => setActiveTab(tab)}
+      />
+    );
   }
 
   if (activeTab === 'valves') {
@@ -2488,48 +3393,97 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
   }
 
   if (activeTab === 'network-map') {
-    return <InfrastructureDashboard
-      data={data}
-      history={history}
-      systemState={systemState}
-      onTogglePump={onTogglePump}
-      onToggleValve={onToggleValve}
-      onSchedulePumpTimer={onSchedulePumpTimer}
-      onSchedulePumpStop={onSchedulePumpStop}
-      onCancelPumpSchedule={onCancelPumpSchedule}
-      focusSection="network"
-    />;
+    return (
+      <InfrastructureDashboard
+        data={data}
+        history={history}
+        systemState={systemState}
+        onTogglePump={onTogglePump}
+        onToggleValve={onToggleValve}
+        onSchedulePumpTimer={onSchedulePumpTimer}
+        onSchedulePumpStop={onSchedulePumpStop}
+        onCancelPumpSchedule={onCancelPumpSchedule}
+        focusSection="network"
+      />
+    );
   }
 
   // Infrastructure overview
   if (activeTab === 'infrastructure') {
-    return <InfrastructureDashboard
-      data={data}
-      history={history}
-      systemState={systemState}
-      onTogglePump={onTogglePump}
-      onToggleValve={onToggleValve}
-      onSchedulePumpTimer={onSchedulePumpTimer}
-      onSchedulePumpStop={onSchedulePumpStop}
-      onCancelPumpSchedule={onCancelPumpSchedule}
-    />;
+    return (
+      <InfrastructureDashboard
+        data={data}
+        history={history}
+        systemState={systemState}
+        onTogglePump={onTogglePump}
+        onToggleValve={onToggleValve}
+        onSchedulePumpTimer={onSchedulePumpTimer}
+        onSchedulePumpStop={onSchedulePumpStop}
+        onCancelPumpSchedule={onCancelPumpSchedule}
+      />
+    );
   }
 
-  if (activeTab === 'daily') return <DailyOperationDashboard data={data} user={user} logInspection={logInspection} history={history} systemState={systemState} />;
-  if (activeTab === 'quality') return <WaterQualityDashboard data={data} logWaterTest={logWaterTest} systemState={systemState} />;
-  if (activeTab === 'service-requests') return <ServiceRequestDashboard userRole={userRole} globalSearchQuery={globalSearchQuery} />;
-  if (activeTab === 'maintenance') return <MaintenanceDashboard onBack={() => setActiveTab('overview')} />;
-  if (activeTab === 'forecasting') return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
-  if (activeTab === 'reports' && userRole === 'researcher') return <ReportsDashboard data={data} history={history} flow24h={flow24h} alerts={alerts} tickets={tickets} systemState={systemState} />;
-  if (activeTab === 'accountability') return <AccountabilityDashboard data={data} logs={logs} alerts={alerts} complaints={complaints} responseTimeData={responseTimeData} systemState={systemState} />;
-  if (activeTab === 'analytics') return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
+  if (activeTab === 'daily')
+    return (
+      <DailyOperationDashboard
+        data={data}
+        user={user}
+        logInspection={logInspection}
+        history={history}
+        systemState={systemState}
+      />
+    );
+  if (activeTab === 'quality')
+    return (
+      <WaterQualityDashboard data={data} logWaterTest={logWaterTest} systemState={systemState} />
+    );
+  if (activeTab === 'service-requests')
+    return <ServiceRequestDashboard userRole={userRole} globalSearchQuery={globalSearchQuery} />;
+  if (activeTab === 'maintenance')
+    return <MaintenanceDashboard onBack={() => setActiveTab('overview')} />;
+  if (activeTab === 'forecasting')
+    return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
+  if (activeTab === 'reports' && userRole === 'researcher')
+    return (
+      <ReportsDashboard
+        data={data}
+        history={history}
+        flow24h={flow24h}
+        alerts={alerts}
+        tickets={tickets}
+        systemState={systemState}
+      />
+    );
+  if (activeTab === 'accountability')
+    return (
+      <AccountabilityDashboard
+        data={data}
+        logs={logs}
+        alerts={alerts}
+        complaints={complaints}
+        responseTimeData={responseTimeData}
+        systemState={systemState}
+      />
+    );
+  if (activeTab === 'analytics')
+    return <ForecastingDashboard data={data} flow24h={flow24h} systemState={systemState} />;
 
   if (activeTab === 'gis') {
     return <GISDashboard systemState={systemState} />;
   }
 
-  if (activeTab === 'energy') return <EnergyDashboard data={data} history={history} systemState={systemState} />;
-  if (activeTab === 'ticketing') return <TicketingDashboard tickets={tickets} resolveTicket={resolveTicket} data={data} systemState={systemState} />;
+  if (activeTab === 'energy')
+    return <EnergyDashboard data={data} history={history} systemState={systemState} />;
+  if (activeTab === 'ticketing')
+    return (
+      <TicketingDashboard
+        tickets={tickets}
+        resolveTicket={resolveTicket}
+        data={data}
+        systemState={systemState}
+      />
+    );
 
   // Detail pages
   if (activeTab === 'pump-details') {
@@ -2541,20 +3495,26 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
   }
 
   if (activeTab === 'pipelines-overview') {
-    return <PipelinesOverview
-      onBack={() => setActiveTab('overview')}
-      onNavigateToPipeline={(tab) => setActiveTab(tab)}
-    />;
+    return (
+      <PipelinesOverview
+        onBack={() => setActiveTab('overview')}
+        onNavigateToPipeline={(tab) => setActiveTab(tab)}
+      />
+    );
   }
 
   if (activeTab?.startsWith('pipeline-details-')) {
     const pipelineId = activeTab.replace('pipeline-details-', '');
-    return <PipelineDetails pipelineId={pipelineId} onBack={() => setActiveTab('pipelines-overview')} />;
+    return (
+      <PipelineDetails pipelineId={pipelineId} onBack={() => setActiveTab('pipelines-overview')} />
+    );
   }
 
   // --- ROLE-BASED OVERVIEW DASHBOARD ---
   if (userRole === 'public') {
-    return <GuestDashboard language={language} t={t} offlineMode={offlineMode} lastSync={lastSync} />;
+    return (
+      <GuestDashboard language={language} t={t} offlineMode={offlineMode} lastSync={lastSync} />
+    );
   }
 
   // Researchers get analytics and data export tools
@@ -2597,7 +3557,10 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
           </div>
           {/* Only Tech/Research can force anomalies */}
           {userRole === 'technician' && (
-            <button onClick={() => forceAnomaly('LEAK')} className="bg-red-100 text-red-700 px-3 py-2 rounded text-xs font-bold border border-red-200">
+            <button
+              onClick={() => forceAnomaly('LEAK')}
+              className="bg-red-100 text-red-700 px-3 py-2 rounded text-xs font-bold border border-red-200"
+            >
               Simulate Leak
             </button>
           )}
@@ -2607,8 +3570,18 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
       {/* CRITICAL METRICS ROW */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard label={t('metrics.pumpStatus')} value={data.pumpStatus} unit="" icon={Power} />
-        <StatCard label={t('metrics.flowRate')} value={data.pumpFlowRate} unit="L/min" icon={Wind} />
-        <StatCard label={t('metrics.pressure')} value={data.pipePressure} unit="Bar" icon={Activity} />
+        <StatCard
+          label={t('metrics.flowRate')}
+          value={data.pumpFlowRate}
+          unit="L/min"
+          icon={Wind}
+        />
+        <StatCard
+          label={t('metrics.pressure')}
+          value={data.pipePressure}
+          unit="Bar"
+          icon={Activity}
+        />
         <StatCard label={t('metrics.tankLevel')} value={data.tankLevel} unit="%" icon={Droplet} />
         <StatCard label={t('metrics.tds')} value={data.qualityTDS} unit="ppm" icon={Layers} />
       </div>
@@ -2621,8 +3594,12 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
               <IconImage name="activity.svg" className="h-7 w-7" aria-hidden="true" /> Real-time
             </h3>
             <div className="flex gap-3 text-xs font-bold">
-              <span className="text-amber-600 flex items-center gap-1"><Zap size={12} /> {data.pumpPower.toFixed(1)} kW</span>
-              <span className="text-red-600 flex items-center gap-1"><Thermometer size={12} /> {data.pumpMotorTemp.toFixed(1)}°C</span>
+              <span className="text-amber-600 flex items-center gap-1">
+                <Zap size={12} /> {data.pumpPower.toFixed(1)} kW
+              </span>
+              <span className="text-red-600 flex items-center gap-1">
+                <Thermometer size={12} /> {data.pumpMotorTemp.toFixed(1)}°C
+              </span>
             </div>
           </div>
           <div className="h-64">
@@ -2638,7 +3615,13 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
                 <XAxis dataKey="time" hide />
                 <YAxis domain={[0, 8]} />
                 <Tooltip />
-                <Area type="monotone" dataKey="pipePressure" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPress)" />
+                <Area
+                  type="monotone"
+                  dataKey="pipePressure"
+                  stroke="#3b82f6"
+                  fillOpacity={1}
+                  fill="url(#colorPress)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -2650,7 +3633,7 @@ const MainDashboard = ({ data, history, flow24h, alerts, logs, togglePump, toggl
             <MapPin size={18} className="text-emerald-600" /> GIS Alert Feed
           </h3>
           <div className="flex-1 overflow-y-auto space-y-3">
-            {HAZARD_LOGS.slice(0, 3).map(log => (
+            {HAZARD_LOGS.slice(0, 3).map((log) => (
               <div key={log.id} className="p-3 bg-gray-50 border rounded-lg text-sm">
                 <div className="flex justify-between mb-1">
                   <span className="font-bold text-red-700">{log.type}</span>
@@ -2707,7 +3690,13 @@ const App = () => {
   // ===== ACTION FEEDBACK STATE =====
   const { notifications, removeNotification, success } = useNotifications();
   const { actions, addAction, clearActions } = useActionLog();
-  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    action: null,
+    isDangerous: false,
+  });
   const [showActionsLog, setShowActionsLog] = useState(false);
 
   // ===== ACCESSIBILITY STATE =====
@@ -2715,7 +3704,6 @@ const App = () => {
   const [textSize, setTextSize] = useState(1); // Default 1.0 = 100%
   const [highContrast, setHighContrast] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-
 
   // ===== THEME MANAGEMENT =====
   useEffect(() => {
@@ -2741,11 +3729,31 @@ const App = () => {
     { keyword: 'ph', title: 'Water Quality - pH', tab: 'quality', icon: '🧪' },
     { keyword: 'turbidity', title: 'Water Quality - Turbidity', tab: 'quality', icon: '🧪' },
     { keyword: 'chlorine', title: 'Water Quality - Chlorine', tab: 'quality', icon: '🧪' },
-    { keyword: 'service request', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
-    { keyword: 'complaint', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
-    { keyword: 'request', title: 'Service Requests & Complaints', tab: 'service-requests', icon: '📝' },
+    {
+      keyword: 'service request',
+      title: 'Service Requests & Complaints',
+      tab: 'service-requests',
+      icon: '📝',
+    },
+    {
+      keyword: 'complaint',
+      title: 'Service Requests & Complaints',
+      tab: 'service-requests',
+      icon: '📝',
+    },
+    {
+      keyword: 'request',
+      title: 'Service Requests & Complaints',
+      tab: 'service-requests',
+      icon: '📝',
+    },
     { keyword: 'ward', title: 'Service Requests by Ward', tab: 'service-requests', icon: '🏘️' },
-    { keyword: 'accountability', title: 'Accountability Dashboard', tab: 'accountability', icon: '✅' },
+    {
+      keyword: 'accountability',
+      title: 'Accountability Dashboard',
+      tab: 'accountability',
+      icon: '✅',
+    },
     { keyword: 'energy', title: 'Energy Monitoring', tab: 'energy', icon: '⚡' },
     { keyword: 'power', title: 'Energy Monitoring', tab: 'energy', icon: '⚡' },
     { keyword: 'analytics', title: 'Analytics & Forecasting', tab: 'analytics', icon: '📈' },
@@ -2764,14 +3772,14 @@ const App = () => {
     }
 
     const query = globalSearchQuery.toLowerCase();
-    const matches = searchableItems.filter(item => 
-      item.keyword.toLowerCase().includes(query) || 
-      item.title.toLowerCase().includes(query)
+    const matches = searchableItems.filter(
+      (item) =>
+        item.keyword.toLowerCase().includes(query) || item.title.toLowerCase().includes(query)
     );
 
     // Remove duplicates based on tab
     const uniqueMatches = matches.reduce((acc, current) => {
-      const exists = acc.find(item => item.tab === current.tab);
+      const exists = acc.find((item) => item.tab === current.tab);
       if (!exists) {
         acc.push(current);
       }
@@ -2808,7 +3816,7 @@ const App = () => {
         tankLevel: tank.tankLevel || 0,
         pumpPower: pump.powerConsumption || 0,
       };
-      setHistory(prev => {
+      setHistory((prev) => {
         const updated = [...prev, newHistoryPoint];
         return updated.slice(-20); // Keep last 20 points
       });
@@ -2818,7 +3826,7 @@ const App = () => {
   // Flow 24h data
   const flow24h = useMemo(() => {
     const hourlyBuckets = Array.from({ length: 24 }, () => []);
-    history.forEach(point => {
+    history.forEach((point) => {
       if (!point.timestamp) return;
       const timestamp = new Date(point.timestamp);
       if (Number.isNaN(timestamp.getTime())) return;
@@ -2840,7 +3848,10 @@ const App = () => {
         : null;
       const value = bucketAvg ?? fallbackFlow;
       return {
-        timeLabel: hourLabelDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        timeLabel: hourLabelDate.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
         flow: Math.round(value),
       };
     });
@@ -2849,18 +3860,24 @@ const App = () => {
     const avgFlow = computed.length ? totalFlow / computed.length : 0;
     const avgRounded = Math.round(avgFlow);
 
-    return computed.map(entry => ({ ...entry, avg: avgRounded }));
+    return computed.map((entry) => ({ ...entry, avg: avgRounded }));
   }, [history, data.pumpFlowRate, data.pumpStatus]);
 
   // Alerts from simulation
   const alerts = simulation.alerts || [];
-  const activeAlerts = alerts.filter(alert => !alert.acknowledged);
+  const activeAlerts = alerts.filter((alert) => !alert.acknowledged);
   // Only show critical/red alerts in the top banner
-  const criticalAlerts = activeAlerts.filter(alert => alert.severity === 'CRITICAL' || alert.severity === 'HIGH');
-  const alertTargetIds = Array.from(new Set(activeAlerts.map(alert => ALERT_TYPE_TO_TAB[alert.type] || 'overview')));
+  const criticalAlerts = activeAlerts.filter(
+    (alert) => alert.severity === 'CRITICAL' || alert.severity === 'HIGH'
+  );
+  const alertTargetIds = Array.from(
+    new Set(activeAlerts.map((alert) => ALERT_TYPE_TO_TAB[alert.type] || 'overview'))
+  );
   const alertTargetsSet = new Set(alertTargetIds);
   const primaryAlert = criticalAlerts[0] || null;
-  const primaryAlertTarget = primaryAlert ? ALERT_TYPE_TO_TAB[primaryAlert.type] || 'overview' : null;
+  const primaryAlertTarget = primaryAlert
+    ? ALERT_TYPE_TO_TAB[primaryAlert.type] || 'overview'
+    : null;
 
   // Logs (empty for now, can be enhanced)
   const logs = [];
@@ -2886,13 +3903,19 @@ const App = () => {
           'success'
         );
         success(`Pump ${willStop ? 'stopped' : 'started'} successfully`);
-        setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
-      }
+        setConfirmDialog({
+          isOpen: false,
+          title: '',
+          message: '',
+          action: null,
+          isDangerous: false,
+        });
+      },
     });
   };
 
   const handleToggleValve = (pipelineId) => {
-    const pipeline = simulation.state?.pipelines?.find(p => p.pipelineId === pipelineId);
+    const pipeline = simulation.state?.pipelines?.find((p) => p.pipelineId === pipelineId);
     const currentState = pipeline?.valveStatus || 'CLOSED';
     const willClose = currentState === 'OPEN';
 
@@ -2912,23 +3935,29 @@ const App = () => {
           'success'
         );
         success(`Valve on pipeline ${pipelineId} ${willClose ? 'closed' : 'opened'}`);
-        setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
-      }
+        setConfirmDialog({
+          isOpen: false,
+          title: '',
+          message: '',
+          action: null,
+          isDangerous: false,
+        });
+      },
     });
   };
 
   // Keep old functions for compatibility
   const togglePump = handleTogglePump;
   const toggleValve = handleToggleValve;
-  const forceAnomaly = () => { };
-  const setData = () => { };
-  const logInspection = () => { }; // Can be enhanced
-  const logWaterTest = () => { }; // Can be enhanced
+  const forceAnomaly = () => {};
+  const setData = () => {};
+  const logInspection = () => {}; // Can be enhanced
+  const logWaterTest = () => {}; // Can be enhanced
   const mlPrediction = null; // Can be enhanced
   const complaints = []; // Can be enhanced
   const responseTimeData = []; // Can be enhanced
   const tickets = []; // Can be enhanced
-  const resolveTicket = () => { }; // Can be enhanced
+  const resolveTicket = () => {}; // Can be enhanced
 
   const handleLogin = (userData, selectedLanguage) => {
     login(userData);
@@ -2981,8 +4010,8 @@ const App = () => {
 
   // Language Selector Component
   const LanguageSelectorDropdown = () => {
-    const currentLang = useMemo(() => 
-      LANGUAGES.find(lang => lang.code === language) || LANGUAGES[0], 
+    const currentLang = useMemo(
+      () => LANGUAGES.find((lang) => lang.code === language) || LANGUAGES[0],
       [language]
     );
     const languageMenuRef = useRef(null);
@@ -3029,7 +4058,9 @@ const App = () => {
             >
               <Languages size={18} className="text-blue-600" />
               <div className="text-left min-w-[60px]">
-                <div className="text-xs font-bold text-gray-800 leading-tight">{currentLang.nativeName}</div>
+                <div className="text-xs font-bold text-gray-800 leading-tight">
+                  {currentLang.nativeName}
+                </div>
               </div>
             </button>
             <button
@@ -3040,7 +4071,17 @@ const App = () => {
               className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-red-300 transition-all duration-300"
               title="Close language selector"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 hover:text-red-600">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-gray-600 hover:text-red-600"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -3085,9 +4126,9 @@ const App = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 ${highContrast ? 'contrast-150' : ''
-        } ${reducedMotion ? '[&_*]:transition-none [&_*]:animate-none' : ''
-        }`}
+      className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 ${
+        highContrast ? 'contrast-150' : ''
+      } ${reducedMotion ? '[&_*]:transition-none [&_*]:animate-none' : ''}`}
     >
       {/* Floating Mobile Menu Button */}
       {!sidebarOpen && (
@@ -3115,12 +4156,20 @@ const App = () => {
       />
 
       {/* Main Content Area - Government Design */}
-      <div className="flex-1 flex flex-col min-h-screen" style={{ background: 'linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end))' }}>
+      <div
+        className="flex-1 flex flex-col min-h-screen"
+        style={{
+          background:
+            'linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end))',
+        }}
+      >
         {/* Floating Search Bar with Language Selector */}
         <div className="sticky top-4 z-50 px-2 sm:px-4 lg:px-6">
           <div className="max-w-4xl mx-auto flex items-center justify-end gap-2 sm:gap-3">
             {/* Search Bar */}
-            <div className={`relative transition-all duration-300 ${showSearchResults ? 'flex-1' : 'flex-none'}`}>
+            <div
+              className={`relative transition-all duration-300 ${showSearchResults ? 'flex-1' : 'flex-none'}`}
+            >
               {!showSearchResults ? (
                 <button
                   onClick={() => setShowSearchResults(true)}
@@ -3130,8 +4179,14 @@ const App = () => {
                 </button>
               ) : (
                 <div className="relative">
-                  <div className={`relative transition-all duration-300 bg-white shadow-lg`} style={{ borderRadius: '12px' }}>
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <div
+                    className={`relative transition-all duration-300 bg-white shadow-lg`}
+                    style={{ borderRadius: '12px' }}
+                  >
+                    <Search
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={20}
+                    />
                     <input
                       type="text"
                       placeholder="Search..."
@@ -3148,8 +4203,10 @@ const App = () => {
                       }}
                       autoFocus
                       className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2 sm:py-3 rounded-xl focus:outline-none text-sm transition-all duration-300 bg-white"
-                      style={{ 
-                        border: globalSearchQuery ? '2px solid #3b82f6' : '1px solid rgba(209, 213, 219, 0.5)'
+                      style={{
+                        border: globalSearchQuery
+                          ? '2px solid #3b82f6'
+                          : '1px solid rgba(209, 213, 219, 0.5)',
                       }}
                     />
                     {globalSearchQuery && (
@@ -3183,19 +4240,29 @@ const App = () => {
                               <p className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
                                 {result.title}
                               </p>
-                              <p className="text-xs text-gray-500">
-                                {result.keyword}
-                              </p>
+                              <p className="text-xs text-gray-500">{result.keyword}</p>
                             </div>
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            <svg
+                              className="w-4 h-4 text-gray-400 group-hover:text-blue-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
                             </svg>
                           </button>
                         ))}
                       </div>
                       {searchResults.length === 0 && globalSearchQuery && (
                         <div className="px-4 py-8 text-center">
-                          <p className="text-sm text-gray-500">No results found for &ldquo;{globalSearchQuery}&rdquo;</p>
+                          <p className="text-sm text-gray-500">
+                            No results found for &ldquo;{globalSearchQuery}&rdquo;
+                          </p>
                         </div>
                       )}
                     </div>
@@ -3215,7 +4282,8 @@ const App = () => {
             <div className="flex-1">
               <p className="text-sm font-bold text-red-700">{primaryAlert.message}</p>
               <p className="text-xs uppercase tracking-wider text-red-500">
-                {primaryAlert.severity} · {criticalAlerts.length} critical alert{criticalAlerts.length > 1 ? 's' : ''} · {primaryAlert.type}
+                {primaryAlert.severity} · {criticalAlerts.length} critical alert
+                {criticalAlerts.length > 1 ? 's' : ''} · {primaryAlert.type}
               </p>
             </div>
             <button
@@ -3242,10 +4310,7 @@ const App = () => {
 
       {/* ACTION FEEDBACK COMPONENTS */}
       {/* Notification Container */}
-      <NotificationContainer 
-        notifications={notifications}
-        onRemove={removeNotification}
-      />
+      <NotificationContainer notifications={notifications} onRemove={removeNotification} />
 
       {/* Confirmation Dialog */}
       <ConfirmationDialog
@@ -3259,7 +4324,13 @@ const App = () => {
           }
         }}
         onCancel={() => {
-          setConfirmDialog({ isOpen: false, title: '', message: '', action: null, isDangerous: false });
+          setConfirmDialog({
+            isOpen: false,
+            title: '',
+            message: '',
+            action: null,
+            isDangerous: false,
+          });
         }}
         isDangerous={confirmDialog.isDangerous}
       />

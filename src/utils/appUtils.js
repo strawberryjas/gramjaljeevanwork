@@ -38,7 +38,7 @@ export const transformStateToData = (state) => {
     pumpPower: 0,
     pumpMotorTemp: 25,
     pumpRunningHours: 0,
-    pumpEfficiency: 85,
+    pumpEfficiency: 65,
     powerFactor: 0.95,
     qualityTDS: 0,
     qualityPH: 7,
@@ -64,7 +64,7 @@ export const transformStateToData = (state) => {
     pumpSchedule: {
       mode: 'MANUAL',
       timerRemainingMs: 0,
-      timerEnd: null
+      timerEnd: null,
     },
     pumpScheduleMode: 'MANUAL',
     pumpScheduleRemainingMs: 0,
@@ -100,10 +100,11 @@ export const transformStateToData = (state) => {
       minute: '2-digit',
     }).format(date);
 
-  const pipelineQualities = pipelines.map(pipeline => {
+  const pipelineQualities = pipelines.map((pipeline) => {
     const inletQuality = pipeline.inlet?.qualitySensor || {};
     const outletQuality = pipeline.outlet?.qualitySensor || {};
-    const shortName = pipeline.pipelineName?.split(' - ').pop() || `Pipeline ${pipeline.pipelineId}`;
+    const shortName =
+      pipeline.pipelineName?.split(' - ').pop() || `Pipeline ${pipeline.pipelineId}`;
 
     return {
       pipelineId: pipeline.pipelineId,
@@ -118,9 +119,17 @@ export const transformStateToData = (state) => {
         TDS: formatMetric(inletQuality.TDS ?? quality.TDS, 0, quality.TDS),
       },
       outlet: {
-        turbidity: formatMetric(outletQuality.turbidity ?? inletQuality.turbidity ?? quality.turbidity, 2, quality.turbidity),
+        turbidity: formatMetric(
+          outletQuality.turbidity ?? inletQuality.turbidity ?? quality.turbidity,
+          2,
+          quality.turbidity
+        ),
         pH: formatMetric(outletQuality.pH ?? inletQuality.pH ?? quality.pH, 2, quality.pH),
-        chlorine: formatMetric(outletQuality.chlorine ?? inletQuality.chlorine ?? quality.chlorine, 2, quality.chlorine),
+        chlorine: formatMetric(
+          outletQuality.chlorine ?? inletQuality.chlorine ?? quality.chlorine,
+          2,
+          quality.chlorine
+        ),
         TDS: formatMetric(outletQuality.TDS ?? inletQuality.TDS ?? quality.TDS, 0, quality.TDS),
       },
     };
@@ -135,7 +144,7 @@ export const transformStateToData = (state) => {
     pumpPower: pumpLoad,
     pumpMotorTemp: pump.motorTemperature || 25,
     pumpRunningHours: pump.pumpRunningHours || 0,
-    pumpEfficiency: pump.pumpEfficiency ?? 85,
+    pumpEfficiency: pump.pumpEfficiency ?? 65,
     powerFactor: pump.powerFactor ?? 0.95,
     qualityTDS: quality.TDS || 0,
     qualityPH: quality.pH || 7,
@@ -166,6 +175,8 @@ export const transformStateToData = (state) => {
     pumpSchedule,
     pumpScheduleMode: pumpSchedule.mode || 'MANUAL',
     pumpScheduleRemainingMs: pumpSchedule.timerRemainingMs || 0,
-    pumpScheduleStopsAt: pumpSchedule.timerEnd ? new Date(pumpSchedule.timerEnd).toISOString() : null,
+    pumpScheduleStopsAt: pumpSchedule.timerEnd
+      ? new Date(pumpSchedule.timerEnd).toISOString()
+      : null,
   };
 };

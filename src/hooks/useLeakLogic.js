@@ -34,7 +34,6 @@ export const useLeakLogic = (inletVal, outletVal, tolerance = 5.0) => {
     isLeaking,
     lossAmount,
     colorCode,
-    statusMessage
+    statusMessage,
   };
 };
-

@@ -3,6 +3,7 @@
 ## ✅ Pre-Deployment Checklist
 
 ### Code Quality
+
 - [x] All backup files removed (`App_clean.jsx`, `App.jsx.backup`)
 - [x] No console.log statements in production code
 - [x] All components have proper error handling
@@ -11,6 +12,7 @@
 - [x] Code follows style guide (CODE_STYLE_GUIDE.md)
 
 ### Testing
+
 - [ ] Manual testing completed for all user roles
   - [ ] Guest dashboard
   - [ ] Technician dashboard
@@ -22,6 +24,7 @@
 - [ ] Mobile responsiveness verified
 
 ### Performance
+
 - [x] Bundle size optimized (< 500KB gzipped)
 - [x] Images optimized
 - [x] Lazy loading implemented where needed
@@ -29,6 +32,7 @@
 - [ ] Lighthouse score > 90
 
 ### Security
+
 - [x] No API keys in code
 - [x] Input sanitization implemented
 - [x] Role-based access control working
@@ -36,6 +40,7 @@
 - [ ] Security headers configured
 
 ### Documentation
+
 - [x] README.md updated
 - [x] PROJECT_STRUCTURE.md created
 - [x] CODE_STYLE_GUIDE.md created
@@ -45,6 +50,7 @@
 ## 🚀 Deployment Steps
 
 ### 1. Environment Setup
+
 ```bash
 # Create .env.production file
 VITE_API_URL=https://api.production.com
@@ -52,6 +58,7 @@ VITE_MAP_API_KEY=your_production_key
 ```
 
 ### 2. Build Production Bundle
+
 ```bash
 # Clean previous builds
 rm -rf dist/
@@ -64,6 +71,7 @@ ls -lh dist/
 ```
 
 ### 3. Test Production Build Locally
+
 ```bash
 # Preview production build
 npm run preview
@@ -74,6 +82,7 @@ npm run preview
 ### 4. Deploy to Hosting Platform
 
 #### Option A: Vercel
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -83,6 +92,7 @@ vercel --prod
 ```
 
 #### Option B: Netlify
+
 ```bash
 # Install Netlify CLI
 npm i -g netlify-cli
@@ -92,6 +102,7 @@ netlify deploy --prod --dir=dist
 ```
 
 #### Option C: GitHub Pages
+
 ```bash
 # Add to package.json
 "homepage": "https://yourusername.github.io/gramjaljeevanwork",
@@ -106,6 +117,7 @@ npm run deploy
 ```
 
 ### 5. Post-Deployment Verification
+
 - [ ] Website loads correctly
 - [ ] All images display properly
 - [ ] Login works for all roles
@@ -116,6 +128,7 @@ npm run deploy
 - [ ] No console errors
 
 ### 6. Performance Testing
+
 - [ ] Run Lighthouse audit
 - [ ] Check Core Web Vitals
 - [ ] Test on slow 3G connection
@@ -123,6 +136,7 @@ npm run deploy
 - [ ] Check bundle sizes
 
 ### 7. Monitoring Setup
+
 - [ ] Error tracking (Sentry, LogRocket)
 - [ ] Analytics (Google Analytics, Plausible)
 - [ ] Uptime monitoring (UptimeRobot, Pingdom)
@@ -131,6 +145,7 @@ npm run deploy
 ## 📊 Production Configuration
 
 ### Vite Build Config
+
 ```js
 // vite.config.js
 export default defineConfig({
@@ -142,46 +157,47 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.logs
-        drop_debugger: true
-      }
+        drop_debugger: true,
+      },
     },
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'charts': ['recharts'],
-          'icons': ['lucide-react']
-        }
-      }
-    }
-  }
+          charts: ['recharts'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
 });
 ```
 
 ### Nginx Configuration
+
 ```nginx
 server {
     listen 80;
     server_name gramjaljeevan.gov.in;
-    
+
     root /var/www/gramjaljeevan/dist;
     index index.html;
-    
+
     # Gzip compression
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-    
+
     # Cache static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
-    
+
     # SPA routing
     location / {
         try_files $uri $uri/ /index.html;
     }
-    
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
@@ -192,6 +208,7 @@ server {
 ## 🔐 Security Headers
 
 ### Recommended Headers
+
 ```
 Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com;
 X-Frame-Options: SAMEORIGIN
@@ -213,6 +230,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 ## 🌐 CDN Configuration
 
 ### Recommended CDN Setup
+
 1. **Static Assets** - CloudFlare, AWS CloudFront
 2. **Images** - Optimize and serve via CDN
 3. **Fonts** - Google Fonts CDN (already configured)
@@ -221,12 +239,15 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 ## 📈 Analytics Setup
 
 ### Google Analytics
+
 ```html
 <!-- Add to index.html -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag() {
+    dataLayer.push(arguments);
+  }
   gtag('js', new Date());
   gtag('config', 'GA_MEASUREMENT_ID');
 </script>
@@ -235,13 +256,14 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 ## 🔄 Continuous Deployment
 
 ### GitHub Actions (Optional)
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -263,6 +285,7 @@ jobs:
 ## 🐛 Rollback Plan
 
 ### If Deployment Fails
+
 1. **Immediate**: Revert to previous version
 2. **Check Logs**: Review error logs
 3. **Test Locally**: Reproduce issue in dev environment
@@ -270,6 +293,7 @@ jobs:
 5. **Redeploy**: After thorough testing
 
 ### Version Control
+
 ```bash
 # Tag releases
 git tag -a v1.0.0 -m "Production release v1.0.0"
@@ -299,11 +323,10 @@ git push origin main
 
 ---
 
-**Deployment Date**: _____________
+**Deployment Date**: **\*\***\_**\*\***
 
-**Deployed By**: _____________
+**Deployed By**: **\*\***\_**\*\***
 
-**Approved By**: _____________
+**Approved By**: **\*\***\_**\*\***
 
 **Version**: 1.0.0
-

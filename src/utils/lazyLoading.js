@@ -3,7 +3,7 @@
  * Helps split large components into separate chunks for better performance.
  */
 
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy } from 'react';
 
 /**
  * Fallback component while lazy component is loading
@@ -15,37 +15,37 @@ const LazyFallback = ({ componentName = 'Component' }) => (
       <p className="text-gray-600">Loading {componentName}...</p>
     </div>
   </div>
-)
+);
 
 /**
  * Wrapper to easily lazy load a component with Suspense
  * Usage: const LazyDashboard = createLazyComponent(() => import('./Dashboard'), 'Dashboard')
  */
 export const createLazyComponent = (importFunc, componentName = 'Component') => {
-  const LazyComponent = lazy(importFunc)
+  const LazyComponent = lazy(importFunc);
 
   return (props) => (
     <Suspense fallback={<LazyFallback componentName={componentName} />}>
       <LazyComponent {...props} />
     </Suspense>
-  )
-}
+  );
+};
 
 /**
  * Error boundary for catching errors in lazy components
  */
 export class LazyComponentErrorBoundary extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error loading lazy component:', error, errorInfo)
+    console.error('Error loading lazy component:', error, errorInfo);
   }
 
   render() {
@@ -63,10 +63,10 @@ export class LazyComponentErrorBoundary extends React.Component {
             </button>
           </div>
         </div>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
@@ -77,22 +77,22 @@ export const withLazyErrorBoundary = (LazyComponent) => (props) => (
   <LazyComponentErrorBoundary>
     <LazyComponent {...props} />
   </LazyComponentErrorBoundary>
-)
+);
 
 /**
  * Preload a lazy component before it's needed
  * Useful for prefetching on link hover
  */
 export const preloadLazyComponent = (importFunc) => {
-  importFunc()
-}
+  importFunc();
+};
 
 /**
  * Create a route-based lazy component wrapper
  */
 export const createRouteLazyComponent = (importFunc, componentName = 'Route') => {
-  return withLazyErrorBoundary(createLazyComponent(importFunc, componentName))
-}
+  return withLazyErrorBoundary(createLazyComponent(importFunc, componentName));
+};
 
 export default {
   LazyFallback,
@@ -101,4 +101,4 @@ export default {
   withLazyErrorBoundary,
   preloadLazyComponent,
   createRouteLazyComponent,
-}
+};
