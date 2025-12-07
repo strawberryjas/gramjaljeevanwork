@@ -17,6 +17,7 @@ export const ValvesDashboard = ({ onBack }) => {
       flow: p.inlet?.flowSensor?.value || 0,
       pressure: p.inlet?.pressureSensor?.value || 0,
       leakageProbability: p.leakageProbability || 0,
+      size: p.valveSize || p.diameter || '150mm',
     })) || [];
 
   const handleValveToggle = (valve) => {
@@ -33,19 +34,6 @@ export const ValvesDashboard = ({ onBack }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 transition-colors"
-            style={{
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--gray-light)',
-              color: 'var(--gray-text-dark)',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray-border)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--gray-light)')}
-          >
-            <ArrowLeft size={20} />
-          </button>
           <div>
             <h2
               className="flex items-center gap-3"
@@ -172,13 +160,24 @@ export const ValvesDashboard = ({ onBack }) => {
                 transition: 'all 0.3s',
               }}
             >
-              <div className="flex items-center justify-between mb-1 md:mb-3">
-                <p
-                  className="text-xs md:text-xl font-bold"
-                  style={{ color: 'var(--gray-text-dark)' }}
-                >
-                  {valve.id}
-                </p>
+              <div className="flex items-start justify-between mb-2 md:mb-3">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src="/images/icons/valve-control.svg" 
+                    alt="Valve" 
+                    className="w-8 h-8 md:w-12 md:h-12"
+                    style={{
+                      filter: valve.state === 'OPEN' ? 'hue-rotate(210deg) saturate(1.5)' : 'none',
+                      transition: 'filter 0.3s'
+                    }}
+                  />
+                  <p
+                    className="text-xs md:text-xl font-bold"
+                    style={{ color: 'var(--gray-text-dark)' }}
+                  >
+                    {valve.id}
+                  </p>
+                </div>
                 <span
                   className="px-2 py-0.5 md:px-3 md:py-1 text-[9px] md:text-sm font-bold"
                   style={{
@@ -192,10 +191,17 @@ export const ValvesDashboard = ({ onBack }) => {
               </div>
 
               <p
-                className="text-[10px] md:text-base mb-2 md:mb-3"
+                className="text-[10px] md:text-base mb-1"
                 style={{ color: 'var(--gray-text)' }}
               >
                 {valve.location}
+              </p>
+              
+              <p
+                className="text-[9px] md:text-sm font-semibold mb-2 md:mb-3"
+                style={{ color: 'var(--primary-blue)' }}
+              >
+                Size: {valve.size}
               </p>
 
               {/* Metrics */}

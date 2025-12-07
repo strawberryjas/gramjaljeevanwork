@@ -94,11 +94,9 @@ export const GuestDashboard = ({ language, t, offlineMode, lastSync }) => {
             <WifiOff size={14} /> {offlineMode ? 'Offline Mode Active' : 'Online Mode Active'} |
             Last Sync: {lastSync || 'Just now'}
           </p>
-        </div>
-        <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-2">
-            <RefreshCcw size={16} /> Refresh Data
-          </button>
+          <p className="text-xs text-gray-400 mt-1">
+            📖 Read-only access • View-only statistics and reports
+          </p>
         </div>
       </div>
 

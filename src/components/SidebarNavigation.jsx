@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import IconImage from './IconImage';
 import { useTranslation } from 'react-i18next';
+import { UserCog, LogOut } from 'lucide-react';
 
 const ministryLogoUrl = '/ministry-logo.svg';
 const jalsenseLogoUrl = '/jalsense-logo.svg';
@@ -25,12 +26,8 @@ export const SidebarNavigation = ({
   alertBlinkTargets = new Set(),
 }) => {
   const { t } = useTranslation();
-  const [expandedSections, setExpandedSections] = useState({
-    infrastructure: true,
-    operations: true,
-    monitoring: true,
-    analysis: true,
-  });
+  // Only one section expanded at a time, default none
+  const [hoveredSection, setHoveredSection] = useState(null);
 
   const isPublicUser = user?.role === 'public';
   const isTechnician = user?.role === 'technician';
@@ -99,24 +96,19 @@ export const SidebarNavigation = ({
   const navigationSections = isPublicUser
     ? [
         {
-          id: 'infrastructure',
-          label: t('nav.infrastructure'),
+          id: 'overview-section',
+          label: t('nav.overview'),
           icon: 'layers-stack.svg',
           items: [
             { id: 'overview', label: t('nav.overview'), icon: 'layers-stack.svg' },
-            { id: 'pump-station', label: t('nav.pumpStation'), icon: 'pump-machine.svg' },
-            { id: 'water-tank', label: t('nav.waterTank'), icon: 'water-droplet.png' },
-            { id: 'pipeline', label: t('nav.pipeline'), icon: 'pipeline-pipe.svg' },
-            { id: 'valves', label: t('nav.valves'), icon: 'valve-control.svg' },
           ],
         },
         {
-          id: 'monitoring',
-          label: t('nav.monitoring'),
-          icon: 'radio-signal.svg',
+          id: 'complaints-section',
+          label: 'Submit Complaint',
+          icon: 'check-success.svg',
           items: [
-            { id: 'quality', label: t('nav.quality'), icon: 'beaker-flask.png' },
-            { id: 'analytics', label: t('nav.analytics'), icon: 'trending-up.svg' },
+            { id: 'complaints', label: 'Submit Complaint', icon: 'check-success.svg' },
           ],
         },
       ]
@@ -133,45 +125,52 @@ export const SidebarNavigation = ({
             { id: 'valves', label: t('nav.valves'), icon: 'valve-control.svg' },
           ],
         },
-        {
-          id: 'operations',
-          label: t('nav.operations'),
-          icon: 'settings-gear.svg',
-          items: [
-            { id: 'quality', label: t('nav.quality'), icon: 'beaker-flask.png' },
-            { id: 'maintenance', label: t('nav.maintenance'), icon: 'wrench.svg' },
-            { id: 'service-requests', label: t('nav.serviceRequests'), icon: 'check-success.svg' },
-            ...(isResearcher
-              ? [{ id: 'reports', label: t('nav.reports'), icon: 'check-success.svg' }]
-              : []),
-          ],
-        },
-        {
-          id: 'monitoring',
-          label: t('nav.monitoring'),
-          icon: 'radio-signal.svg',
-          items: [
-            { id: 'accountability', label: t('nav.accountability'), icon: 'check-success.svg' },
-            { id: 'energy', label: t('nav.energy'), icon: 'gauge-meter.png' },
-          ],
-        },
-        {
-          id: 'analysis',
-          label: t('nav.analysis'),
-          icon: 'trending-up.svg',
-          items: [
-            { id: 'analytics', label: t('nav.analytics'), icon: 'trending-up.svg' },
-            { id: 'gis', label: t('nav.gis'), icon: 'map-location.svg' },
-          ],
-        },
+        ...(isResearcher
+          ? [
+              {
+                id: 'research',
+                label: t('nav.research') || 'Research',
+                icon: 'trending-up.svg',
+                items: [
+                  { id: 'overview', label: t('nav.analytics'), icon: 'trending-up.svg' },
+                  { id: 'reports', label: t('nav.reports'), icon: 'check-success.svg' },
+                ],
+              },
+            ]
+          : [
+              {
+                id: 'operations',
+                label: t('nav.operations'),
+                icon: 'settings-gear.svg',
+                items: [
+                  { id: 'quality', label: t('nav.quality'), icon: 'beaker-flask.png' },
+                  { id: 'maintenance', label: t('nav.maintenance'), icon: 'wrench.svg' },
+                  { id: 'service-requests', label: t('nav.serviceRequests'), icon: 'check-success.svg' },
+                  { id: 'control-center', label: 'Control Center', icon: 'settings-gear.svg' },
+                ],
+              },
+              {
+                id: 'monitoring',
+                label: t('nav.monitoring'),
+                icon: 'radio-signal.svg',
+                items: [
+                  { id: 'accountability', label: t('nav.accountability'), icon: 'check-success.svg' },
+                  { id: 'energy', label: t('nav.energy'), icon: 'gauge-meter.png' },
+                ],
+              },
+              {
+                id: 'analysis',
+                label: t('nav.analysis'),
+                icon: 'trending-up.svg',
+                items: [
+                  { id: 'analytics', label: t('nav.analytics'), icon: 'trending-up.svg' },
+                  { id: 'gis', label: t('nav.gis'), icon: 'map-location.svg' },
+                ],
+              },
+            ]),
       ];
 
-  const toggleSection = (sectionId) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId],
-    }));
-  };
+  // No toggle needed, handled by hover
 
   const handleItemClick = (itemId) => {
     setActiveTab(itemId);
@@ -186,7 +185,7 @@ export const SidebarNavigation = ({
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[2100] lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -196,7 +195,7 @@ export const SidebarNavigation = ({
         ref={sidebarRef}
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
-        className={`fixed top-0 h-screen z-50 flex flex-col justify-between transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 h-screen z-[2200] flex flex-col justify-between transition-all duration-300 ease-in-out ${
           isOpen ? 'w-72 left-0' : 'w-72 -left-72 lg:-left-72'
         } overflow-hidden`}
         style={{
@@ -323,170 +322,209 @@ export const SidebarNavigation = ({
           }}
         >
           <div className="space-y-2">
-            {navigationSections.map((section) => {
-              const isExpanded = expandedSections[section.id];
-              const hasSomeActive = section.items.some((item) => item.id === activeTab);
-              const sectionHasAlert = section.items.some((item) => alertBlinkTargets.has(item.id));
+            {isPublicUser ? (
+              // Guest users: Show primary navigation buttons without sections
+              navigationSections.map((section) =>
+                section.items.map((item) => {
+                  const isActive = item.id === activeTab;
+                  const isItemBlinking = alertBlinkTargets.has(item.id);
+                  const itemTextColor = isActive ? 'var(--primary-blue)' : 'var(--gray-text-dark)';
+                  const itemBackground = isActive ? 'var(--bg-persona)' : 'transparent';
+                  const itemBorderLeft = isActive ? '3px solid var(--primary-blue)' : 'none';
+                  const itemPaddingLeft = isActive ? '14px' : '12px';
 
-              return (
-                <div key={section.id}>
-                  {/* Section Header - Government Style */}
-                  <button
-                    onClick={() => {
-                      if (!isOpen && typeof setIsOpen === 'function') {
-                        setIsOpen(true);
-                        // wait for open animation then toggle
-                        setTimeout(() => toggleSection(section.id), 220);
-                      } else {
-                        toggleSection(section.id);
-                      }
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 transition-all ${sectionHasAlert ? 'animate-pulse-subtle' : ''}`}
-                    style={{
-                      backgroundColor: hasSomeActive ? 'var(--bg-persona)' : 'transparent',
-                      borderLeft: hasSomeActive ? '3px solid var(--primary-blue)' : 'none',
-                      color: hasSomeActive ? 'var(--primary-blue)' : 'var(--gray-text-dark)',
-                      fontSize: 'var(--font-size-md)',
-                      fontWeight: hasSomeActive
-                        ? 'var(--font-weight-semibold)'
-                        : 'var(--font-weight-medium)',
-                      borderRadius: 'var(--radius-none)',
-                      ...(sectionHasAlert && !hasSomeActive
-                        ? {
-                            borderLeft: '3px solid #f97316',
-                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
-                            boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)',
-                          }
-                        : sectionHasAlert
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleItemClick(item.id)}
+                      className="w-full flex items-center gap-3 px-3 py-3 transition-all"
+                      style={{
+                        fontSize: 'var(--font-size-md)',
+                        color: itemTextColor,
+                        fontWeight: isActive ? 'var(--font-weight-semibold)' : 'var(--font-weight-medium)',
+                        backgroundColor: itemBackground,
+                        borderRadius: 'var(--radius-sm)',
+                        borderLeft: itemBorderLeft,
+                        paddingLeft: itemPaddingLeft,
+                        textDecoration: 'none',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'var(--gray-light)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                      title={!isOpen ? item.label : ''}
+                      aria-label={item.label}
+                    >
+                      <IconImage
+                        name={item.icon}
+                        className="h-9 w-9 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      {isOpen && <span className="flex-1 text-left text-sm font-bold">{item.label}</span>}
+                    </button>
+                  );
+                })
+              )
+            ) : (
+              // Other users: Show expandable sections
+              navigationSections.map((section) => {
+                const isExpanded = hoveredSection === section.id;
+                const hasSomeActive = section.items.some((item) => item.id === activeTab);
+                const sectionHasAlert = section.items.some((item) => alertBlinkTargets.has(item.id));
+
+                return (
+                  <div key={section.id}
+                    onMouseEnter={() => setHoveredSection(section.id)}
+                    onMouseLeave={() => setHoveredSection(null)}
+                  >
+                    {/* Section Header - Government Style */}
+                    <button
+                      onClick={() => {
+                        if (!isOpen && typeof setIsOpen === 'function') {
+                          setIsOpen(true);
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 transition-all ${sectionHasAlert ? 'animate-pulse-subtle' : ''}`}
+                      style={{
+                        backgroundColor: hasSomeActive ? 'var(--bg-persona)' : 'transparent',
+                        borderLeft: hasSomeActive ? '3px solid var(--primary-blue)' : 'none',
+                        color: hasSomeActive ? 'var(--primary-blue)' : 'var(--gray-text-dark)',
+                        fontSize: 'var(--font-size-md)',
+                        fontWeight: hasSomeActive
+                          ? 'var(--font-weight-semibold)'
+                          : 'var(--font-weight-medium)',
+                        borderRadius: 'var(--radius-none)',
+                        ...(sectionHasAlert && !hasSomeActive
                           ? {
+                              borderLeft: '3px solid #f97316',
+                              backgroundColor: 'rgba(249, 115, 22, 0.08)',
                               boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)',
                             }
-                          : {}),
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!hasSomeActive) {
-                        e.currentTarget.style.backgroundColor = 'var(--gray-light)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!hasSomeActive) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                    title={!isOpen ? section.label : ''}
-                    aria-label={section.label}
-                  >
-                    <IconImage
-                      name={section.icon}
-                      className="h-9 w-9 flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    {isOpen && (
-                      <>
-                        <span className="flex-1 text-left text-sm font-bold">{section.label}</span>
-                        <IconImage
-                          name="chevron-right.svg"
-                          className={`h-9 w-9 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
-                          aria-hidden="true"
-                        />
-                      </>
-                    )}
-                  </button>
-
-                  {/* Section Items - Government Style */}
-                  {isOpen && isExpanded && (
-                    <div
-                      className="ml-3 mt-1 space-y-1 pl-3"
-                      style={{ borderLeft: '1px solid var(--gray-border)' }}
+                          : sectionHasAlert
+                            ? {
+                                boxShadow: '0 0 14px rgba(249, 115, 22, 0.35)',
+                              }
+                            : {}),
+                      }}
+                      title={!isOpen ? section.label : ''}
+                      aria-label={section.label}
                     >
-                      {section.items.map((item) => {
-                        const isActive = item.id === activeTab;
-                        const isItemBlinking = alertBlinkTargets.has(item.id);
-                        const itemTextColor = isActive
-                          ? 'var(--primary-blue)'
-                          : isItemBlinking
-                            ? '#c2410c'
-                            : 'var(--gray-text-dark)';
-                        const itemBackground = isActive
-                          ? 'var(--bg-persona)'
-                          : isItemBlinking
-                            ? 'rgba(249, 115, 22, 0.08)'
-                            : 'transparent';
-                        const itemBorderLeft = isItemBlinking
-                          ? '3px solid #f97316'
-                          : isActive
-                            ? '2px solid var(--primary-blue)'
-                            : 'none';
-                        const itemPaddingLeft = isActive || isItemBlinking ? '14px' : '12px';
-                        const itemBoxShadow = isItemBlinking
-                          ? '0 0 12px rgba(249, 115, 22, 0.35)'
-                          : 'none';
+                      <IconImage
+                        name={section.icon}
+                        className="h-9 w-9 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      {isOpen && (
+                        <>
+                          <span className="flex-1 text-left text-sm font-bold">{section.label}</span>
+                          <IconImage
+                            name="chevron-right.svg"
+                            className={`h-9 w-9 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                            aria-hidden="true"
+                          />
+                        </>
+                      )}
+                    </button>
 
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => {
-                              if (!isOpen && typeof setIsOpen === 'function') {
-                                setIsOpen(true);
-                                setTimeout(() => handleItemClick(item.id), 220);
-                              } else {
-                                handleItemClick(item.id);
-                              }
-                            }}
-                            className={`w-full flex items-center gap-3 px-3 py-2 transition-all ${isItemBlinking ? 'animate-pulse-subtle' : ''}`}
-                            style={{
-                              fontSize: 'var(--font-size-base)',
-                              color: itemTextColor,
-                              fontWeight: isActive
-                                ? 'var(--font-weight-semibold)'
-                                : 'var(--font-weight-regular)',
-                              backgroundColor: itemBackground,
-                              borderRadius: 'var(--radius-sm)',
-                              borderLeft: itemBorderLeft,
-                              paddingLeft: itemPaddingLeft,
-                              textDecoration: isActive ? 'underline' : 'none',
-                              boxShadow: itemBoxShadow,
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isActive) {
-                                e.currentTarget.style.backgroundColor = 'var(--gray-light)';
-                                e.currentTarget.style.textDecoration = 'underline';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isActive) {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                                e.currentTarget.style.textDecoration = 'none';
-                              }
-                            }}
-                            aria-label={item.label}
-                          >
-                            <IconImage
-                              name={item.icon}
-                              className="h-8 w-8 flex-shrink-0"
-                              aria-hidden="true"
-                            />
-                            <span className="flex-1 text-left">{item.label}</span>
-                            {isItemBlinking && (
-                              <span
-                                className="w-2 h-2 rounded-full bg-amber-400 animate-bounce-slow"
+                    {/* Section Items - Government Style */}
+                    {isOpen && isExpanded && (
+                      <div
+                        className="ml-3 mt-1 space-y-1 pl-3"
+                        style={{ borderLeft: '1px solid var(--gray-border)' }}
+                      >
+                        {section.items.map((item) => {
+                          const isActive = item.id === activeTab;
+                          const isItemBlinking = alertBlinkTargets.has(item.id);
+                          const itemTextColor = isActive
+                            ? 'var(--primary-blue)'
+                            : isItemBlinking
+                              ? '#c2410c'
+                              : 'var(--gray-text-dark)';
+                          const itemBackground = isActive
+                            ? 'var(--bg-persona)'
+                            : isItemBlinking
+                              ? 'rgba(249, 115, 22, 0.08)'
+                              : 'transparent';
+                          const itemBorderLeft = isItemBlinking
+                            ? '3px solid #f97316'
+                            : isActive
+                              ? '2px solid var(--primary-blue)'
+                              : 'none';
+                          const itemPaddingLeft = isActive || isItemBlinking ? '14px' : '12px';
+                          const itemBoxShadow = isItemBlinking
+                            ? '0 0 12px rgba(249, 115, 22, 0.35)'
+                            : 'none';
+
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                if (!isOpen && typeof setIsOpen === 'function') {
+                                  setIsOpen(true);
+                                  setTimeout(() => handleItemClick(item.id), 220);
+                                } else {
+                                  handleItemClick(item.id);
+                                }
+                              }}
+                              className={`w-full flex items-center gap-3 px-3 py-2 transition-all ${isItemBlinking ? 'animate-pulse-subtle' : ''}`}
+                              style={{
+                                fontSize: 'var(--font-size-base)',
+                                color: itemTextColor,
+                                fontWeight: isActive
+                                  ? 'var(--font-weight-semibold)'
+                                  : 'var(--font-weight-regular)',
+                                backgroundColor: itemBackground,
+                                borderRadius: 'var(--radius-sm)',
+                                borderLeft: itemBorderLeft,
+                                paddingLeft: itemPaddingLeft,
+                                textDecoration: 'none',
+                                boxShadow: itemBoxShadow,
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isActive) {
+                                  e.currentTarget.style.backgroundColor = 'var(--gray-light)';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isActive) {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }
+                              }}
+                              aria-label={item.label}
+                            >
+                              <IconImage
+                                name={item.icon}
+                                className="h-8 w-8 flex-shrink-0"
                                 aria-hidden="true"
-                              ></span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                              />
+                              <span className="flex-1 text-left">{item.label}</span>
+                              {isItemBlinking && (
+                                <span
+                                  className="w-2 h-2 rounded-full bg-amber-400 animate-bounce-slow"
+                                  aria-hidden="true"
+                                ></span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </nav>
 
         {/* Footer - Government Style - Always at Bottom */}
         <div
-          className="p-4 space-y-3 mt-auto"
+          className="p-2 space-y-1 mt-auto"
           style={{
             backgroundColor: 'var(--gray-light)',
             borderTop: '1px solid var(--gray-border)',
@@ -495,7 +533,7 @@ export const SidebarNavigation = ({
           {isOpen && (
             <>
               {/* Ministry Logo - Rectangle */}
-              <div className="flex justify-center py-2">
+              <div className="flex justify-center py-1">
                 <img
                   src={ministryLogoUrl}
                   alt="Ministry Logo"
@@ -506,38 +544,44 @@ export const SidebarNavigation = ({
                 />
               </div>
 
-              {/* Accessibility & Logout Buttons - Government Style */}
-              <div className="space-y-2">
+              {/* Accessibility & Logout Buttons - Square Boxes Side by Side */}
+              <div className="flex gap-2 justify-center">
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (onAccessibility) {
                       onAccessibility();
                     }
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 transition-colors"
+                  className="flex items-center justify-center transition-all duration-300 ease-in-out"
                   style={{
-                    fontSize: 'var(--font-size-base)',
-                    fontWeight: 'var(--font-weight-semibold)',
-                    borderRadius: 'var(--radius-sm)',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
                     border: '2px solid var(--primary-blue)',
                     backgroundColor: 'var(--bg-white)',
                     color: 'var(--primary-blue)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-persona)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-white)';
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                   aria-label="Accessibility"
+                  type="button"
                 >
-                  <IconImage name="accessibility-icon.svg" className="h-8 w-8" aria-hidden="true" />
-                  <span>Accessibility</span>
+                  <UserCog size={24} />
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     console.log('Logout clicked');
-                    if (onLogout) {
+                    if (typeof onLogout === 'function') {
                       onLogout();
                     } else {
                       localStorage.clear();
@@ -545,25 +589,27 @@ export const SidebarNavigation = ({
                       window.location.href = '/login';
                     }
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 transition-opacity"
+                  className="flex items-center justify-center transition-all duration-300 ease-in-out"
                   style={{
-                    fontSize: 'var(--font-size-base)',
-                    fontWeight: 'var(--font-weight-semibold)',
-                    borderRadius: 'var(--radius-sm)',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
                     backgroundColor: 'var(--primary-blue)',
                     color: 'var(--bg-white)',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.opacity = '0.9';
+                    e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.transform = 'scale(1)';
                   }}
                   title="Click to logout"
                   aria-label="Logout"
+                  type="button"
                 >
-                  <IconImage name="logout-icon.svg" className="h-8 w-8" aria-hidden="true" />
-                  <span>Logout</span>
+                  <LogOut size={24} />
                 </button>
               </div>
             </>
@@ -573,11 +619,11 @@ export const SidebarNavigation = ({
           {!isOpen && (
             <>
               {/* Ministry Logo - Small when closed */}
-              <div className="flex justify-center py-2">
+              <div className="flex justify-center py-1">
                 <img
                   src={ministryLogoUrl}
                   alt="Ministry Logo"
-                  className="h-8 w-auto object-contain"
+                  className="h-6 w-auto object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
@@ -585,14 +631,14 @@ export const SidebarNavigation = ({
               </div>
 
               {/* Icon-only buttons when closed */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <button
                   onClick={() => {
                     if (onAccessibility) {
                       onAccessibility();
                     }
                   }}
-                  className="w-full flex items-center justify-center p-2 transition-colors"
+                  className="w-full flex items-center justify-center p-2 transition-all duration-200 ease-in-out scale-95 hover:scale-100"
                   style={{
                     borderRadius: 'var(--radius-sm)',
                     border: '2px solid var(--primary-blue)',
@@ -621,7 +667,7 @@ export const SidebarNavigation = ({
                       window.location.href = '/login';
                     }
                   }}
-                  className="w-full flex items-center justify-center p-2 transition-opacity"
+                  className="w-full flex items-center justify-center p-2 transition-all duration-200 ease-in-out scale-95 hover:scale-100"
                   style={{
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--primary-blue)',

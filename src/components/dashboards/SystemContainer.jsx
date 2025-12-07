@@ -1135,460 +1135,775 @@ export const SystemContainer = ({ onNavigate }) => {
               <p className="text-xs text-slate-600">{isPumpOn ? 'Running' : 'Stopped'}</p>
             </div>
 
-            {/* Pump Control Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePump();
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg ${
-                isPumpOn
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-600 text-white hover:bg-gray-700'
-              }`}
-            >
-              {isPumpOn ? 'ON' : 'OFF'}
-            </button>
+            {/* Pump Control Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isPumpOn) togglePump();
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg ${
+                  isPumpOn
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-300 text-gray-700 hover:bg-green-500 hover:text-white'
+                }`}
+              >
+                ON
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isPumpOn) togglePump();
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg ${
+                  !isPumpOn
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-300 text-gray-700 hover:bg-red-500 hover:text-white'
+                }`}
+              >
+                OFF
+              </button>
+            </div>
           </div>
 
-          {/* Water Tank - Center (Overhead Tank SVG with Enhanced 3D) */}
+          {/* Water Tank - Center (Realistic Side View with Details) */}
           <div
-            onClick={() => onNavigate && onNavigate('water-tank')}
-            className="absolute top-2 left-1/2 transform -translate-x-1/2 cursor-pointer hover:scale-105 transition-transform group z-20"
-            style={{ width: '580px' }}
+            className="absolute top-2 left-1/2 transform -translate-x-1/2 transition-transform group z-10"
+            style={{ width: '500px', pointerEvents: 'none' }}
           >
             <svg
-              viewBox="0 0 800 550"
+              viewBox="0 0 800 700"
               className="w-full h-auto"
-              style={{ maxHeight: '520px', filter: 'drop-shadow(0 12px 25px rgba(0,0,0,0.4))' }}
+              style={{ maxHeight: '480px', filter: 'drop-shadow(0 10px 22px rgba(0,0,0,0.4))', pointerEvents: 'none' }}
             >
-              <defs>
-                <linearGradient id="tankBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6b7280" />
-                  <stop offset="30%" stopColor="#9ca3af" />
-                  <stop offset="70%" stopColor="#6b7280" />
-                  <stop offset="100%" stopColor="#4b5563" />
-                </linearGradient>
-                <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.95" />
-                  <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#0891b2" stopOpacity="1" />
-                </linearGradient>
-                <linearGradient id="pillarGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#374151" />
-                  <stop offset="50%" stopColor="#6b7280" />
-                  <stop offset="100%" stopColor="#1f2937" />
-                </linearGradient>
-                <radialGradient id="tankShineGradient" cx="30%" cy="30%">
-                  <stop offset="0%" stopColor="#d1d5db" stopOpacity="0.8" />
-                  <stop offset="50%" stopColor="#9ca3af" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="#4b5563" stopOpacity="0.3" />
-                </radialGradient>
-                <filter id="dropShadowTank" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
-                  <feOffset dx="4" dy="8" />
-                  <feComponentTransfer>
-                    <feFuncA type="linear" slope="0.5" />
-                  </feComponentTransfer>
-                  <feMerge>
-                    <feMergeNode />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="innerShadow">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
-                  <feOffset dx="-2" dy="-2" />
-                  <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" />
-                  <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0" />
-                </filter>
-              </defs>
+              <g transform="scale(0.75) translate(75, 65)">
+                {/* Clickable overlay for tank navigation */}
+                <rect
+                  x="220"
+                  y="-65"
+                  width="360"
+                  height="200"
+                  fill="transparent"
+                  style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                  onClick={() => onNavigate && onNavigate('water-tank')}
+                />
+                  <defs>
+                    {/* Dirty shaded yellow gradient for support columns */}
+                    <linearGradient id="concreteGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#92722c" />
+                      <stop offset="30%" stopColor="#b8923e" />
+                      <stop offset="70%" stopColor="#a07f38" />
+                      <stop offset="100%" stopColor="#7a5e28" />
+                    </linearGradient>
 
-              {/* Ground/Base Platform with 3D depth */}
-              <rect x="100" y="480" width="600" height="60" fill="#1f2937" rx="6" />
-              <rect x="100" y="480" width="600" height="12" fill="#374151" rx="6" />
-              <rect x="110" y="488" width="580" height="48" fill="#111827" rx="4" />
+                    {/* Tank body gradient - light yellow with dirt */}
+                    <linearGradient id="tankMetalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#fef3c7" stopOpacity="0.4" />
+                      <stop offset="30%" stopColor="#fde68a" stopOpacity="0.35" />
+                      <stop offset="70%" stopColor="#d4a574" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#ca8a04" stopOpacity="0.45" />
+                    </linearGradient>
 
-              {/* Base shadow for depth */}
-              <ellipse cx="400" cy="540" rx="300" ry="20" fill="#000" opacity="0.3" />
+                    {/* Water gradient */}
+                    <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.9" />
+                      <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.95" />
+                      <stop offset="100%" stopColor="#0891b2" stopOpacity="1.0" />
+                    </linearGradient>
 
-              {/* Supporting Pillars with enhanced 3D - Only 2 pillars slightly inside corners */}
-              {[170, 630].map((x, i) => (
-                <g key={i} filter="url(#dropShadowTank)">
-                  {/* Main pillar body */}
-                  <rect
-                    x={x - 26}
-                    y="220"
-                    width="52"
-                    height="260"
-                    fill="url(#pillarGradient)"
-                    rx="4"
-                  />
-                  {/* Highlight edge */}
-                  <rect
-                    x={x - 26}
-                    y="220"
-                    width="8"
-                    height="260"
-                    fill="#9ca3af"
-                    opacity="0.4"
-                    rx="4"
-                  />
-                  {/* Shadow edge */}
-                  <rect
-                    x={x + 16}
-                    y="220"
-                    width="8"
-                    height="260"
-                    fill="#1f2937"
-                    opacity="0.6"
-                    rx="4"
-                  />
+                    {/* Pipe gradient */}
+                    <linearGradient id="blueMetalPipe" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#1e40af" />
+                      <stop offset="50%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#1e40af" />
+                    </linearGradient>
 
-                  {/* Steel bands with depth */}
-                  {[250, 320, 390, 460].map((y, j) => (
-                    <g key={j}>
-                      <rect x={x - 30} y={y} width="60" height="10" fill="#52525b" rx="2" />
-                      <rect
-                        x={x - 30}
-                        y={y}
-                        width="60"
-                        height="3"
-                        fill="#9ca3af"
-                        opacity="0.5"
-                        rx="2"
+                    {/* Clip path for water in tank */}
+                    <clipPath id="waterClip">
+                      <rect x="220" y="-40" width="360" height="170" rx="3" />
+                    </clipPath>
+                  </defs>
+
+                  {/* Ground level */}
+                  <rect x="100" y="650" width="600" height="10" fill="#6b7280" opacity="0.8" />
+
+                  {/* Four Support Columns (tall, slender) */}
+                  <g id="supportColumns">
+                    {/* Left front column */}
+                    <rect
+                      x="215"
+                      y="165"
+                      width="25"
+                      height="485"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+                    <rect x="217" y="165" width="3" height="485" fill="#c4a858" opacity="0.6" />
+
+                    {/* Left back column */}
+                    <rect
+                      x="280"
+                      y="165"
+                      width="25"
+                      height="485"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+                    <rect x="282" y="165" width="3" height="485" fill="#c4a858" opacity="0.6" />
+
+                    {/* Right back column */}
+                    <rect
+                      x="495"
+                      y="165"
+                      width="25"
+                      height="485"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+                    <rect x="497" y="165" width="3" height="485" fill="#c4a858" opacity="0.6" />
+
+                    {/* Right front column */}
+                    <rect
+                      x="560"
+                      y="165"
+                      width="25"
+                      height="485"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+                    <rect x="562" y="165" width="3" height="485" fill="#c4a858" opacity="0.6" />
+                  </g>
+
+                  {/* Horizontal Support Beams */}
+                  <g id="supportBeams">
+                    {/* Bottom beams (near ground) */}
+                    <rect
+                      x="215"
+                      y="630"
+                      width="370"
+                      height="20"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+
+                    {/* Mid-section beams */}
+                    <rect
+                      x="215"
+                      y="420"
+                      width="370"
+                      height="20"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+
+                    {/* Top beams (just below tank) */}
+                    <rect
+                      x="215"
+                      y="145"
+                      width="370"
+                      height="20"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+                  </g>
+
+
+
+
+
+                  {/* Vertical Inlet/Outlet Pipes (running along column) */}
+                  <g id="verticalPipes">
+                    {/* Main pipe from ground to tank */}
+                    <rect
+                      x="390"
+                      y="165"
+                      width="20"
+                      height="485"
+                      fill="url(#blueMetalPipe)"
+                      rx="2"
+                    />
+                    <rect x="392" y="165" width="3" height="485" fill="#60a5fa" opacity="0.6" />
+
+                    {/* Pipe joints/flanges */}
+                    <rect x="385" y="630" width="30" height="12" fill="#1e3a8a" rx="2" />
+                    <rect x="385" y="420" width="30" height="12" fill="#1e3a8a" rx="2" />
+                    <rect x="385" y="165" width="30" height="12" fill="#1e3a8a" rx="2" />
+                  </g>
+
+                  {/* Cylindrical Water Tank (true side view) */}
+                  <g id="waterTank" opacity="0.95">
+                    {/* Tank bottom - straight line */}
+                    <line x1="220" y1="135" x2="580" y2="135" stroke="#ca8a04" strokeWidth="3" />
+
+                    {/* Tank body (cylindrical sides) */}
+                    <rect
+                      x="220"
+                      y="-40"
+                      width="360"
+                      height="170"
+                      fill="url(#tankMetalGradient)"
+                      stroke="#ca8a04"
+                      strokeWidth="3"
+                    />
+
+                    {/* Tank flat top */}
+                    <line x1="220" y1="-40" x2="580" y2="-40" stroke="#ca8a04" strokeWidth="3" />
+
+                    {/* Left edge highlight */}
+                    <line x1="220" y1="-40" x2="220" y2="130" stroke="#fef3c7" strokeWidth="2" />
+
+                    {/* Right edge shadow */}
+                    <line x1="580" y1="-40" x2="580" y2="130" stroke="#92400e" strokeWidth="2" />
+
+                    {/* Clickable overlay for tank navigation */}
+                    <rect
+                      x="220"
+                      y="-65"
+                      width="360"
+                      height="200"
+                      fill="transparent"
+                      style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                      onClick={() => onNavigate && onNavigate('water-tank')}
+                    />
+
+                    {/* Small hatch/door */}
+                    <rect
+                      x="500"
+                      y="75"
+                      width="40"
+                      height="45"
+                      fill="#6b7280"
+                      stroke="#4b5563"
+                      strokeWidth="2"
+                      rx="2"
+                    />
+                    <circle cx="532" cy="97" r="3" fill="#374151" />
+                  </g>
+
+                  {/* Tank Platform (walkway around tank) - Moved in front of tank */}
+                  <g id="tankPlatform">
+                    <rect
+                      x="205"
+                      y="140"
+                      width="390"
+                      height="25"
+                      fill="url(#concreteGradient)"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                    />
+
+                    {/* Platform railing */}
+                    <line x1="205" y1="140" x2="595" y2="140" stroke="#000000" strokeWidth="3" />
+                    {/* Vertical rail posts */}
+                    {[225, 285, 345, 405, 465, 525, 575].map((x, i) => (
+                      <line
+                        key={i}
+                        x1={x}
+                        y1="130"
+                        x2={x}
+                        y2="140"
+                        stroke="#000000"
+                        strokeWidth="2"
                       />
-                    </g>
-                  ))}
-
-                  {/* Pillar base with 3D effect */}
-                  <rect x={x - 36} y="465" width="72" height="25" fill="#52525b" rx="3" />
-                  <rect x={x - 34} y="467" width="68" height="20" fill="#374151" rx="2" />
-                </g>
-              ))}
-
-              {/* Support Beams with 3D depth */}
-              <rect x="140" y="215" width="520" height="18" fill="#52525b" rx="3" />
-              <rect x="140" y="215" width="520" height="5" fill="#9ca3af" opacity="0.5" rx="3" />
-
-              {/* Main Water Tank Body - Side View with Full Transparency like pipes */}
-              <g filter="url(#dropShadowTank)">
-                {/* Main tank body - rectangular side view with full transparency */}
-                <rect
-                  x="140"
-                  y="60"
-                  width="520"
-                  height="160"
-                  fill="url(#tankBodyGradient)"
-                  rx="6"
-                  opacity="0.15"
-                />
-
-                {/* Metallic shine overlay for 3D effect */}
-                <ellipse
-                  cx="340"
-                  cy="110"
-                  rx="180"
-                  ry="70"
-                  fill="url(#tankShineGradient)"
-                  opacity="0.1"
-                />
-
-                {/* Inner tank wall - fully transparent */}
-                <rect
-                  x="145"
-                  y="65"
-                  width="510"
-                  height="155"
-                  fill="#52525b"
-                  rx="4"
-                  opacity="0.15"
-                />
-
-                {/* Inner shadow for depth */}
-                <rect
-                  x="150"
-                  y="70"
-                  width="500"
-                  height="145"
-                  fill="none"
-                  stroke="#1f2937"
-                  strokeWidth="3"
-                  opacity="0.2"
-                  rx="4"
-                />
-
-                {/* Vertical Bands with 3D depth */}
-                {[200, 280, 360, 440, 520, 600].map((x, i) => (
-                  <g key={i}>
-                    <rect
-                      x={x}
-                      y="60"
-                      width="10"
-                      height="160"
-                      fill="#3f3f46"
-                      opacity="0.3"
-                      rx="2"
-                    />
-                    <rect x={x} y="60" width="3" height="160" fill="#9ca3af" opacity="0.2" rx="1" />
+                    ))}
+                    {/* Top rail */}
+                    <line x1="205" y1="130" x2="595" y2="130" stroke="#000000" strokeWidth="3" />
+                    
+                    {/* End caps to close grills */}
+                    <line x1="205" y1="130" x2="205" y2="140" stroke="#000000" strokeWidth="3" />
+                    <line x1="595" y1="130" x2="595" y2="140" stroke="#000000" strokeWidth="3" />
                   </g>
-                ))}
 
-                {/* Horizontal Bands with highlights */}
-                {[90, 130, 170, 200].map((y, i) => (
-                  <g key={i}>
-                    <rect
-                      x="140"
-                      y={y}
-                      width="520"
-                      height="8"
-                      fill="#3f3f46"
-                      opacity="0.3"
-                      rx="2"
-                    />
-                    <rect
-                      x="140"
-                      y={y}
-                      width="520"
-                      height="2"
-                      fill="#9ca3af"
-                      opacity="0.3"
-                      rx="2"
-                    />
-                  </g>
-                ))}
-
-                {/* Water Inside Tank */}
-                <g clipPath="url(#tankClip)">
-                  <clipPath id="tankClip">
-                    <rect x="145" y="65" width="510" height="155" rx="4" />
-                  </clipPath>
-
-                  {tank.tankLevel > 0 && (
-                    <>
-                      {/* Main Water Body */}
-                      <rect
-                        x="145"
-                        y={220 - (tank.tankLevel / 100) * 155}
-                        width="510"
-                        height={(tank.tankLevel / 100) * 155}
-                        fill="url(#waterGradient)"
-                      >
-                        <animate
-                          attributeName="opacity"
-                          values="0.9;1;0.9"
-                          dur="3s"
-                          repeatCount="indefinite"
+                  {/* Water Level (animated) */}
+                  <g clipPath="url(#waterClip)">
+                    {tank.tankLevel > 0 && (
+                      <>
+                        {/* Main Water Body */}
+                        <rect
+                          x="220"
+                          y={-40 + 170 * (1 - tank.tankLevel / 100)}
+                          width="360"
+                          height={170 * (tank.tankLevel / 100)}
+                          fill="url(#waterGradient)"
+                          className="transition-all duration-1000 ease-in-out"
                         />
-                      </rect>
 
-                      {/* Water Surface with Wave Effect */}
-                      {tank.isFilling && (
-                        <>
-                          {/* Primary wave */}
-                          <ellipse
-                            cx="400"
-                            cy={220 - (tank.tankLevel / 100) * 155}
-                            rx="255"
-                            ry="10"
-                            fill="#22d3ee"
-                            opacity="0.5"
-                          >
-                            <animate
-                              attributeName="ry"
-                              values="8;14;8"
-                              dur="2s"
-                              repeatCount="indefinite"
-                            />
-                            <animate
-                              attributeName="opacity"
-                              values="0.4;0.7;0.4"
-                              dur="2s"
-                              repeatCount="indefinite"
-                            />
-                          </ellipse>
-                          {/* Secondary wave */}
-                          <ellipse
-                            cx="400"
-                            cy={220 - (tank.tankLevel / 100) * 155}
-                            rx="240"
-                            ry="8"
-                            fill="#06b6d4"
-                            opacity="0.4"
-                          >
-                            <animate
-                              attributeName="ry"
-                              values="6;12;6"
-                              dur="2.5s"
-                              repeatCount="indefinite"
-                            />
-                            <animate
-                              attributeName="opacity"
-                              values="0.3;0.6;0.3"
-                              dur="2.5s"
-                              repeatCount="indefinite"
-                            />
-                          </ellipse>
-                          {/* Water bubbles rising */}
-                          {[0, 1, 2, 3, 4].map((i) => (
-                            <circle
-                              key={i}
-                              cx={300 + i * 50}
-                              cy="200"
-                              r="3"
-                              fill="#fff"
-                              opacity="0.5"
-                            >
+                        {/* Water surface with realistic wave animation */}
+                        <path
+                          d={`M 220 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                              Q 280 ${-40 + 170 * (1 - tank.tankLevel / 100) - 3}, 340 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                              T 460 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                              T 580 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                              L 580 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} 
+                              L 220 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} Z`}
+                          fill="#22d3ee"
+                          opacity="0.6"
+                          className="transition-all duration-1000 ease-in-out"
+                        >
+                          <animate
+                            attributeName="d"
+                            values={`M 220 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     Q 280 ${-40 + 170 * (1 - tank.tankLevel / 100) - 3}, 340 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 460 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 580 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     L 580 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} 
+                                     L 220 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} Z;
+                                   M 220 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     Q 280 ${-40 + 170 * (1 - tank.tankLevel / 100) + 3}, 340 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 460 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 580 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     L 580 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} 
+                                     L 220 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} Z;
+                                   M 220 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     Q 280 ${-40 + 170 * (1 - tank.tankLevel / 100) - 3}, 340 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 460 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     T 580 ${-40 + 170 * (1 - tank.tankLevel / 100)} 
+                                     L 580 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} 
+                                     L 220 ${-40 + 170 * (1 - tank.tankLevel / 100) + 5} Z`}
+                            dur="3s"
+                            repeatCount="indefinite"
+                          />
+                        </path>
+
+                        {/* Water surface shimmer with gentle motion */}
+                        <ellipse
+                          cx="400"
+                          cy={-40 + 170 * (1 - tank.tankLevel / 100)}
+                          rx="178"
+                          ry="4"
+                          fill="#ffffff"
+                          opacity="0.5"
+                          className="transition-all duration-1000 ease-in-out"
+                        >
+                          <animate
+                            attributeName="ry"
+                            values="4;8;4"
+                            dur="2s"
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="opacity"
+                            values="0.5;0.7;0.5"
+                            dur="2s"
+                            repeatCount="indefinite"
+                          />
+                        </ellipse>
+
+                        {/* Realistic water turbulence when filling */}
+                        {tank.isFilling && (
+                          <>
+                            {/* Splash effect at inlet */}
+                            <circle cx="535" cy={-40 + 170 * (1 - tank.tankLevel / 100) + 10} r="4" fill="#ffffff" opacity="0.7">
                               <animate
-                                attributeName="cy"
-                                from="210"
-                                to={220 - (tank.tankLevel / 100) * 135 - 10}
-                                dur={`${2 + i * 0.3}s`}
-                                begin={`${i * 0.4}s`}
+                                attributeName="r"
+                                values="4;8;4"
+                                dur="0.8s"
                                 repeatCount="indefinite"
                               />
                               <animate
                                 attributeName="opacity"
-                                from="0.6"
-                                to="0"
-                                dur={`${2 + i * 0.3}s`}
-                                begin={`${i * 0.4}s`}
-                                repeatCount="indefinite"
-                              />
-                              <animate
-                                attributeName="r"
-                                from="2"
-                                to="5"
-                                dur={`${2 + i * 0.3}s`}
-                                begin={`${i * 0.4}s`}
+                                values="0.7;0.3;0.7"
+                                dur="0.8s"
                                 repeatCount="indefinite"
                               />
                             </circle>
-                          ))}
-                        </>
-                      )}
+                            
+                            {/* Rising bubbles - more natural paths */}
+                            <circle cx="260" cy="110" r="2.5" fill="#ffffff" opacity="0.7">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="4s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.7;0"
+                                dur="4s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="320" cy="100" r="3" fill="#ffffff" opacity="0.6">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="3.5s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.6;0"
+                                dur="3.5s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="380" cy="105" r="2" fill="#ffffff" opacity="0.7">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="4.2s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.7;0"
+                                dur="4.2s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="440" cy="115" r="3.5" fill="#ffffff" opacity="0.5">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="3.8s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.5;0"
+                                dur="3.8s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="500" cy="108" r="2.5" fill="#ffffff" opacity="0.6">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="4.5s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.6;0"
+                                dur="4.5s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                            <circle cx="550" cy="120" r="2" fill="#ffffff" opacity="0.7">
+                              <animate
+                                attributeName="cy"
+                                values={`130;${-40 + 170 * (1 - tank.tankLevel / 100)};130`}
+                                dur="3.3s"
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="opacity"
+                                values="0;0.7;0"
+                                dur="3.3s"
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                          </>
+                        )}
+                        
+                        {/* Water draining effect when emptying */}
+                        {!tank.isFilling && tank.tankLevel < 50 && (
+                          <>
+                            {/* Swirling effect near drain */}
+                            <ellipse cx="400" cy={-40 + 170 * (1 - tank.tankLevel / 100) + 160} rx="30" ry="8" fill="#0891b2" opacity="0.4">
+                              <animateTransform
+                                attributeName="transform"
+                                type="rotate"
+                                from="0 400 130"
+                                to="360 400 130"
+                                dur="2s"
+                                repeatCount="indefinite"
+                              />
+                            </ellipse>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </g>
 
-                      {/* Water reducing effect */}
-                      {!tank.isFilling && tank.outletValveStatus === 'OPEN' && (
-                        <>
-                          {/* Ripples when draining */}
-                          <ellipse
-                            cx="400"
-                            cy={220 - (tank.tankLevel / 100) * 135}
-                            rx="215"
-                            ry="6"
-                            fill="#0891b2"
-                            opacity="0.3"
-                          >
-                            <animate
-                              attributeName="ry"
-                              values="6;9;6"
-                              dur="1.8s"
-                              repeatCount="indefinite"
-                            />
-                            <animate
-                              attributeName="opacity"
-                              values="0.3;0.5;0.3"
-                              dur="1.8s"
-                              repeatCount="indefinite"
-                            />
-                          </ellipse>
-                        </>
-                      )}
+                  {/* Flat Tank Top with Safety Grills - Side View */}
+                  <g id="tankRoof">
+                    {/* Flat roof top line */}
+                    <rect
+                      x="220"
+                      y="-45"
+                      width="360"
+                      height="5"
+                      fill="#fde68a"
+                      stroke="#ca8a04"
+                      strokeWidth="2"
+                    />
 
+                    {/* Safety grill bars on top */}
+                    {[240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460, 480, 500, 520, 540, 560].map((x, i) => (
+                      <line
+                        key={i}
+                        x1={x}
+                        y1="-65"
+                        x2={x}
+                        y2="-40"
+                        stroke="#000000"
+                        strokeWidth="2"
+                      />
+                    ))}
+                    
+                    {/* Side rails */}
+                    <line x1="220" y1="-45" x2="580" y2="-45" stroke="#000000" strokeWidth="3" />
+                    <line x1="220" y1="-65" x2="580" y2="-65" stroke="#000000" strokeWidth="3" />
+                    
+                    {/* End caps to close grills */}
+                    <line x1="220" y1="-65" x2="220" y2="-40" stroke="#000000" strokeWidth="3" />
+                    <line x1="580" y1="-65" x2="580" y2="-40" stroke="#000000" strokeWidth="3" />
+                  </g>
+
+                  {/* Pipe connection to tank */}
+                  <g id="tankPipeConnection">
+                    {/* Left vertical pipe (stand) from tank head to ground */}
+                    <rect
+                      x="180"
+                      y="-40"
+                      width="15"
+                      height="690"
+                      fill="url(#blueMetalPipe)"
+                      rx="2"
+                    />
+                    <rect x="182" y="-38" width="3" height="686" fill="#60a5fa" opacity="0.6" />
+                    
+                    {/* Center-left vertical pipe (stand) */}
+                    <rect
+                      x="328"
+                      y="180"
+                      width="15"
+                      height="470"
+                      fill="url(#blueMetalPipe)"
+                      rx="2"
+                    />
+                    <rect x="330" y="182" width="3" height="466" fill="#60a5fa" opacity="0.6" />
+                    
+                    {/* Left horizontal pipe from vertical pipe to tank head */}
+                    <rect
+                      x="180"
+                      y="-47"
+                      width="45"
+                      height="15"
+                      fill="url(#blueMetalPipe)"
+                      rx="2"
+                    />
+                    <rect x="182" y="-45" width="3" height="11" fill="#60a5fa" opacity="0.6" />
+                    
+                    {/* Center-left horizontal pipe */}
+                    <rect
+                      x="320"
+                      y="165"
+                      width="30"
+                      height="15"
+                      fill="url(#blueMetalPipe)"
+                      rx="2"
+                    />
+                    <rect x="322" y="167" width="3" height="11" fill="#60a5fa" opacity="0.6" />
+                  </g>
+
+                  {/* Water Level Display Overlay */}
+                  {tank.tankLevel > 0 && (
+                    <g id="waterLevelDisplay">
+                      {/* Percentage display - positioned based on water level to avoid collision */}
                       <text
                         x="400"
-                        y={Math.max(100, 215 - (tank.tankLevel / 100) * 135)}
-                        fontSize="32"
-                        fill="#fff"
+                        y={Math.max(-20, -35 + 170 * (1 - tank.tankLevel / 100) - 15)}
+                        fontSize="36"
+                        fill="#0891b2"
                         textAnchor="middle"
                         fontWeight="bold"
+                        stroke="#ffffff"
+                        strokeWidth="3"
+                        paintOrder="stroke"
                       >
                         {(tank.tankLevel || 0).toFixed(0)}%
                       </text>
-                      <rect
-                        x="330"
-                        y={Math.max(123, 238 - (tank.tankLevel / 100) * 135)}
-                        width="140"
-                        height="22"
-                        fill="rgba(0,0,0,0.3)"
-                        rx="4"
-                      />
-                      <text
-                        x="400"
-                        y={Math.max(138, 253 - (tank.tankLevel / 100) * 135)}
-                        fontSize="16"
-                        fill="#fff"
-                        textAnchor="middle"
-                        fontWeight="600"
-                      >
-                        {(tank.currentVolume || 0).toLocaleString()} L
-                      </text>
-                    </>
+                    </g>
                   )}
-                </g>
-              </g>
-
-              {/* Inlet Pipe from Left Side - PVC Style */}
-              <g filter="url(#dropShadowTank)">
-                {/* Horizontal inlet pipe from left */}
-                <defs>
-                  <linearGradient id="pvcPipeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#94a3b8" />
-                    <stop offset="50%" stopColor="#64748b" />
-                    <stop offset="100%" stopColor="#475569" />
-                  </linearGradient>
-                </defs>
-                <rect x="80" y="135" width="110" height="20" fill="url(#pvcPipeGradient)" rx="10" />
-                <rect x="80" y="137" width="110" height="6" fill="rgba(255,255,255,0.3)" rx="3" />
-
-                {/* Pipe connection flange */}
-                <rect x="175" y="130" width="15" height="30" fill="#334155" rx="2" />
-                <circle cx="182.5" cy="140" r="2" fill="#64748b" />
-                <circle cx="182.5" cy="150" r="2" fill="#64748b" />
-
-                {/* Valve on inlet pipe */}
-                <rect x="120" y="128" width="35" height="34" fill="#52525b" rx="4" />
-                <rect x="123" y="131" width="29" height="28" fill="#3f3f46" rx="3" />
-                <circle
-                  cx="137.5"
-                  cy="145"
-                  r="10"
-                  fill={tank.inletValveStatus === 'OPEN' ? '#22c55e' : '#ef4444'}
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                />
-                <circle cx="135" cy="142" r="3" fill="#fff" opacity="0.6" />
-              </g>
-
-              {/* Outlet Pipe from Center Bottom - PVC Style */}
-              <g filter="url(#dropShadowTank)">
-                {/* Vertical outlet pipe going down */}
-                <rect x="390" y="220" width="20" height="80" fill="url(#pvcPipeGradient)" rx="10" />
-                <rect x="392" y="220" width="6" height="80" fill="rgba(255,255,255,0.3)" rx="3" />
-
-                {/* Pipe connection flange at tank */}
-                <rect x="385" y="215" width="30" height="15" fill="#334155" rx="2" />
-                <circle cx="395" cy="222.5" r="2" fill="#64748b" />
-                <circle cx="405" cy="222.5" r="2" fill="#64748b" />
-
-                {/* Valve on outlet pipe */}
-                <rect x="383" y="250" width="34" height="35" fill="#52525b" rx="4" />
-                <rect x="386" y="253" width="28" height="29" fill="#3f3f46" rx="3" />
-                <circle
-                  cx="400"
-                  cy="267.5"
-                  r="10"
-                  fill={tank.outletValveStatus === 'OPEN' ? '#22c55e' : '#ef4444'}
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                />
-                <circle cx="397" cy="264.5" r="3" fill="#fff" opacity="0.6" />
               </g>
             </svg>
           </div>
 
+          {/* Volume Indicator - Separate from Tank */}
+          <div className="absolute top-8 right-8 z-20">
+            <svg width="100" height="300" viewBox="0 0 100 300">
+              <defs>
+                <linearGradient id="volumeWaterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#0891b2" stopOpacity="1.0" />
+                </linearGradient>
+              </defs>
+              
+              {/* Title */}
+              <text x="50" y="15" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="bold">
+                Tank Volume
+              </text>
+              
+              {/* Outer container box with color-coded border */}
+              <rect
+                x="10"
+                y="30"
+                width="80"
+                height="220"
+                fill="#f8fafc"
+                stroke={tank.tankLevel > 60 ? "#22c55e" : tank.tankLevel > 30 ? "#eab308" : "#ef4444"}
+                strokeWidth="3"
+                rx="8"
+                className="transition-all duration-1000 ease-in-out"
+              />
+              
+              {/* Color gradients based on tank level */}
+              <defs>
+                <linearGradient id="volumeWaterGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#86efac" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#22c55e" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#16a34a" stopOpacity="1.0" />
+                </linearGradient>
+                <linearGradient id="volumeWaterYellow" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#fde047" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#eab308" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#ca8a04" stopOpacity="1.0" />
+                </linearGradient>
+                <linearGradient id="volumeWaterRed" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#fca5a5" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#ef4444" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity="1.0" />
+                </linearGradient>
+              </defs>
+              
+              {/* Water fill - animated based on tank level with color coding */}
+              <rect
+                x="15"
+                y={30 + 210 * (1 - tank.tankLevel / 100)}
+                width="70"
+                height={210 * (tank.tankLevel / 100)}
+                fill={tank.tankLevel > 60 ? "url(#volumeWaterGreen)" : tank.tankLevel > 30 ? "url(#volumeWaterYellow)" : "url(#volumeWaterRed)"}
+                rx="5"
+                className="transition-all duration-1000 ease-in-out"
+              >
+                {tank.isFilling && (
+                  <animate
+                    attributeName="y"
+                    from={30 + 210}
+                    to={30 + 210 * (1 - tank.tankLevel / 100)}
+                    dur="1s"
+                    fill="freeze"
+                  />
+                )}
+              </rect>
+              
+              {/* Water shimmer effect with color matching */}
+              <rect
+                x="15"
+                y={30 + 210 * (1 - tank.tankLevel / 100)}
+                width="70"
+                height="20"
+                fill={tank.tankLevel > 60 ? "#86efac" : tank.tankLevel > 30 ? "#fde047" : "#fca5a5"}
+                opacity="0.5"
+                rx="5"
+                className="transition-all duration-1000 ease-in-out"
+              >
+                <animate
+                  attributeName="opacity"
+                  values="0.3;0.7;0.3"
+                  dur="2s"
+                  repeatCount="indefinite"
+                />
+              </rect>
+              
+              {/* Draining wave effect */}
+              {!tank.isFilling && tank.tankLevel < 50 && (
+                <path
+                  d={`M 15 ${30 + 210 * (1 - tank.tankLevel / 100)} Q 35 ${30 + 210 * (1 - tank.tankLevel / 100) - 3}, 55 ${30 + 210 * (1 - tank.tankLevel / 100)} T 85 ${30 + 210 * (1 - tank.tankLevel / 100)} L 85 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} L 15 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} Z`}
+                  fill={tank.tankLevel > 30 ? "#eab308" : "#ef4444"}
+                  opacity="0.4"
+                >
+                  <animate
+                    attributeName="d"
+                    values={`M 15 ${30 + 210 * (1 - tank.tankLevel / 100)} Q 35 ${30 + 210 * (1 - tank.tankLevel / 100) - 3}, 55 ${30 + 210 * (1 - tank.tankLevel / 100)} T 85 ${30 + 210 * (1 - tank.tankLevel / 100)} L 85 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} L 15 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} Z;
+                            M 15 ${30 + 210 * (1 - tank.tankLevel / 100)} Q 35 ${30 + 210 * (1 - tank.tankLevel / 100) + 3}, 55 ${30 + 210 * (1 - tank.tankLevel / 100)} T 85 ${30 + 210 * (1 - tank.tankLevel / 100)} L 85 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} L 15 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} Z;
+                            M 15 ${30 + 210 * (1 - tank.tankLevel / 100)} Q 35 ${30 + 210 * (1 - tank.tankLevel / 100) - 3}, 55 ${30 + 210 * (1 - tank.tankLevel / 100)} T 85 ${30 + 210 * (1 - tank.tankLevel / 100)} L 85 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} L 15 ${30 + 210 * (1 - tank.tankLevel / 100) + 10} Z`}
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </path>
+              )}
+              
+              {/* Percentage display in center */}
+              <text
+                x="50"
+                y={40 + 210 * (1 - tank.tankLevel / 100) - 15}
+                fontSize="24"
+                fill="#0f172a"
+                textAnchor="middle"
+                fontWeight="bold"
+                stroke="#ffffff"
+                strokeWidth="2"
+                paintOrder="stroke"
+              >
+                {(tank.tankLevel || 0).toFixed(0)}%
+              </text>
+              
+              {/* Volume text display */}
+              <text
+                x="50"
+                y="270"
+                fontSize="14"
+                fill="#0f172a"
+                textAnchor="middle"
+                fontWeight="bold"
+              >
+                {(tank.currentVolume || 0).toLocaleString()} L
+              </text>
+              <text
+                x="50"
+                y="285"
+                fontSize="10"
+                fill="#475569"
+                textAnchor="middle"
+                fontWeight="600"
+              >
+                of {(tank.tankCapacity || 10000).toLocaleString()} L
+              </text>
+              
+              {/* Bubbles animation when filling */}
+              {tank.isFilling && (
+                <>
+                  {[20, 35, 50, 65].map((offset, i) => (
+                    <circle
+                      key={i}
+                      cx={20 + offset}
+                      cy="230"
+                      r="3"
+                      fill="#ffffff"
+                      opacity="0.7"
+                    >
+                      <animate
+                        attributeName="cy"
+                        values={`230;${30 + 210 * (1 - tank.tankLevel / 100)};230`}
+                        dur={`${2 + i * 0.3}s`}
+                        repeatCount="indefinite"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0;0.7;0"
+                        dur={`${2 + i * 0.3}s`}
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  ))}
+                </>
+              )}
+            </svg>
+          </div>
+
           {/* Pipelines Connected Directly (Below Tank) */}
-          <div className="absolute top-[22rem] left-0 right-0 flex justify-center gap-4 px-8 z-10">
+          <div className="absolute top-[22rem] left-0 right-0 flex justify-center gap-4 px-8 z-30">
             {pipelines.map((pipeline, idx) => {
               const isOpen = pipeline.valveStatus === 'OPEN';
               const hasLeakage = pipeline.leakageProbability > 30;
@@ -1648,9 +1963,9 @@ export const SystemContainer = ({ onNavigate }) => {
 
                       {/* Main vertical pipe */}
                       <rect
-                        x="54"
+                        x="51"
                         y="0"
-                        width="12"
+                        width="18"
                         height="130"
                         fill={`url(#pipeGrad${idx})`}
                         stroke={hasLeakage ? '#ef4444' : isOpen ? '#22c55e' : '#1e3a8a'}
@@ -1659,9 +1974,9 @@ export const SystemContainer = ({ onNavigate }) => {
                         opacity="0.6"
                       />
                       <rect
-                        x="56"
+                        x="54"
                         y="0"
-                        width="4"
+                        width="6"
                         height="130"
                         fill="rgba(255,255,255,0.2)"
                         rx="2"
@@ -1675,7 +1990,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 160 Q 60 170, 50 170 L 10 170"
                             fill="none"
                             stroke={`url(#pipeGrad${idx})`}
-                            strokeWidth="12"
+                            strokeWidth="18"
                             strokeLinecap="round"
                             opacity="0.6"
                           />
@@ -1683,7 +1998,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 160 Q 60 170, 50 170 L 10 170"
                             fill="none"
                             stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="4"
+                            strokeWidth="6"
                             strokeLinecap="round"
                           />
                         </>
@@ -1695,7 +2010,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 190 Q 60 200, 50 200 L 20 200"
                             fill="none"
                             stroke={`url(#pipeGrad${idx})`}
-                            strokeWidth="12"
+                            strokeWidth="18"
                             strokeLinecap="round"
                             opacity="0.6"
                           />
@@ -1703,7 +2018,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 190 Q 60 200, 50 200 L 20 200"
                             fill="none"
                             stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="4"
+                            strokeWidth="6"
                             strokeLinecap="round"
                           />
                         </>
@@ -1712,9 +2027,9 @@ export const SystemContainer = ({ onNavigate }) => {
                         <>
                           {/* Straight down to center bottom */}
                           <rect
-                            x="54"
+                            x="51"
                             y="130"
-                            width="12"
+                            width="18"
                             height="110"
                             fill={`url(#pipeGrad${idx})`}
                             stroke={hasLeakage ? '#ef4444' : isOpen ? '#22c55e' : '#1e3a8a'}
@@ -1723,9 +2038,9 @@ export const SystemContainer = ({ onNavigate }) => {
                             opacity="0.6"
                           />
                           <rect
-                            x="56"
+                            x="54"
                             y="130"
-                            width="4"
+                            width="6"
                             height="110"
                             fill="rgba(255,255,255,0.2)"
                             rx="2"
@@ -1739,7 +2054,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 190 Q 60 200, 70 200 L 130 200"
                             fill="none"
                             stroke={`url(#pipeGrad${idx})`}
-                            strokeWidth="12"
+                            strokeWidth="18"
                             strokeLinecap="round"
                             opacity="0.6"
                           />
@@ -1747,7 +2062,7 @@ export const SystemContainer = ({ onNavigate }) => {
                             d="M 60 130 L 60 190 Q 60 200, 70 200 L 130 200"
                             fill="none"
                             stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="4"
+                            strokeWidth="6"
                             strokeLinecap="round"
                           />
                         </>
@@ -1756,18 +2071,18 @@ export const SystemContainer = ({ onNavigate }) => {
                         <>
                           {/* Right bend with 2 bends - down, right, then down again to ward 5 */}
                           <path
-                            d="M 60 130 L 60 150 Q 60 160, 70 160 L 145 160 Q 155 160, 155 170 L 155 220"
+                            d="M 60 130 L 60 150 Q 60 160, 70 160 L 200 160 Q 210 160, 210 170 L 210 255"
                             fill="none"
                             stroke={`url(#pipeGrad${idx})`}
-                            strokeWidth="12"
+                            strokeWidth="18"
                             strokeLinecap="round"
                             opacity="0.6"
                           />
                           <path
-                            d="M 60 130 L 60 150 Q 60 160, 70 160 L 145 160 Q 155 160, 155 170 L 155 220"
+                            d="M 60 130 L 60 150 Q 60 160, 70 160 L 200 160 Q 210 160, 210 170 L 210 255"
                             fill="none"
                             stroke="rgba(255,255,255,0.2)"
-                            strokeWidth="4"
+                            strokeWidth="6"
                             strokeLinecap="round"
                           />
                         </>
@@ -1879,7 +2194,7 @@ export const SystemContainer = ({ onNavigate }) => {
                           )}
                           {idx === 4 && (
                             <path
-                              d="M 60 0 L 60 130 L 60 150 Q 60 160, 70 160 L 145 160 Q 155 160, 155 170 L 155 220"
+                              d="M 60 0 L 60 130 L 60 150 Q 60 160, 70 160 L 200 160 Q 210 160, 210 170 L 210 255"
                               fill="none"
                               stroke={`url(#waterFlow${idx})`}
                               strokeWidth="6"
@@ -1975,210 +2290,11 @@ export const SystemContainer = ({ onNavigate }) => {
                       filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.4))',
                     }}
                   >
-                    <svg viewBox="0 0 120 100" className="w-full h-full">
-                      <defs>
-                        <linearGradient id={`groundGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#86efac" />
-                          <stop offset="50%" stopColor="#4ade80" />
-                          <stop offset="100%" stopColor="#22c55e" />
-                        </linearGradient>
-                        <linearGradient id={`skyGrad${idx}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#7dd3fc" />
-                          <stop offset="100%" stopColor="#bae6fd" />
-                        </linearGradient>
-                        <radialGradient id={`sunGrad${idx}`}>
-                          <stop offset="0%" stopColor="#fef08a" />
-                          <stop offset="100%" stopColor="#fde047" />
-                        </radialGradient>
-                      </defs>
-
-                      {/* Sky background */}
-                      <rect x="0" y="0" width="120" height="70" fill={`url(#skyGrad${idx})`} />
-
-                      {/* Sun */}
-                      <circle cx="100" cy="15" r="8" fill={`url(#sunGrad${idx})`} opacity="0.9" />
-
-                      {/* Mountains background */}
-                      <path
-                        d="M 0 60 L 30 35 L 50 50 L 70 30 L 90 45 L 120 40 L 120 70 L 0 70 Z"
-                        fill="#94a3b8"
-                        opacity="0.6"
-                      />
-                      <path
-                        d="M 0 65 L 25 45 L 45 55 L 65 40 L 85 50 L 120 48 L 120 70 L 0 70 Z"
-                        fill="#64748b"
-                        opacity="0.5"
-                      />
-
-                      {/* Ground with gradient */}
-                      <rect x="0" y="70" width="120" height="30" fill={`url(#groundGrad${idx})`} />
-
-                      {/* Dirt path */}
-                      <path
-                        d="M 0 85 Q 30 83, 60 85 Q 90 87, 120 85 L 120 88 Q 90 90, 60 88 Q 30 86, 0 88 Z"
-                        fill="#92400e"
-                        opacity="0.7"
-                      />
-
-                      {/* Back house (smaller, for depth) */}
-                      <g opacity="0.75">
-                        <rect
-                          x="8"
-                          y="55"
-                          width="22"
-                          height="18"
-                          fill="#f59e0b"
-                          stroke="#92400e"
-                          strokeWidth="0.8"
-                        />
-                        <path
-                          d="M 5 55 L 19 45 L 33 55 Z"
-                          fill="#dc2626"
-                          stroke="#7f1d1d"
-                          strokeWidth="0.8"
-                        />
-                        <rect x="13" y="60" width="5" height="8" fill="#78350f" />
-                        <rect
-                          x="21"
-                          y="60"
-                          width="4"
-                          height="4"
-                          fill="#93c5fd"
-                          stroke="#1e3a8a"
-                          strokeWidth="0.5"
-                        />
-                      </g>
-
-                      {/* Trees on left */}
-                      <g>
-                        <rect x="38" y="60" width="3" height="12" fill="#78350f" />
-                        <ellipse cx="39.5" cy="58" rx="5" ry="7" fill="#15803d" />
-                        <ellipse cx="37" cy="56" rx="4" ry="5" fill="#16a34a" />
-                        <ellipse cx="42" cy="56" rx="4" ry="5" fill="#16a34a" />
-                      </g>
-
-                      {/* Main house - 3D effect */}
-                      <g>
-                        {/* Shadow */}
-                        <ellipse cx="72" cy="93" rx="28" ry="5" fill="#000" opacity="0.25" />
-
-                        {/* House front wall */}
-                        <rect
-                          x="55"
-                          y="50"
-                          width="34"
-                          height="25"
-                          fill="#fbbf24"
-                          stroke="#92400e"
-                          strokeWidth="1.5"
-                        />
-
-                        {/* House side wall (3D) */}
-                        <path
-                          d="M 89 50 L 89 75 L 97 70 L 97 45 Z"
-                          fill="#f59e0b"
-                          stroke="#92400e"
-                          strokeWidth="1.5"
-                        />
-
-                        {/* Roof front */}
-                        <path
-                          d="M 50 50 L 72 32 L 94 50 Z"
-                          fill="#dc2626"
-                          stroke="#7f1d1d"
-                          strokeWidth="1.5"
-                        />
-
-                        {/* Roof side (3D) */}
-                        <path
-                          d="M 94 50 L 72 32 L 80 27 L 102 45 Z"
-                          fill="#b91c1c"
-                          stroke="#7f1d1d"
-                          strokeWidth="1.5"
-                        />
-
-                        {/* Roof ridge highlight */}
-                        <line
-                          x1="72"
-                          y1="32"
-                          x2="80"
-                          y2="27"
-                          stroke="#ef4444"
-                          strokeWidth="1"
-                          opacity="0.6"
-                        />
-
-                        {/* Door with frame */}
-                        <rect
-                          x="64"
-                          y="58"
-                          width="12"
-                          height="17"
-                          fill="#78350f"
-                          stroke="#451a03"
-                          strokeWidth="1.5"
-                          rx="1"
-                        />
-                        <rect x="64" y="58" width="2" height="17" fill="#92400e" />
-                        <circle cx="73" cy="67" r="1" fill="#fbbf24" />
-
-                        {/* Windows with 3D frames */}
-                        <g>
-                          <rect
-                            x="57"
-                            y="54"
-                            width="8"
-                            height="8"
-                            fill="#60a5fa"
-                            stroke="#1e3a8a"
-                            strokeWidth="1.2"
-                          />
-                          <line x1="57" y1="58" x2="65" y2="58" stroke="#1e3a8a" strokeWidth="1" />
-                          <line x1="61" y1="54" x2="61" y2="62" stroke="#1e3a8a" strokeWidth="1" />
-                          <rect x="58" y="55" width="2" height="2" fill="#dbeafe" opacity="0.7" />
-                        </g>
-
-                        <g>
-                          <rect
-                            x="79"
-                            y="54"
-                            width="8"
-                            height="8"
-                            fill="#60a5fa"
-                            stroke="#1e3a8a"
-                            strokeWidth="1.2"
-                          />
-                          <line x1="79" y1="58" x2="87" y2="58" stroke="#1e3a8a" strokeWidth="1" />
-                          <line x1="83" y1="54" x2="83" y2="62" stroke="#1e3a8a" strokeWidth="1" />
-                          <rect x="80" y="55" width="2" height="2" fill="#dbeafe" opacity="0.7" />
-                        </g>
-
-                        {/* Side window */}
-                        <rect
-                          x="91"
-                          y="54"
-                          width="4"
-                          height="6"
-                          fill="#60a5fa"
-                          stroke="#1e3a8a"
-                          strokeWidth="0.8"
-                        />
-                      </g>
-
-                      {/* Trees on right */}
-                      <g>
-                        <rect x="103" y="58" width="4" height="14" fill="#78350f" />
-                        <ellipse cx="105" cy="56" rx="6" ry="8" fill="#15803d" />
-                        <ellipse cx="102" cy="53" rx="5" ry="6" fill="#16a34a" />
-                        <ellipse cx="108" cy="53" rx="5" ry="6" fill="#16a34a" />
-                        <ellipse cx="105" cy="50" rx="4" ry="5" fill="#22c55e" />
-                      </g>
-
-                      {/* Small bushes */}
-                      <ellipse cx="48" cy="73" rx="4" ry="3" fill="#15803d" />
-                      <ellipse cx="52" cy="74" rx="3" ry="2.5" fill="#16a34a" />
-                      <ellipse cx="98" cy="72" rx="3.5" ry="3" fill="#15803d" />
-                    </svg>
+                    <img 
+                      src="/home.svg" 
+                      alt="Home" 
+                      className="w-full h-full object-contain"
+                    />
 
                     {/* Ward label */}
                     <div className="absolute -bottom-6 left-0 right-0 text-center bg-amber-700 text-white text-[10px] font-bold py-0.5 rounded shadow">

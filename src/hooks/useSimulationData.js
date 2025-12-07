@@ -23,6 +23,7 @@ import {
   setPumpTimer,
   schedulePumpStop,
   cancelPumpSchedule,
+  forceSimulationState,
 } from '../utils/simulationEngine';
 
 /**
@@ -134,6 +135,16 @@ export function useSimulationData(autoStart = true) {
     return getRealtimeHistory();
   }, []);
 
+  // Force simulation state (for Control Center)
+  const handleForceSimulationState = useCallback((component, state, customValues) => {
+    console.log('🔧 useSimulationData: handleForceSimulationState called', { component, state, customValues });
+    const result = forceSimulationState(component, state, customValues);
+    console.log('🔧 useSimulationData: forceSimulationState returned, updating state');
+    setState(getLiveState());
+    console.log('🔧 useSimulationData: state updated');
+    return result;
+  }, []);
+
   return {
     // Live state
     state,
@@ -166,6 +177,7 @@ export function useSimulationData(autoStart = true) {
     schedulePumpTimer: handleSetPumpTimer,
     schedulePumpStop: handleSchedulePumpStop,
     cancelPumpSchedule: handleCancelPumpSchedule,
+    forceSimulationState: handleForceSimulationState,
 
     // Simulation control
     startSimulation: start,

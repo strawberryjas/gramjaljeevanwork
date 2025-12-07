@@ -26,6 +26,7 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
   const { state, toggleValve, isLive } = useSimulationData();
   const pipelines = state?.pipelines || [];
   const pipeline = pipelines.find((p) => p.pipelineId === pipelineId) || pipelines[0];
+  const [showDetailsSidebar, setShowDetailsSidebar] = React.useState(false);
 
   // Get tank water quality for baseline TDS comparison
   const tankWaterQuality = state?.overheadTank?.waterQuality || {};
@@ -186,12 +187,6 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-slate-700" />
-          </button>
           <div>
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
               <Activity className="text-blue-600" size={28} />
@@ -1908,6 +1903,46 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
                   </div>
                 );
               })()}
+              {(() => {
+                const ecoli = inletQuality.ecoli || 0;
+                const ecoliColor = ecoli === 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+                const ecoliTextColor = ecoli === 0 ? 'text-green-700' : 'text-red-700';
+                const hasAlert = ecoli > 0;
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${ecoliColor} ${hasAlert ? 'animate-pulse' : ''}`}>
+                    <span className="text-[9px] md:text-base text-gray-600 flex items-center gap-1">
+                      E.coli
+                      {hasAlert && <AlertTriangle size={12} className="text-red-600" />}
+                    </span>
+                    <span className={`text-[9px] md:text-lg font-bold ${ecoliTextColor}`}>
+                      {ecoli.toFixed(0)} CFU/100ml
+                    </span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const ammonia = inletQuality.ammonia || 0.1;
+                const ammoniaColor =
+                  ammonia <= 0.5
+                    ? 'bg-green-50 border-green-200'
+                    : ammonia <= 1.5
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200';
+                const ammoniaTextColor =
+                  ammonia <= 0.5 ? 'text-green-700' : ammonia <= 1.5 ? 'text-yellow-700' : 'text-red-700';
+                const hasAlert = ammonia > 1.5;
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${ammoniaColor} ${hasAlert ? 'animate-pulse' : ''}`}>
+                    <span className="text-[9px] md:text-base text-gray-600 flex items-center gap-1">
+                      Ammonia
+                      {hasAlert && <AlertTriangle size={12} className="text-red-600" />}
+                    </span>
+                    <span className={`text-[9px] md:text-lg font-bold ${ammoniaTextColor}`}>
+                      {ammonia.toFixed(2)} mg/L
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div>
@@ -1982,13 +2017,80 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
                   </div>
                 );
               })()}
+              {(() => {
+                const ecoli = outletQuality.ecoli || 0;
+                const ecoliColor = ecoli === 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+                const ecoliTextColor = ecoli === 0 ? 'text-green-700' : 'text-red-700';
+                const hasAlert = ecoli > 0;
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${ecoliColor} ${hasAlert ? 'animate-pulse' : ''}`}>
+                    <span className="text-[9px] md:text-base text-gray-600 flex items-center gap-1">
+                      E.coli
+                      {hasAlert && <AlertTriangle size={12} className="text-red-600" />}
+                    </span>
+                    <span className={`text-[9px] md:text-lg font-bold ${ecoliTextColor}`}>
+                      {ecoli.toFixed(0)} CFU/100ml
+                    </span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const ammonia = outletQuality.ammonia || 0.2;
+                const ammoniaColor =
+                  ammonia <= 0.5
+                    ? 'bg-green-50 border-green-200'
+                    : ammonia <= 1.5
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200';
+                const ammoniaTextColor =
+                  ammonia <= 0.5 ? 'text-green-700' : ammonia <= 1.5 ? 'text-yellow-700' : 'text-red-700';
+                const hasAlert = ammonia > 1.5;
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${ammoniaColor} ${hasAlert ? 'animate-pulse' : ''}`}>
+                    <span className="text-[9px] md:text-base text-gray-600 flex items-center gap-1">
+                      Ammonia
+                      {hasAlert && <AlertTriangle size={12} className="text-red-600" />}
+                    </span>
+                    <span className={`text-[9px] md:text-lg font-bold ${ammoniaTextColor}`}>
+                      {ammonia.toFixed(2)} mg/L
+                    </span>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const residualChlorine = outletQuality.residualChlorine || 0.3;
+                const rcColor =
+                  residualChlorine >= 0.2 && residualChlorine <= 2.0
+                    ? 'bg-green-50 border-green-200'
+                    : residualChlorine >= 0.1 && residualChlorine < 0.2
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200';
+                const rcTextColor =
+                  residualChlorine >= 0.2 && residualChlorine <= 2.0
+                    ? 'text-green-700'
+                    : residualChlorine >= 0.1 && residualChlorine < 0.2
+                      ? 'text-yellow-700'
+                      : 'text-red-700';
+                const hasAlert = residualChlorine < 0.1 || residualChlorine > 2.0;
+                return (
+                  <div className={`flex justify-between p-1 md:p-2 rounded border ${rcColor} ${hasAlert ? 'animate-pulse' : ''}`}>
+                    <span className="text-[9px] md:text-base text-gray-600 flex items-center gap-1">
+                      RC (Chlorine)
+                      {hasAlert && <AlertTriangle size={12} className="text-red-600" />}
+                    </span>
+                    <span className={`text-[9px] md:text-lg font-bold ${rcTextColor}`}>
+                      {residualChlorine.toFixed(2)} mg/L
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sensor Information */}
-      <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6">
+      {/* Sensor Information - Mobile/Tablet Only */}
+      <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-6 lg:hidden">
         <h3 className="text-sm md:text-lg font-bold text-slate-800 mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
           <Radio size={16} className="text-blue-600 md:w-5 md:h-5" />
           Sensor Information
@@ -2012,6 +2114,182 @@ export const PipelineDetails = ({ pipelineId, onBack }) => {
               <p>Flow Sensor: {outletFlow.toFixed(1)} L/min</p>
               <p>Pressure Sensor: {outletPressure.toFixed(2)} Bar</p>
               <p>Battery: 82%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pipeline Technical Specifications - Mobile/Tablet Only */}
+      <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-4 md:p-6 border border-blue-100 lg:hidden">
+        <h3 className="text-base md:text-lg font-bold text-slate-800 mb-3 md:mb-4 flex items-center gap-2">
+          <Activity className="text-blue-600" size={18} />
+          Technical Specifications
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* Diameter */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-blue-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-blue-600 font-semibold mb-1">Diameter</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.diameter || '150'}<span className="text-xs ml-1">mm</span></p>
+          </div>
+
+          {/* Flow Rate */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-purple-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-purple-600 font-semibold mb-1">Flow Rate</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.maxFlowRate || '100'}<span className="text-xs ml-1">L/min</span></p>
+          </div>
+
+          {/* Pressure (KFC) */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-pink-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-pink-600 font-semibold mb-1">Pressure (KFC)</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.pressureRating || '10'}<span className="text-xs ml-1">Bar</span></p>
+          </div>
+
+          {/* Material */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-cyan-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-cyan-600 font-semibold mb-1">Material</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.material || 'PVC'}</p>
+          </div>
+
+          {/* KSC */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-indigo-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-indigo-600 font-semibold mb-1">KSC Rating</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.kscRating || 'Class 4'}</p>
+          </div>
+
+          {/* Load Capacity */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-orange-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-orange-600 font-semibold mb-1">Load Capacity</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.loadCapacity || '2500'}<span className="text-xs ml-1">kg</span></p>
+          </div>
+
+          {/* Length */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-emerald-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-emerald-600 font-semibold mb-1">Length</p>
+            <p className="text-lg font-bold text-slate-800">{(pipeline.length || 450).toFixed(0)}<span className="text-xs ml-1">m</span></p>
+          </div>
+
+          {/* Depth */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-teal-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-teal-600 font-semibold mb-1">Depth</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.depth || '1.2'}<span className="text-xs ml-1">m</span></p>
+          </div>
+
+          {/* Wall Thickness */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-violet-200/50 hover:shadow-md transition-shadow">
+            <p className="text-xs text-violet-600 font-semibold mb-1">Wall Thickness</p>
+            <p className="text-lg font-bold text-slate-800">{pipeline.wallThickness || '4.5'}<span className="text-xs ml-1">mm</span></p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hover Trigger Area - Desktop Only */}
+      <div
+        className="hidden lg:block fixed right-0 top-0 bottom-0 w-4 z-40"
+        onMouseEnter={() => setShowDetailsSidebar(true)}
+      />
+
+      {/* Details Sidebar - Desktop Only */}
+      <div
+        className={`hidden lg:block fixed right-0 top-0 bottom-0 w-96 bg-white shadow-2xl border-l-2 border-blue-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
+          showDetailsSidebar ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        onMouseLeave={() => setShowDetailsSidebar(false)}
+      >
+        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 z-10 shadow-md">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Settings size={20} />
+            Pipeline Details
+          </h3>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Technical Specifications */}
+          <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 border-2 border-blue-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-blue-700 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+              Technical Specifications
+            </h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-blue-100">
+                <span className="text-sm text-gray-600">Diameter</span>
+                <span className="text-sm font-bold text-black">{pipeline.diameter || '150'} mm</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-purple-100">
+                <span className="text-sm text-gray-600">Flow Rate</span>
+                <span className="text-sm font-bold text-black">{pipeline.maxFlowRate || '100'} L/min</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-pink-100">
+                <span className="text-sm text-gray-600">Pressure (KFC)</span>
+                <span className="text-sm font-bold text-black">{pipeline.pressureRating || '10'} Bar</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-cyan-100">
+                <span className="text-sm text-gray-600">Material</span>
+                <span className="text-sm font-bold text-black">{pipeline.material || 'PVC'}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-indigo-100">
+                <span className="text-sm text-gray-600">KSC Rating</span>
+                <span className="text-sm font-bold text-black">{pipeline.kscRating || 'Class 4'}</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-orange-100">
+                <span className="text-sm text-gray-600">Load Capacity</span>
+                <span className="text-sm font-bold text-black">{pipeline.loadCapacity || '2500'} kg</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-emerald-100">
+                <span className="text-sm text-gray-600">Length</span>
+                <span className="text-sm font-bold text-black">{(pipeline.length || 450).toFixed(0)} m</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-teal-100">
+                <span className="text-sm text-gray-600">Depth</span>
+                <span className="text-sm font-bold text-black">{pipeline.depth || '1.2'} m</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-violet-100">
+                <span className="text-sm text-gray-600">Wall Thickness</span>
+                <span className="text-sm font-bold text-black">{pipeline.wallThickness || '4.5'} mm</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sensor Information */}
+          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-4 border-2 border-emerald-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-emerald-700 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
+              Sensor Information
+            </h4>
+            <div className="space-y-3">
+              <div className="bg-blue-50/50 rounded-lg p-3 border border-blue-200">
+                <p className="text-xs font-bold text-blue-700 mb-2">Inlet Sensors</p>
+                <div className="space-y-1 text-xs text-gray-700">
+                  <div className="flex justify-between">
+                    <span>Flow Sensor:</span>
+                    <span className="font-semibold">{inletFlow.toFixed(1)} L/min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pressure Sensor:</span>
+                    <span className="font-semibold">{inletPressure.toFixed(2)} Bar</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Battery:</span>
+                    <span className="font-semibold">85%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-green-50/50 rounded-lg p-3 border border-green-200">
+                <p className="text-xs font-bold text-green-700 mb-2">Outlet Sensors</p>
+                <div className="space-y-1 text-xs text-gray-700">
+                  <div className="flex justify-between">
+                    <span>Flow Sensor:</span>
+                    <span className="font-semibold">{outletFlow.toFixed(1)} L/min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pressure Sensor:</span>
+                    <span className="font-semibold">{outletPressure.toFixed(2)} Bar</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Battery:</span>
+                    <span className="font-semibold">82%</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

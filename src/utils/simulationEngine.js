@@ -1385,6 +1385,203 @@ export function isSimulationRunning() {
   return simulationInterval !== null;
 }
 
+/**
+ * Force a specific simulation state for testing (Control Center)
+ * @param {string} component - Component to modify (pump, pipeline, tank, valve, quality, energy)
+ * @param {string} state - State to apply (leak, overheating, normal, etc.)
+ * @param {object} customValues - Custom sensor values
+ */
+export function forceSimulationState(component, state, customValues = {}) {
+  console.log('🎛️ forceSimulationState called:', { component, state, customValues });
+  
+  switch(component) {
+    case 'pump':
+      if (!systemState.pumpHouse) {
+        console.error('pumpHouse not found in systemState');
+        break;
+      }
+      if (state === 'overheating') {
+        systemState.pumpHouse.motorTemperature = 95;
+      } else if (state === 'vibration') {
+        systemState.pumpHouse.vibrationLevel = 8.5;
+      } else if (state === 'low-efficiency') {
+        systemState.pumpHouse.pumpEfficiency = 45;
+      } else if (state === 'offline') {
+        systemState.pumpHouse.pumpStatus = 'OFF';
+        systemState.pumpHouse.powerConsumption = 0;
+      } else {
+        // Reset to normal
+        systemState.pumpHouse.motorTemperature = 45;
+        systemState.pumpHouse.vibrationLevel = 2.1;
+        systemState.pumpHouse.pumpEfficiency = 85;
+      }
+      break;
+      
+    case 'pipeline':
+      if (!systemState.pipelines || !systemState.pipelines[0]) {
+        console.error('No pipelines found in systemState');
+        break;
+      }
+      const pipeline = systemState.pipelines[0];
+      const inletFlow = pipeline.inlet?.currentFlow || 85;
+      
+      if (state === 'leak') {
+        pipeline.outlet.currentFlow = inletFlow * 0.6;
+        pipeline.outlet.currentPressure = 1.5;
+        pipeline.leakagePercent = 40;
+      } else if (state === 'burst') {
+        pipeline.outlet.currentFlow = inletFlow * 0.2;
+        pipeline.outlet.currentPressure = 0.5;
+        pipeline.leakagePercent = 80;
+      } else if (state === 'blockage') {
+        pipeline.outlet.currentFlow = inletFlow * 0.3;
+        pipeline.outlet.currentPressure = 5.5;
+        pipeline.leakagePercent = 5;
+      } else if (state === 'low-pressure') {
+        pipeline.outlet.currentPressure = 1.2;
+      } else if (state === 'high-pressure') {
+        pipeline.outlet.currentPressure = 6.8;
+      } else {
+        // Reset to normal
+        pipeline.outlet.currentFlow = inletFlow * 0.95;
+        pipeline.outlet.currentPressure = 3.5;
+        pipeline.leakagePercent = 2;
+      }
+      break;
+      
+    case 'tank':
+      if (!systemState.overheadTank) {
+        console.error('overheadTank not found in systemState');
+        break;
+      }
+      if (state === 'low-level') {
+        systemState.overheadTank.tankLevel = 15;
+      } else if (state === 'overflow') {
+        systemState.overheadTank.tankLevel = 98;
+      } else if (state === 'contamination') {
+        if (systemState.overheadTank.waterQuality) {
+          systemState.overheadTank.waterQuality.turbidity = 8.5;
+        }
+      } else if (state === 'sensor-error') {
+        // Mark as sensor error (could add a status field)
+        systemState.overheadTank.tankLevel = -1; // Invalid value to indicate error
+      } else {
+        // Reset to normal
+        systemState.overheadTank.tankLevel = 75;
+        if (systemState.overheadTank.waterQuality) {
+          systemState.overheadTank.waterQuality.turbidity = 1.2;
+        }
+      }
+      break;
+      
+    case 'valve':
+      if (!systemState.pipelines || !systemState.pipelines[0]) {
+        console.error('No pipelines found for valve control');
+        break;
+      }
+      const valvePipeline = systemState.pipelines[0];
+      if (state === 'stuck-open') {
+        valvePipeline.valveStatus = 'OPEN';
+      } else if (state === 'stuck-closed') {
+        valvePipeline.valveStatus = 'CLOSED';
+      } else if (state === 'partial-failure') {
+        const inFlow = valvePipeline.inlet?.currentFlow || 85;
+        valvePipeline.outlet.currentFlow = inFlow * 0.5;
+      } else {
+        valvePipeline.valveStatus = 'OPEN';
+      }
+      break;
+      
+    case 'quality':
+      if (!systemState.overheadTank || !systemState.overheadTank.waterQuality) {
+        console.error('waterQuality not found in systemState');
+        break;
+      }
+      if (state === 'high-ph') {
+        systemState.overheadTank.waterQuality.pH = 9.2;
+      } else if (state === 'low-ph') {
+        systemState.overheadTank.waterQuality.pH = 5.8;
+      } else if (state === 'high-turbidity') {
+        systemState.overheadTank.waterQuality.turbidity = 7.5;
+      } else if (state === 'low-chlorine') {
+        systemState.overheadTank.waterQuality.chlorine = 0.1;
+      } else if (state === 'contaminated') {
+        systemState.overheadTank.waterQuality.turbidity = 9.8;
+        systemState.overheadTank.waterQuality.pH = 9.5;
+        systemState.overheadTank.waterQuality.chlorine = 0.05;
+      } else {
+        // Reset to normal
+        systemState.overheadTank.waterQuality.pH = 7.3;
+        systemState.overheadTank.waterQuality.turbidity = 1.2;
+        systemState.overheadTank.waterQuality.chlorine = 0.8;
+      }
+      break;
+      
+    case 'energy':
+      if (!systemState.pumpHouse || !systemState.controlUnit) {
+        console.error('pumpHouse or controlUnit not found in systemState');
+        break;
+      }
+      if (state === 'high-consumption') {
+        systemState.pumpHouse.powerConsumption = 28;
+      } else if (state === 'power-surge') {
+        systemState.pumpHouse.operatingVoltage = 245;
+      } else if (state === 'fluctuation') {
+        systemState.pumpHouse.operatingVoltage = 205;
+      } else if (state === 'offline') {
+        systemState.pumpHouse.operatingVoltage = 0;
+        systemState.pumpHouse.powerConsumption = 0;
+      } else {
+        // Reset to normal
+        systemState.pumpHouse.operatingVoltage = 415;
+        systemState.pumpHouse.powerConsumption = 8.2;
+      }
+      break;
+  }
+  
+  // Apply custom values if provided
+  if (customValues.waterLevel !== undefined && systemState.overheadTank) {
+    systemState.overheadTank.tankLevel = customValues.waterLevel;
+  }
+  if (customValues.pressure !== undefined && systemState.pipelines && systemState.pipelines[0]) {
+    systemState.pipelines[0].outlet.currentPressure = customValues.pressure;
+  }
+  if (customValues.flowRate !== undefined && systemState.pipelines && systemState.pipelines[0]) {
+    systemState.pipelines[0].outlet.currentFlow = customValues.flowRate;
+  }
+  if (customValues.ph !== undefined && systemState.overheadTank && systemState.overheadTank.waterQuality) {
+    systemState.overheadTank.waterQuality.pH = customValues.ph;
+  }
+  if (customValues.turbidity !== undefined && systemState.overheadTank && systemState.overheadTank.waterQuality) {
+    systemState.overheadTank.waterQuality.turbidity = customValues.turbidity;
+  }
+  if (customValues.chlorine !== undefined && systemState.overheadTank && systemState.overheadTank.waterQuality) {
+    systemState.overheadTank.waterQuality.chlorine = customValues.chlorine;
+  }
+  if (customValues.temperature !== undefined && systemState.overheadTank) {
+    systemState.overheadTank.temperature = customValues.temperature;
+  }
+  
+  console.log('✅ Simulation state updated, calling updateSystemMetrics');
+  
+  // Update system metrics
+  updateSystemMetrics();
+  
+  // Manually notify subscribers
+  const currentState = getLiveState();
+  subscribers.forEach((sub) => {
+    try {
+      sub(currentState);
+    } catch (e) {
+      console.error('Subscriber notification error:', e);
+    }
+  });
+  
+  console.log('✅ forceSimulationState complete, returning live state');
+  
+  return getLiveState();
+}
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================

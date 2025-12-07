@@ -71,12 +71,6 @@ export const PipelinesOverview = ({ onBack, onNavigateToPipeline }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-slate-700" />
-          </button>
           <div>
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
               <Activity className="text-blue-600" size={28} />

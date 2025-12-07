@@ -53,6 +53,8 @@ import {
   PieChart as PieChartIcon,
   Menu,
   Search,
+  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 import {
   LineChart,
@@ -122,6 +124,16 @@ const ServiceRequestDashboard = lazy(() =>
     default: module.ServiceRequestDashboard,
   }))
 );
+const ComplaintSubmission = lazy(() =>
+  import('./components/dashboards/ComplaintSubmission').then((module) => ({
+    default: module.ComplaintSubmission,
+  }))
+);
+const ControlCenter = lazy(() =>
+  import('./components/dashboards/ControlCenter').then((module) => ({
+    default: module.ControlCenter,
+  }))
+);
 const MaintenanceDashboard = lazy(() =>
   import('./components/dashboards/MaintenanceDashboard').then((module) => ({
     default: module.default,
@@ -170,6 +182,7 @@ import { useSimulationData } from './hooks/useSimulationData';
 import { useAuth, useLanguage, useOffline } from './hooks/useAppState';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './components/LanguageSelector';
+import { LanguageSelectorDropdown } from './components/LanguageSelectorDropdown';
 
 const ministryLogoUrl = '/ministry-logo.svg';
 const jalsenseLogoUrl = '/jalsense-logo.svg';
@@ -189,896 +202,6 @@ const ALERT_TYPE_TO_TAB = {
  * V18.1 - Refactored Architecture Edition
  * Features: Modular dashboard components, separated concerns, optimized rendering
  */
-
-const InfrastructureDashboard = ({
-  data,
-  history,
-  systemState,
-  onTogglePump,
-  onToggleValve,
-  onSchedulePumpTimer,
-  onSchedulePumpStop,
-  onCancelPumpSchedule,
-}) => {
-  const [selectedPump, setSelectedPump] = useState('primary');
-  const [confirmPump, setConfirmPump] = useState(null);
-  const [pumpTimerMinutes, setPumpTimerMinutes] = useState(30);
-  const [pumpStopAt, setPumpStopAt] = useState(() =>
-    toLocalInputString(new Date(Date.now() + 60 * 60 * 1000))
-  );
-
-  // Use live system state from simulation engine
-  const pumpStatus = systemState?.pumpHouse?.pumpStatus || data?.pumpStatus || 'OFF';
-  const isPumpOn = pumpStatus === 'ON' || pumpStatus === 'RUNNING';
-
-  // Get pipeline data from digital twin
-  const pipelineSegments = systemState?.pipelines?.map((p, idx) => {
-    const inletFlow = p.inlet?.flowSensor?.value || 0;
-    const inletPressure = p.inlet?.pressureSensor?.value || 0;
-    const status =
-      p.leakageProbability > 40 ? 'critical' : p.leakageProbability > 20 ? 'warning' : 'normal';
-    return {
-      id: `pipeline-${p.pipelineId}`,
-      label: p.pipelineName || `Pipeline ${p.pipelineId}`,
-      pressure: inletPressure,
-      flow: inletFlow,
-      status: status,
-      pipelineId: p.pipelineId,
-      valveStatus: p.valveStatus,
-      leakage: p.leakageProbability,
-    };
-  }) || [
-    { id: 'intake', label: 'Raw Water Intake', pressure: 4.2, flow: 420, status: 'normal' },
-    { id: 'treatment', label: 'Treatment Plant', pressure: 3.6, flow: 400, status: 'normal' },
-    { id: 'transmission', label: 'Transmission Main', pressure: 3.1, flow: 380, status: 'warning' },
-    {
-      id: 'distribution',
-      label: 'Distribution Ring',
-      pressure: 2.4,
-      flow: 360,
-      status: 'critical',
-    },
-  ];
-
-  // Get valves from digital twin pipelines
-  const valves = systemState?.pipelines?.map((p) => ({
-    id: `V-${p.pipelineId}`,
-    location: p.pipelineName?.replace(/.*- /, '') || `Ward ${p.pipelineId}`,
-    state: p.valveStatus,
-    automation: 'Manual',
-    lastAction: 'Just now',
-    pipelineId: p.pipelineId,
-  })) || [
-    { id: 'V-01', location: 'Ward 1', state: 'OPEN', automation: 'Auto', lastAction: '10 min ago' },
-    {
-      id: 'V-05',
-      location: 'Ward 5',
-      state: 'CLOSED',
-      automation: 'Manual',
-      lastAction: '1 hr ago',
-    },
-    {
-      id: 'V-12',
-      location: 'Elevated Tank',
-      state: 'OPEN',
-      automation: 'Auto',
-      lastAction: '5 min ago',
-    },
-    {
-      id: 'V-17',
-      location: 'Booster Line',
-      state: 'CLOSED',
-      automation: 'Manual',
-      lastAction: '2 hrs ago',
-    },
-  ];
-
-  // Get sensors from digital twin - Main tank sensors + pipeline sensors
-  const sensors = systemState
-    ? [
-        // Main Tank Sensors
-        {
-          id: 'S-TANK-LEVEL',
-          type: 'Level',
-          location: 'Main Tank',
-          battery: 95,
-          lastSeen: 'Just now',
-          value: `${systemState.overheadTank?.tankLevel?.toFixed(1)}%`,
-          status: systemState.overheadTank?.tankLevel > 30 ? 'ACTIVE' : 'WARNING',
-        },
-        {
-          id: 'S-TANK-PH',
-          type: 'Water Quality (pH)',
-          location: 'Main Tank',
-          battery: 92,
-          lastSeen: 'Just now',
-          value: systemState.overheadTank?.waterQuality?.pH?.toFixed(2),
-          status: 'ACTIVE',
-        },
-        {
-          id: 'S-TANK-TURB',
-          type: 'Water Quality (Turbidity)',
-          location: 'Main Tank',
-          battery: 90,
-          lastSeen: 'Just now',
-          value: `${systemState.overheadTank?.waterQuality?.turbidity?.toFixed(2)} NTU`,
-          status: 'ACTIVE',
-        },
-        // Pipeline Sensors (from each pipeline)
-        ...(systemState.pipelines?.flatMap((p) => [
-          {
-            id: `S-P${p.pipelineId}-INLET-FLOW`,
-            type: 'Flow',
-            location: `${p.pipelineName} - Inlet`,
-            battery: 88,
-            lastSeen: 'Just now',
-            value: `${p.inlet?.flowSensor?.value || 0} L/min`,
-            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
-          },
-          {
-            id: `S-P${p.pipelineId}-INLET-PRESSURE`,
-            type: 'Pressure',
-            location: `${p.pipelineName} - Inlet`,
-            battery: 85,
-            lastSeen: 'Just now',
-            value: `${p.inlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
-            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
-          },
-          {
-            id: `S-P${p.pipelineId}-OUTLET-FLOW`,
-            type: 'Flow',
-            location: `${p.pipelineName} - Outlet`,
-            battery: 82,
-            lastSeen: 'Just now',
-            value: `${p.outlet?.flowSensor?.value || 0} L/min`,
-            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
-          },
-          {
-            id: `S-P${p.pipelineId}-OUTLET-PRESSURE`,
-            type: 'Pressure',
-            location: `${p.pipelineName} - Outlet`,
-            battery: 80,
-            lastSeen: 'Just now',
-            value: `${p.outlet?.pressureSensor?.value?.toFixed(2) || 0} bar`,
-            status: p.valveStatus === 'OPEN' ? 'ACTIVE' : 'INACTIVE',
-          },
-        ]) || []),
-      ]
-    : [
-        { id: 'S-101', type: 'Pressure', location: 'Ward 3', battery: 92, lastSeen: '2 mins ago' },
-        { id: 'S-204', type: 'Flow', location: 'Ward 5', battery: 68, lastSeen: '12 mins ago' },
-        {
-          id: 'S-307',
-          type: 'Water Quality',
-          location: 'Tank Zone',
-          battery: 54,
-          lastSeen: '5 mins ago',
-        },
-        {
-          id: 'S-415',
-          type: 'Level',
-          location: 'Ground Reservoir',
-          battery: 87,
-          lastSeen: 'Just now',
-        },
-      ];
-
-  // Get tank data from digital twin
-  const tankCapacity = systemState?.overheadTank?.tankCapacity || 50000;
-  const tankLevel = systemState?.overheadTank?.tankLevel || data?.tankLevel || 75;
-  const currentVolume = Math.round((tankLevel / 100) * tankCapacity);
-  const inflow = systemState?.pumpHouse?.pumpFlowOutput || data?.pumpFlowRate || 0;
-  const totalOutflow = systemState?.systemMetrics?.totalFlowRate || 0;
-  const outflow = totalOutflow || Math.max(320, inflow - 40);
-  const predictedEmptyHours =
-    outflow > inflow ? (currentVolume / (outflow - inflow)).toFixed(1) : 'Stable';
-  const predictedFillHours =
-    inflow > outflow ? ((tankCapacity - currentVolume) / (inflow - outflow)).toFixed(1) : 'N/A';
-
-  const handlePumpToggle = (id) => {
-    if (id === 'primary' && onTogglePump) {
-      onTogglePump();
-    } else {
-      setConfirmPump(id);
-    }
-  };
-
-  const pumpSchedule = systemState?.pumpSchedule || {};
-  const scheduleMode = pumpSchedule.mode || 'MANUAL';
-  const scheduleCountdown = formatDurationLabel(pumpSchedule.timerRemainingMs);
-  const scheduleStopTime = pumpSchedule.timerEnd
-    ? new Date(pumpSchedule.timerEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '—';
-  const lastScheduleEvent = pumpSchedule.lastEvent?.type?.replace(/_/g, ' ');
-
-  const triggerPumpTimer = () => {
-    if (!onSchedulePumpTimer) return;
-    const minutes = Math.max(1, Number(pumpTimerMinutes) || 0);
-    onSchedulePumpTimer(minutes);
-  };
-
-  const triggerPumpStopAt = () => {
-    if (!onSchedulePumpStop || !pumpStopAt) return;
-    onSchedulePumpStop(pumpStopAt);
-  };
-
-  const clearPumpSchedule = () => {
-    if (onCancelPumpSchedule) {
-      onCancelPumpSchedule('USER_CANCELLED');
-    }
-  };
-
-  const confirmPumpToggle = () => {
-    if (!confirmPump) return;
-    if (confirmPump === 'primary' && onTogglePump) {
-      onTogglePump();
-    }
-    setConfirmPump(null);
-  };
-
-  const handleValveToggle = (valve) => {
-    if (valve.pipelineId && onToggleValve) {
-      onToggleValve(valve.pipelineId);
-    }
-  };
-
-  return (
-    <div className="space-y-8">
-      {/* Removed Infrastructure Command Center and pipeline network overview */}
-
-      {/* Pump Station + Tank */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Single Pump Station */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-black flex items-center gap-2">
-              <Power size={18} /> Main Pump Station
-            </h3>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-bold ${isPumpOn ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-gray-100 text-gray-600'}`}
-            >
-              {isPumpOn ? '● RUNNING' : '○ STOPPED'}
-            </span>
-          </div>
-
-          {/* Pump Visual - Realistic Industrial Design */}
-          <div
-            className={`relative p-6 rounded-2xl border-2 mb-4 transition-all duration-500 ${isPumpOn ? 'border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-50' : 'border-gray-200 bg-gray-50'}`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Realistic Pump Motor Assembly */}
-                <div className="relative" style={{ width: '140px', height: '160px' }}>
-                  {/* Mounting Base */}
-                  <div
-                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-gradient-to-b from-stone-600 to-stone-800 rounded-sm border-2 border-stone-900"
-                    style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.4)' }}
-                  >
-                    {/* Bolt Holes */}
-                    <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
-                    <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-2 h-2 rounded-full bg-stone-900 border border-stone-700"></div>
-                  </div>
-
-                  {/* Motor Housing (Cylindrical Body) */}
-                  <div
-                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-28 rounded-lg overflow-hidden"
-                    style={{
-                      background: isPumpOn
-                        ? 'linear-gradient(90deg, #334155 0%, #475569 20%, #64748b 50%, #475569 80%, #334155 100%)'
-                        : 'linear-gradient(90deg, #1e293b 0%, #334155 20%, #475569 50%, #334155 80%, #1e293b 100%)',
-                      boxShadow: isPumpOn
-                        ? '0 8px 25px rgba(34, 197, 94, 0.3), inset -4px 0 8px rgba(0,0,0,0.3), inset 4px 0 8px rgba(255,255,255,0.1)'
-                        : '0 8px 25px rgba(0,0,0,0.5), inset -4px 0 8px rgba(0,0,0,0.4), inset 4px 0 8px rgba(255,255,255,0.05)',
-                      border: '3px solid #1e293b',
-                    }}
-                  >
-                    {/* Cooling Fins (Horizontal Lines) */}
-                    <div className="absolute inset-0">
-                      {[...Array(8)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="absolute left-0 right-0 h-0.5 bg-slate-900/40"
-                          style={{ top: `${12 + i * 10}%` }}
-                        ></div>
-                      ))}
-                    </div>
-
-                    {/* Motor Name Plate */}
-                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-yellow-600 px-2 py-0.5 rounded-sm border border-yellow-800">
-                      <p className="text-[8px] font-bold text-slate-900">7.5HP MOTOR</p>
-                    </div>
-
-                    {/* Ventilation Grills */}
-                    <div className="absolute bottom-2 left-2 right-2 flex gap-1">
-                      {[...Array(6)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 h-3 bg-slate-900/60 rounded-sm border border-slate-700"
-                        ></div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Pump Head (Front Casing) */}
-                  <div
-                    className="absolute bottom-4 right-0 w-16 h-20 rounded-r-xl overflow-hidden"
-                    style={{
-                      background:
-                        'linear-gradient(135deg, #ffffffff 0%, #000000ff 50%, #ffffffff 100%)',
-                      boxShadow:
-                        'inset -3px 0 6px rgba(0,0,0,0.4), inset 3px 0 6px rgba(255,255,255,0.1), 0 6px 20px rgba(0,0,0,0.3)',
-                      border: '2px solid #0a3a5a',
-                    }}
-                  >
-                    {/* Impeller Housing (Circular) */}
-                    <div
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-4 border-sky-900/50"
-                      style={{
-                        background:
-                          'radial-gradient(circle, #0369a1 0%, #075985 50%, #0c4a6e 100%)',
-                        boxShadow: 'inset 0 0 15px rgba(0,0,0,0.6)',
-                      }}
-                    >
-                      {/* Rotating Impeller */}
-                      <div
-                        className={`absolute inset-0 ${isPumpOn ? 'animate-spin' : ''}`}
-                        style={{ animationDuration: '1.5s' }}
-                      >
-                        {/* Impeller Blades */}
-                        {[...Array(6)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="absolute top-1/2 left-1/2 w-1 h-5 bg-cyan-400/70 rounded"
-                            style={{
-                              transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-8px)`,
-                              transformOrigin: 'center',
-                            }}
-                          ></div>
-                        ))}
-                        {/* Center Hub */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-600"></div>
-                      </div>
-                    </div>
-
-                    {/* Outlet Flange */}
-                    <div
-                      className="absolute top-0 right-0 w-6 h-8 bg-gradient-to-r from-sky-800 to-sky-900 border-2 border-sky-950 rounded-r"
-                      style={{ boxShadow: 'inset -2px 0 4px rgba(0,0,0,0.5)' }}
-                    >
-                      {/* Bolt Holes on Flange */}
-                      <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
-                      <div className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-slate-900 border border-slate-700"></div>
-                    </div>
-                  </div>
-
-                  {/* Status Indicator Light */}
-                  <div
-                    className={`absolute top-2 left-2 w-4 h-4 rounded-full border-2 border-white ${
-                      isPumpOn
-                        ? 'bg-green-400 shadow-lg shadow-green-400/80 animate-pulse'
-                        : 'bg-red-500 shadow-lg shadow-red-500/50'
-                    }`}
-                    style={{
-                      boxShadow: isPumpOn
-                        ? '0 0 15px rgba(34, 197, 94, 0.8), inset 0 1px 2px rgba(255,255,255,0.5)'
-                        : '0 0 10px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(0,0,0,0.3)',
-                    }}
-                  ></div>
-
-                  {/* Vibration Effect when Running */}
-                  {isPumpOn && (
-                    <div
-                      className="absolute inset-0 animate-pulse opacity-30 pointer-events-none"
-                      style={{
-                        background:
-                          'radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%)',
-                      }}
-                    ></div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-2xl font-black text-black">
-                    {isPumpOn ? 'RUNNING' : 'STOPPED'}
-                  </p>
-                  <p className="text-sm text-gray-500">Primary Pump • Kirloskar 7.5HP</p>
-                </div>
-              </div>
-
-              {/* Flow Animation: pipe from pump to tank */}
-              <div className="hidden xl:flex items-center gap-2">
-                <div className="flex items-center">
-                  <div className="w-40 h-6 bg-gray-300 rounded-full relative overflow-hidden border border-gray-400">
-                    {isPumpOn && (
-                      <div className="absolute inset-0">
-                        <div
-                          className="h-full bg-blue-500/70 animate-flow-right"
-                          style={{ width: '40%' }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <span className="text-xs text-blue-600 font-bold">Pump → Tank</span>
-              </div>
-            </div>
-
-            {/* Pump Metrics */}
-            <div className="grid grid-cols-4 gap-3 mt-6">
-              <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-blue-600">
-                  {(systemState?.pumpHouse?.pumpFlowOutput || 0).toFixed(0)}
-                </p>
-                <p className="text-xs text-gray-500">L/min Flow</p>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-emerald-600">
-                  {(systemState?.pumpHouse?.pumpPressureOutput || 0).toFixed(1)}
-                </p>
-                <p className="text-xs text-gray-500">Bar Pressure</p>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-amber-600">
-                  {(systemState?.pumpHouse?.powerConsumption || 0).toFixed(1)}
-                </p>
-                <p className="text-xs text-gray-500">kW Power</p>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg border">
-                <p className="text-2xl font-black text-purple-600">
-                  {(systemState?.pumpHouse?.pumpRunningHours || 0).toFixed(1)}
-                </p>
-                <p className="text-xs text-gray-500">Hours Run</p>
-              </div>
-            </div>
-
-            {/* Motor Temperature */}
-            <div className="mt-4 p-3 bg-white rounded-lg border flex items-center justify-between">
-              <span className="text-sm text-gray-600">Motor Temperature</span>
-              <span
-                className={`text-lg font-bold ${(systemState?.pumpHouse?.motorTemperature || 25) > 55 ? 'text-red-600' : 'text-green-600'}`}
-              >
-                {(systemState?.pumpHouse?.motorTemperature || 25).toFixed(1)}°C
-              </span>
-            </div>
-          </div>
-
-          {/* Pump Control Button */}
-          <button
-            onClick={() => handlePumpToggle('primary')}
-            className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
-              isPumpOn
-                ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200'
-                : 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-200'
-            }`}
-          >
-            {isPumpOn ? <Square size={20} /> : <Play size={20} />}
-            {isPumpOn ? 'STOP PUMP' : 'START PUMP'}
-          </button>
-
-          {/* Open Pipelines Count */}
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <p className="text-sm text-blue-700">
-              <strong>
-                {systemState?.pipelines?.filter((p) => p.valveStatus === 'OPEN').length || 0}
-              </strong>{' '}
-              of 5 pipelines open
-              {isPumpOn &&
-                systemState?.pipelines?.filter((p) => p.valveStatus === 'OPEN').length === 0 && (
-                  <span className="ml-2 text-green-600 font-bold">• Tank Filling</span>
-                )}
-            </p>
-          </div>
-
-          {/* Pump Scheduler Controls */}
-          <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                <Clock size={14} className="text-blue-600" />
-                Pump Scheduler
-              </p>
-              <span className="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-bold">
-                Mode: {scheduleMode}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  max={240}
-                  value={pumpTimerMinutes}
-                  onChange={(e) => setPumpTimerMinutes(e.target.value)}
-                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
-                />
-                <button
-                  onClick={triggerPumpTimer}
-                  className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition-colors"
-                >
-                  Run Timer
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="datetime-local"
-                  value={pumpStopAt || ''}
-                  onChange={(e) => setPumpStopAt(e.target.value)}
-                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
-                />
-                <button
-                  onClick={triggerPumpStopAt}
-                  className="px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
-                >
-                  Schedule Stop
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
-              <span>
-                Next auto-stop: {scheduleMode === 'TIMER' ? scheduleCountdown : scheduleStopTime}
-              </span>
-              <span>Failsafe: Tank 100% cutoff active</span>
-              <button
-                onClick={clearPumpSchedule}
-                className="text-rose-600 font-bold hover:underline"
-              >
-                Clear schedule
-              </button>
-            </div>
-            {lastScheduleEvent && (
-              <p className="text-[11px] text-slate-500">Last event: {lastScheduleEvent}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Tank Status with Filling Animation */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-black flex items-center gap-2">
-              <Droplet size={18} /> Water Tank Status
-            </h3>
-            {systemState?.overheadTank?.isFilling && (
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 animate-pulse">
-                ↑ FILLING
-              </span>
-            )}
-            {!systemState?.overheadTank?.isFilling && inflow < outflow && isPumpOn && (
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                ↓ DRAINING
-              </span>
-            )}
-          </div>
-          <div className="space-y-4">
-            {/* Tank Visual with Animation */}
-            <div className="relative h-48 bg-slate-200 rounded-2xl overflow-hidden border-4 border-slate-300">
-              {/* Water Level */}
-              <div className="absolute inset-0 flex flex-col justify-end">
-                <div
-                  className={`w-full transition-all duration-1000 ${
-                    systemState?.overheadTank?.isFilling
-                      ? 'bg-gradient-to-t from-blue-600 via-blue-400 to-cyan-300'
-                      : 'bg-gradient-to-t from-blue-500 via-blue-400 to-blue-300'
-                  }`}
-                  style={{ height: `${Math.max(0, Math.min(100, tankLevel))}%` }}
-                >
-                  {/* Wave Animation when filling */}
-                  {systemState?.overheadTank?.isFilling && (
-                    <div className="absolute top-0 left-0 right-0 h-4 overflow-hidden">
-                      <div className="animate-wave bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 h-full opacity-70"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Bubbles animation when filling */}
-              {systemState?.overheadTank?.isFilling && (
-                <div className="absolute inset-0 pointer-events-none">
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute w-2 h-2 bg-white/50 rounded-full animate-bubble"
-                      style={{
-                        left: `${15 + i * 15}%`,
-                        bottom: '10%',
-                        animationDelay: `${i * 0.3}s`,
-                        animationDuration: '2s',
-                      }}
-                    ></div>
-                  ))}
-                </div>
-              )}
-
-              {/* Tank Info Overlay */}
-              <div className="absolute inset-0 flex flex-col justify-between p-4">
-                <div className="flex justify-between text-xs font-bold text-slate-500">
-                  <span>100%</span>
-                  <span className="text-white bg-black/30 px-2 py-0.5 rounded">
-                    {systemState?.overheadTank?.isFilling
-                      ? '▲ Filling'
-                      : inflow < outflow
-                        ? '▼ Draining'
-                        : '— Stable'}
-                  </span>
-                </div>
-                <div className="text-center text-white drop-shadow-lg">
-                  <p className="text-4xl font-black">
-                    {Math.max(0, Math.min(100, tankLevel)).toFixed(1)}%
-                  </p>
-                  <p className="text-sm uppercase tracking-wide font-bold">
-                    {currentVolume.toLocaleString()} / {tankCapacity.toLocaleString()} L
-                  </p>
-                </div>
-                <div className="text-xs text-slate-500 font-bold">0%</div>
-              </div>
-            </div>
-
-            {/* Water Quality Metrics */}
-            {systemState?.overheadTank?.waterQuality && (
-              <div className="grid grid-cols-4 gap-2 text-xs">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-blue-700">
-                    {systemState.overheadTank.waterQuality.pH.toFixed(2)}
-                  </p>
-                  <p className="text-blue-500">pH</p>
-                </div>
-                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-cyan-700">
-                    {systemState.overheadTank.waterQuality.turbidity.toFixed(2)}
-                  </p>
-                  <p className="text-cyan-500">NTU</p>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-green-700">
-                    {systemState.overheadTank.waterQuality.chlorine.toFixed(2)}
-                  </p>
-                  <p className="text-green-500">Cl mg/L</p>
-                </div>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 text-center">
-                  <p className="font-bold text-purple-700">
-                    {systemState.overheadTank.waterQuality.TDS.toFixed(0)}
-                  </p>
-                  <p className="text-purple-500">TDS</p>
-                </div>
-              </div>
-            )}
-
-            {/* Flow Metrics */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div
-                className={`border rounded-xl p-3 ${inflow > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}
-              >
-                <p className="text-gray-500 flex items-center gap-1">
-                  <span className={inflow > 0 ? 'text-green-500' : ''}>↓</span> Inflow Rate
-                </p>
-                <p
-                  className={`text-xl font-bold ${inflow > 0 ? 'text-green-600' : 'text-gray-600'}`}
-                >
-                  {inflow.toFixed(0)} L/min
-                </p>
-              </div>
-              <div
-                className={`border rounded-xl p-3 ${outflow > 0 ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}
-              >
-                <p className="text-gray-500 flex items-center gap-1">
-                  <span className={outflow > 0 ? 'text-amber-500' : ''}>↑</span> Outflow Rate
-                </p>
-                <p
-                  className={`text-xl font-bold ${outflow > 0 ? 'text-amber-600' : 'text-gray-600'}`}
-                >
-                  {outflow.toFixed(0)} L/min
-                </p>
-              </div>
-            </div>
-
-            {/* Valve Controls */}
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() =>
-                  onToggleValve && systemState?.pipelines?.forEach((_, i) => onToggleValve(i + 1))
-                }
-                className="py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-all"
-              >
-                Toggle All Valves
-              </button>
-              <button className="py-2 text-xs font-bold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
-                View Tank History
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Valves and Sensors */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
-          <div className="p-4 border-b bg-green-50 flex items-center justify-between">
-            <h3 className="font-bold text-green-900 flex items-center gap-2">
-              <PenTool size={18} /> Valve Control Matrix
-            </h3>
-            <span className="text-xs font-semibold text-green-700">
-              {valves.filter((v) => v.state === 'OPEN').length} OPEN / {valves.length} TOTAL
-            </span>
-          </div>
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-            {valves.map((valve) => (
-              <div key={valve.id} className="p-3 rounded-xl border">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-semibold text-black">{valve.id}</p>
-                  <span
-                    className={`text-2xs px-2 py-0.5 rounded-full font-bold ${valve.state === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-black'}`}
-                  >
-                    {valve.state}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500">{valve.location}</p>
-                <p className="text-2xs text-gray-400 mt-1">Mode: {valve.automation}</p>
-                <p className="text-2xs text-gray-400">Last action: {valve.lastAction}</p>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => handleValveToggle(valve)}
-                    className={`flex-1 text-2xs py-1.5 rounded-lg border font-bold ${
-                      valve.state === 'OPEN'
-                        ? 'bg-red-50 border-red-200 text-red-700'
-                        : 'bg-green-50 border-green-200 text-green-700'
-                    }`}
-                  >
-                    {valve.state === 'OPEN' ? 'Close Valve' : 'Open Valve'}
-                  </button>
-                  <button className="flex-1 text-2xs py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border-2 border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
-          <div className="p-4 border-b bg-emerald-50 flex items-center justify-between">
-            <h3 className="font-bold text-emerald-900 flex items-center gap-2">
-              <Microscope size={18} /> Sensor Health Dashboard
-            </h3>
-            <span className="text-xs font-semibold text-emerald-600">
-              Avg Battery:{' '}
-              {Math.round(sensors.reduce((acc, s) => acc + s.battery, 0) / sensors.length)}%
-            </span>
-          </div>
-          <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-            {sensors.map((sensor) => (
-              <div
-                key={sensor.id}
-                className={`flex items-center justify-between rounded-xl border p-3 ${
-                  sensor.status === 'WARNING'
-                    ? 'border-amber-300 bg-amber-50'
-                    : sensor.status === 'INACTIVE'
-                      ? 'border-gray-200 bg-gray-50'
-                      : 'border-emerald-200 bg-emerald-50'
-                }`}
-              >
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-black">
-                    {sensor.id} • {sensor.type}
-                  </p>
-                  <p className="text-xs text-gray-500">{sensor.location}</p>
-                  {sensor.value && (
-                    <p className="text-xs font-bold text-blue-600 mt-1">Current: {sensor.value}</p>
-                  )}
-                  <p className="text-2xs text-gray-400 mt-1">
-                    Last transmission: {sensor.lastSeen}
-                  </p>
-                  {sensor.status && (
-                    <span
-                      className={`text-2xs px-2 py-0.5 rounded-full font-bold mt-1 inline-block ${
-                        sensor.status === 'ACTIVE'
-                          ? 'bg-green-100 text-green-700'
-                          : sensor.status === 'WARNING'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {sensor.status}
-                    </span>
-                  )}
-                </div>
-                <div className="text-right ml-4">
-                  <p className="text-xs text-gray-500">Battery</p>
-                  <p
-                    className={`text-lg font-bold ${sensor.battery < 50 ? 'text-red-600' : 'text-green-600'}`}
-                  >
-                    {sensor.battery}%
-                  </p>
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                    <div
-                      className={`h-full ${sensor.battery < 50 ? 'bg-red-500' : 'bg-emerald-500'}`}
-                      style={{ width: `${sensor.battery}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Pump Performance Chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b bg-slate-50 flex items-center gap-2">
-          <Activity size={18} className="text-slate-600" />
-          <h3 className="font-bold text-slate-800">Flow vs Pressure Trends</h3>
-        </div>
-        <div className="p-6 h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={history}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="time" hide />
-              <YAxis
-                yAxisId="left"
-                label={{ value: 'Flow (L/m)', angle: -90, position: 'insideLeft' }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                label={{ value: 'Pressure (Bar)', angle: 90, position: 'insideRight' }}
-              />
-              <Tooltip />
-              <Legend />
-              <Area
-                yAxisId="left"
-                type="monotone"
-                dataKey="pumpFlowRate"
-                fill="#dbeafe"
-                stroke="#3b82f6"
-                name="Flow Rate"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="pipePressure"
-                stroke="#ef4444"
-                strokeWidth={2}
-                name="Pipe Pressure"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {confirmPump && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden border-2 border-gray-200">
-            <div className="p-5 border-b bg-amber-50 flex items-center gap-3">
-              <AlertTriangle size={20} className="text-amber-600" />
-              <div>
-                <p className="text-sm font-bold text-amber-700 uppercase tracking-wide">
-                  Confirm Action
-                </p>
-                <p className="text-xs text-amber-600">Pump {confirmPump.toUpperCase()}</p>
-              </div>
-            </div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-black">
-                Are you sure you want to {data.pumpStatus === 'RUNNING' ? 'stop' : 'start'} the{' '}
-                <strong>{confirmPump} pump</strong>? This will update the live infrastructure status
-                and may affect current supply schedule.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmPump(null)}
-                  className="flex-1 py-2 rounded-xl border text-black font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmPumpToggle}
-                  className={`flex-1 py-2 rounded-xl font-bold text-white ${data.pumpStatus === 'RUNNING' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const DailyOperationDashboard = ({ data, user, logInspection, history }) => {
   const [costPerUnit] = useState(8);
@@ -1970,84 +1093,6 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
             </div>
           </div>
 
-          {/* Pressure Sensors Network */}
-          <div className="bg-white rounded-xl border-2 border-purple-200 shadow-lg overflow-hidden">
-            <div className="bg-purple-600 px-4 py-3 flex items-center justify-between">
-              <h4 className="font-bold text-white flex items-center gap-2">
-                <Gauge size={18} /> Pressure Sensor Network
-              </h4>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
-                ✓ ALL ONLINE
-              </span>
-            </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { zone: 'Inlet', pressure: 2.8, threshold: 3.5 },
-                { zone: 'Pump Outlet', pressure: 4.2, threshold: 5.0 },
-                { zone: 'Distribution', pressure: 3.1, threshold: 4.0 },
-                { zone: 'Tank Inlet', pressure: 2.5, threshold: 3.0 },
-              ].map((sensor, idx) => (
-                <div key={idx} className="space-y-2 bg-purple-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-700">{sensor.zone}</span>
-                    <span
-                      className={`text-sm font-black ${sensor.pressure < sensor.threshold * 0.6 ? 'text-red-600' : 'text-green-600'}`}
-                    >
-                      {sensor.pressure.toFixed(1)} Bar
-                    </span>
-                  </div>
-                  <div className="w-full bg-purple-200 rounded-full h-1.5">
-                    <div
-                      className={`h-1.5 rounded-full transition-all ${sensor.pressure < sensor.threshold * 0.6 ? 'bg-red-600' : 'bg-green-600'}`}
-                      style={{ width: `${(sensor.pressure / sensor.threshold) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-2xs text-purple-600">
-                    {sensor.pressure < sensor.threshold * 0.6 ? '⚠ Low pressure' : '✓ Normal'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Valve Status Matrix */}
-          <div className="bg-white rounded-xl border-2 border-emerald-200 shadow-lg overflow-hidden">
-            <div className="bg-emerald-600 px-4 py-3 flex items-center justify-between">
-              <h4 className="font-bold text-white flex items-center gap-2">
-                <Settings size={18} /> Valve Control Matrix
-              </h4>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
-                6/6 OPERATIONAL
-              </span>
-            </div>
-            <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { name: 'Main Inlet', status: 'OPEN', cycles: 342 },
-                { name: 'Pump Bypass', status: 'CLOSED', cycles: 89 },
-                { name: 'Tank Inlet', status: 'OPEN', cycles: 521 },
-                { name: 'Tank Outlet', status: 'CLOSED', cycles: 467 },
-                { name: 'Distribution 1', status: 'OPEN', cycles: 234 },
-                { name: 'Distribution 2', status: 'OPEN', cycles: 198 },
-              ].map((valve, idx) => (
-                <div key={idx} className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xs font-bold text-emerald-700 uppercase">
-                      {valve.name}
-                    </span>
-                    <div
-                      className={`w-3 h-3 rounded-full ${valve.status === 'OPEN' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}
-                    ></div>
-                  </div>
-                  <p className="text-xs font-black text-slate-900">{valve.status}</p>
-                  <p className="text-2xs text-slate-500 mt-1">{valve.cycles} cycles</p>
-                  <p className="text-2xs text-emerald-600 mt-1">
-                    {valve.cycles > 500 ? '⚠ Service soon' : '✓ Good condition'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Water Quality Sensors */}
           <div className="bg-white rounded-lg md:rounded-xl border md:border-2 border-cyan-200 shadow-lg overflow-hidden">
             <div className="bg-cyan-600 px-2 md:px-4 py-2 md:py-3 flex items-center justify-between">
@@ -2136,601 +1181,8 @@ const ForecastingDashboard = ({ data, flow24h, systemState }) => {
 };
 
 const ReportsDashboard = ({ data, history, flow24h, alerts, tickets, systemState }) => {
-  const [selectedReport, setSelectedReport] = useState('daily');
-  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [endDate, setEndDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().slice(0, 10);
-  });
-  const [comparisonEnabled, setComparisonEnabled] = useState(true);
-  const [exportFormat, setExportFormat] = useState('pdf');
-  const [autoSchedule, setAutoSchedule] = useState(false);
-
-  const templates = [
-    {
-      id: 'daily',
-      title: 'Daily Operations Summary',
-      description: 'Production, distribution and complaints snapshot',
-      icon: Clipboard,
-    },
-    {
-      id: 'weekly',
-      title: 'Weekly Water Supply',
-      description: 'Supply hours vs demand fulfilment',
-      icon: Calendar,
-    },
-    {
-      id: 'maintenance',
-      title: 'Monthly Maintenance Log',
-      description: 'Work orders and inspections',
-      icon: Wrench,
-    },
-    {
-      id: 'alerts',
-      title: 'Alert Response Time',
-      description: 'Detection to closure timeline',
-      icon: AlertCircle,
-    },
-    {
-      id: 'quality',
-      title: 'Water Quality Trends',
-      description: 'pH, turbidity and chlorine compliance',
-      icon: Beaker,
-    },
-    {
-      id: 'energy',
-      title: 'Energy Consumption',
-      description: 'kWh, peak/off-peak, cost per KL',
-      icon: Zap,
-    },
-  ];
-
-  const weeklySupplyData = flow24h.slice(0, 7).map((entry, idx) => ({
-    day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx],
-    supply: Math.round(85 + Math.random() * 15),
-    demand: Math.round(90 + Math.random() * 10),
-  }));
-
-  const alertResponseData = alerts.slice(0, 5).map((alert, idx) => ({
-    name: alert.area || `Zone ${idx + 1}`,
-    detection: Math.round(5 + Math.random() * 10),
-    dispatch: Math.round(15 + Math.random() * 20),
-    resolution: Math.round(30 + Math.random() * 40),
-  }));
-
-  const saveSchedule = () => {
-    setAutoSchedule(true);
-  };
-
-  const exportReport = (format) => {
-    setExportFormat(format);
-    alert(`Report exported as ${format.toUpperCase()}`);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-black flex items-center gap-3">
-            <FileBarChart size={32} className="text-indigo-600" /> Reports & Analytics Studio
-          </h2>
-          <p className="text-sm text-gray-500">
-            Generate on-demand and scheduled reports with multi-format export
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <label className="text-xs text-gray-500 font-bold uppercase">Date Range</label>
-          <div className="flex flex-wrap gap-2">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border rounded-xl text-sm"
-            />
-            <span className="text-xs text-gray-400 flex items-center">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border rounded-xl text-sm"
-            />
-            <label className="flex items-center gap-2 text-xs font-semibold text-black bg-gray-100 px-3 py-2 rounded-xl">
-              <input
-                type="checkbox"
-                checked={comparisonEnabled}
-                onChange={(e) => setComparisonEnabled(e.target.checked)}
-              />
-              Compare prev. period
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Templates */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {templates.map((template) => {
-          const Icon = template.icon;
-          const active = selectedReport === template.id;
-          return (
-            <button
-              key={template.id}
-              onClick={() => setSelectedReport(template.id)}
-              className={`p-4 rounded-2xl border-2 text-left transition-all hover:shadow-lg ${active ? 'border-green-600 bg-green-50' : 'border-gray-100 bg-white'}`}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div
-                  className={`p-2 rounded-xl ${active ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}
-                >
-                  <Icon size={18} />
-                </div>
-                <h3 className="font-bold text-black">{template.title}</h3>
-              </div>
-              <p className="text-xs text-gray-500">{template.description}</p>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Visualizations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-black flex items-center gap-2">
-              <BarChart3 size={18} /> Weekly Supply vs Demand
-            </h3>
-            <span className="text-xs text-gray-400">Liters x 1000</span>
-          </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklySupplyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="supply" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Supply" />
-                <Bar dataKey="demand" fill="#f97316" radius={[6, 6, 0, 0]} name="Demand" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-black flex items-center gap-2">
-              <Activity size={18} /> Alert Response Analysis
-            </h3>
-            <span className="text-xs text-gray-400">Minutes</span>
-          </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={alertResponseData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="detection" stackId="a" fill="#22c55e" name="Detection" />
-                <Bar dataKey="dispatch" stackId="a" fill="#3b82f6" name="Dispatch" />
-                <Bar dataKey="resolution" stackId="a" fill="#f97316" name="Resolution" />
-                <Line type="monotone" dataKey="resolution" stroke="#ef4444" strokeWidth={2} dot />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Export & Scheduling */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <FileText size={18} /> Export Options
-          </h3>
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {['pdf', 'excel', 'csv'].map((format) => (
-              <button
-                key={format}
-                onClick={() => exportReport(format)}
-                className={`py-3 rounded-xl border font-bold text-sm uppercase ${exportFormat === format ? 'bg-amber-500 text-white border-amber-500' : 'border-gray-200 text-black'}`}
-              >
-                {format}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-3 text-xs">
-            <button className="px-4 py-2 rounded-xl bg-gray-50 border text-black font-bold flex items-center gap-2">
-              <Download size={14} /> Download Report
-            </button>
-            <button className="px-4 py-2 rounded-xl bg-green-50 border border-green-200 text-green-700 font-bold flex items-center gap-2">
-              <Share2 size={14} /> Share with Authorities
-            </button>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <CalendarClock size={18} /> Automated Scheduling
-          </h3>
-          <div className="space-y-3 text-sm">
-            <label className="flex items-center gap-2 font-semibold">
-              <input
-                type="checkbox"
-                checked={autoSchedule}
-                onChange={(e) => setAutoSchedule(e.target.checked)}
-              />
-              Enable scheduled emails
-            </label>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <p className="text-gray-500 mb-1">Frequency</p>
-                <select className="w-full border rounded-xl px-3 py-2">
-                  <option>Daily 7:00 AM</option>
-                  <option>Weekly Monday</option>
-                  <option>Monthly 1st</option>
-                </select>
-              </div>
-              <div>
-                <p className="text-gray-500 mb-1">Recipients</p>
-                <input
-                  type="text"
-                  placeholder="ops@district.gov.in"
-                  className="w-full border rounded-xl px-3 py-2"
-                />
-              </div>
-            </div>
-            <button
-              onClick={saveSchedule}
-              className="w-full py-3 rounded-full bg-green-600 text-white font-bold text-sm mt-2 hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-            >
-              Save Schedule
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Custom Widgets */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-black flex items-center gap-2">
-            <LayoutDashboard size={18} /> Custom Dashboard Widgets
-          </h3>
-          <button className="px-4 py-2 text-xs font-bold rounded-xl border bg-gray-50">
-            Add Widget
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="p-4 border rounded-xl bg-gray-50">
-            <p className="text-xs text-gray-500 uppercase mb-2">Population Projection</p>
-            <p className="text-3xl font-bold text-black">+4.2%</p>
-            <p className="text-xs text-gray-400">Expected demand increase next year</p>
-          </div>
-          <div className="p-4 border rounded-xl bg-gray-50">
-            <p className="text-xs text-gray-500 uppercase mb-2">Compliance Score</p>
-            <p className="text-3xl font-bold text-emerald-600">92%</p>
-            <p className="text-xs text-gray-400">Water quality compliance</p>
-          </div>
-          <div className="p-4 border rounded-xl bg-gray-50">
-            <p className="text-xs text-gray-500 uppercase mb-2">Report Turnaround</p>
-            <p className="text-3xl font-bold text-blue-600">14 min</p>
-            <p className="text-xs text-gray-400">Average generation time</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Comprehensive Maintenance Schedule Overview */}
-      {systemState && (
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-8 shadow-xl">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-3">
-              <CalendarClock size={28} className="text-indigo-600" />
-              System-Wide Maintenance Schedule
-            </h2>
-            <div className="px-4 py-2 rounded-full bg-white border-2 border-indigo-300">
-              <span className="text-sm font-bold text-indigo-700">Predictive Maintenance</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Pump House Maintenance */}
-            {systemState.pumpHouse && (
-              <MaintenanceCard
-                title="Pump Station"
-                lastMaintenanceDate={systemState.pumpHouse.lastMaintenanceDate}
-                nextMaintenanceDate={systemState.pumpHouse.nextMaintenanceDate}
-                maintenanceIntervalDays={systemState.pumpHouse.maintenanceIntervalDays}
-                maintenanceHistory={systemState.pumpHouse.maintenanceHistory}
-                type="pump"
-                additionalMetrics={[
-                  {
-                    label: 'Operation Cycles',
-                    value: systemState.pumpHouse.operationCycles?.toLocaleString() || '0',
-                  },
-                  {
-                    label: 'Vibration',
-                    value: `${systemState.pumpHouse.vibration?.toFixed(1) || '0'} mm/s`,
-                  },
-                  {
-                    label: 'Motor Temp',
-                    value: `${systemState.pumpHouse.motorTemperature?.toFixed(1) || '0'}°C`,
-                  },
-                  {
-                    label: 'Efficiency',
-                    value: `${systemState.pumpHouse.pumpEfficiency?.toFixed(0) || '0'}%`,
-                  },
-                ]}
-              />
-            )}
-
-            {/* Water Tank Maintenance */}
-            {systemState.overheadTank && (
-              <MaintenanceCard
-                title="Overhead Water Tank"
-                lastMaintenanceDate={systemState.overheadTank.lastMaintenanceDate}
-                nextMaintenanceDate={systemState.overheadTank.nextMaintenanceDate}
-                maintenanceIntervalDays={systemState.overheadTank.maintenanceIntervalDays}
-                maintenanceHistory={systemState.overheadTank.maintenanceHistory}
-                type="tank"
-                additionalMetrics={[
-                  {
-                    label: 'Capacity',
-                    value: `${(systemState.overheadTank.tankCapacity / 1000).toFixed(0)} kL`,
-                  },
-                  {
-                    label: 'Current Level',
-                    value: `${systemState.overheadTank.tankLevel?.toFixed(1)}%`,
-                  },
-                  {
-                    label: 'Water Quality',
-                    value:
-                      systemState.overheadTank.waterQuality?.pH >= 6.5 &&
-                      systemState.overheadTank.waterQuality?.pH <= 8.5
-                        ? 'Safe'
-                        : 'Alert',
-                  },
-                  {
-                    label: 'Temperature',
-                    value: `${systemState.overheadTank.temperature?.toFixed(1)}°C`,
-                  },
-                ]}
-              />
-            )}
-          </div>
-
-          {/* Pipeline Maintenance Grid */}
-          {systemState.pipelines && systemState.pipelines.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
-                <Wrench size={22} className="text-indigo-600" />
-                Pipeline Network Maintenance
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                {systemState.pipelines.map((pipeline, idx) => (
-                  <MaintenanceCard
-                    key={idx}
-                    title={`Pipeline ${pipeline.pipelineId}: ${pipeline.pipelineName}`}
-                    lastMaintenanceDate={pipeline.lastInspectionDate}
-                    nextMaintenanceDate={pipeline.nextInspectionDate}
-                    maintenanceIntervalDays={pipeline.inspectionIntervalDays}
-                    maintenanceHistory={pipeline.maintenanceHistory}
-                    type="pipeline"
-                    additionalMetrics={[
-                      {
-                        label: 'Length',
-                        value: `${pipeline.pipelineLength} m`,
-                        subtext: `${pipeline.pipelineDiameter} mm dia`,
-                      },
-                      {
-                        label: 'Condition Score',
-                        value: `${pipeline.pipelineConditionScore}%`,
-                        subtext: pipeline.pipelineConditionScore < 70 ? '⚠️ Fair' : '✓ Good',
-                      },
-                      {
-                        label: 'Leakage Risk',
-                        value: `${pipeline.leakageProbability}%`,
-                        subtext: pipeline.leakageProbability > 10 ? '⚠️ High' : '✓ Low',
-                      },
-                      {
-                        label: 'Valve Cycles',
-                        value: pipeline.valveOperationCycles?.toLocaleString(),
-                        subtext: 'Operation count',
-                      },
-                    ]}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Sensor Calibration Schedule */}
-          {systemState.pipelines && systemState.pipelines.length > 0 && (
-            <div className="mt-6 bg-white rounded-xl p-6 border-2 border-gray-200 shadow-md">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Activity size={22} className="text-blue-600" />
-                Sensor Calibration Schedule
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {systemState.pipelines.slice(0, 3).map((pipeline) => (
-                  <div key={pipeline.pipelineId} className="space-y-3">
-                    <h4 className="text-sm font-bold text-gray-700 border-b pb-2">
-                      Pipeline {pipeline.pipelineId} Sensors
-                    </h4>
-
-                    {/* Flow Sensor */}
-                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">
-                          Flow Sensor (Inlet)
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">
-                          {pipeline.inlet.flowSensor.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span>{' '}
-                        {new Date(pipeline.inlet.flowSensor.lastCalibrationDate).toLocaleDateString(
-                          'en-IN',
-                          { day: '2-digit', month: 'short' }
-                        )}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span>{' '}
-                        {new Date(pipeline.inlet.flowSensor.nextCalibrationDate).toLocaleDateString(
-                          'en-IN',
-                          { day: '2-digit', month: 'short' }
-                        )}
-                      </p>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-blue-500 h-full rounded-full"
-                            style={{
-                              width: `${Math.min(((Date.now() - pipeline.inlet.flowSensor.lastCalibrationDate) / (pipeline.inlet.flowSensor.nextCalibrationDate - pipeline.inlet.flowSensor.lastCalibrationDate)) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pressure Sensor */}
-                    <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">
-                          Pressure Sensor (Inlet)
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold">
-                          {pipeline.inlet.pressureSensor.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span>{' '}
-                        {new Date(
-                          pipeline.inlet.pressureSensor.lastCalibrationDate
-                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span>{' '}
-                        {new Date(
-                          pipeline.inlet.pressureSensor.nextCalibrationDate
-                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                      </p>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-purple-500 h-full rounded-full"
-                            style={{
-                              width: `${Math.min(((Date.now() - pipeline.inlet.pressureSensor.lastCalibrationDate) / (pipeline.inlet.pressureSensor.nextCalibrationDate - pipeline.inlet.pressureSensor.lastCalibrationDate)) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quality Sensor */}
-                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">
-                          Quality Sensor (Inlet)
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">
-                          {pipeline.inlet.qualitySensor.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-1">
-                        <span className="font-semibold">Last Cal:</span>{' '}
-                        {new Date(
-                          pipeline.inlet.qualitySensor.lastCalibrationDate
-                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-semibold">Next Cal:</span>{' '}
-                        {new Date(
-                          pipeline.inlet.qualitySensor.nextCalibrationDate
-                        ).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                      </p>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-emerald-500 h-full rounded-full"
-                            style={{
-                              width: `${Math.min(((Date.now() - pipeline.inlet.qualitySensor.lastCalibrationDate) / (pipeline.inlet.qualitySensor.nextCalibrationDate - pipeline.inlet.qualitySensor.lastCalibrationDate)) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Maintenance Summary Stats */}
-          <div className="mt-6 bg-white rounded-xl p-6 border-2 border-gray-200 shadow-md">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <BarChart3 size={22} className="text-indigo-600" />
-              Maintenance Overview
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                <p className="text-xs text-gray-600 uppercase mb-1">Total Components</p>
-                <p className="text-3xl font-black text-blue-700">
-                  {2 + (systemState.pipelines?.length || 0)}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Under monitoring</p>
-              </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                <p className="text-xs text-gray-600 uppercase mb-1">Up to Date</p>
-                <p className="text-3xl font-black text-green-700">
-                  {
-                    [
-                      systemState.pumpHouse,
-                      systemState.overheadTank,
-                      ...(systemState.pipelines || []),
-                    ].filter(
-                      (c) =>
-                        c.nextMaintenanceDate > Date.now() &&
-                        (Date.now() - c.lastMaintenanceDate) / (24 * 60 * 60 * 1000) <
-                          (c.maintenanceIntervalDays || c.inspectionIntervalDays)
-                    ).length
-                  }
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Maintained recently</p>
-              </div>
-              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
-                <p className="text-xs text-gray-600 uppercase mb-1">Due Soon</p>
-                <p className="text-3xl font-black text-yellow-700">
-                  {
-                    [
-                      systemState.pumpHouse,
-                      systemState.overheadTank,
-                      ...(systemState.pipelines || []),
-                    ].filter((c) => {
-                      const daysUntil = Math.ceil(
-                        (c.nextMaintenanceDate - Date.now()) / (24 * 60 * 60 * 1000)
-                      );
-                      return daysUntil > 0 && daysUntil <= 14;
-                    }).length
-                  }
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Within 14 days</p>
-              </div>
-              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
-                <p className="text-xs text-gray-600 uppercase mb-1">Overdue</p>
-                <p className="text-3xl font-black text-red-700">
-                  {
-                    [
-                      systemState.pumpHouse,
-                      systemState.overheadTank,
-                      ...(systemState.pipelines || []),
-                    ].filter((c) => c.nextMaintenanceDate < Date.now()).length
-                  }
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Requires attention</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <div>ReportsDashboard - To be implemented</div>
   );
 };
 
@@ -2803,64 +1255,6 @@ const AccountabilityDashboard = ({ data, logs, alerts, complaints, responseTimeD
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const GISDashboard = () => {
-  return (
-    <div className="space-y-6 h-[calc(100vh-120px)] flex flex-col">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-          <Map size={28} className="text-emerald-600" /> GIS Mapping & Pipeline Network
-        </h2>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-          <div className="bg-emerald-50 p-3 border-b border-emerald-100 flex justify-between items-center">
-            <h3 className="font-bold text-emerald-800 text-sm flex items-center gap-2">
-              <MapPin size={16} /> Pipeline Network View (Padur, Chennai)
-            </h3>
-            <span className="text-xs bg-white px-2 py-1 rounded border text-emerald-600 font-bold">
-              Interactive Map
-            </span>
-          </div>
-
-          <div className="flex-1 relative bg-slate-100">
-            <PipelineMapViewer
-              pipelineData={samplePipelineData}
-              infrastructureData={sampleInfrastructureData}
-            />
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border shadow-sm flex flex-col">
-          <div className="bg-red-50 p-4 border-b border-red-100">
-            <h3 className="font-bold text-red-800 flex items-center gap-2">
-              <AlertTriangle size={18} /> Active Hazard Registry
-            </h3>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {HAZARD_LOGS.map((hazard) => (
-              <div
-                key={hazard.id}
-                className="p-3 border rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-bold text-black">{hazard.type}</span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded font-bold ${hazard.status === 'Active' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
-                  >
-                    {hazard.status}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                  <MapPin size={10} /> {hazard.area}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -3139,203 +1533,30 @@ const EnergyDashboard = ({ data, history }) => {
           </button>
         </div>
       </div>
-
-      {/* Load Shedding & Comparison */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <Calendar size={18} /> Load Shedding Schedule
-          </h3>
-          <div className="space-y-3 text-sm">
-            {[
-              { window: '06:00 - 07:00', impact: 'Auto start generator', status: 'Mitigated' },
-              { window: '14:00 - 15:30', impact: 'Reduce booster speed', status: 'Upcoming' },
-              { window: '22:00 - 23:00', impact: 'Shift flushing operations', status: 'Planned' },
-            ].map((slot) => (
-              <div
-                key={slot.window}
-                className="p-3 rounded-xl border bg-gray-50 flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-bold text-black">{slot.window}</p>
-                  <p className="text-xs text-gray-500">{slot.impact}</p>
-                </div>
-                <span
-                  className={`text-2xs font-bold px-3 py-1 rounded-full ${slot.status === 'Mitigated' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}
-                >
-                  {slot.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-black mb-4 flex items-center gap-2">
-            <Gauge size={18} /> Comparison with Similar Systems
-          </h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span>Energy / kL</span>
-              <span className="font-bold text-black">{energyPerKL} vs 0.55 (State Avg)</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Peak Demand</span>
-              <span className="font-bold text-black">{pumpPowerKW.toFixed(1)} kW vs 45 kW</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Solar Contribution</span>
-              <span className="font-bold text-black">{renewableContribution.solar}% vs 12%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Generator Runtime</span>
-              <span className="font-bold text-black">2.5h vs 3.0h</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
 const TicketingDashboard = ({ tickets, resolveTicket, data }) => {
-  const [filter, setFilter] = useState('All');
-  const filteredTickets = filter === 'All' ? tickets : tickets.filter((t) => t.status === filter);
+  return (
+    <div>TicketingDashboard - To be implemented</div>
+  );
+};
 
+const GISDashboard = ({ systemState }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-black flex items-center gap-2">
-          <Ticket size={28} className="text-blue-600" /> User Complaint Help Desk
+          <Map size={28} className="text-emerald-600" /> GIS Mapping & Pipeline Network
         </h2>
-        <button className="bg-green-600 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg hover:bg-green-700 hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:scale-105 active:scale-95">
-          <PlusCircle size={16} /> New Ticket
-        </button>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Ticket List */}
-        <div className="lg:col-span-2 bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
-          <div className="bg-gray-50 p-4 border-b border-gray-200 flex gap-2 items-center">
-            <Filter size={16} className="text-gray-500" />
-            {['All', 'Open', 'Resolved'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === f ? 'bg-green-100 text-green-800 border border-green-600' : 'text-black hover:bg-gray-200'}`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-          <div className="p-0 overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-500 border-b">
-                <tr>
-                  <th className="p-4 font-semibold">Ticket ID</th>
-                  <th className="p-4 font-semibold">Date</th>
-                  <th className="p-4 font-semibold">User</th>
-                  <th className="p-4 font-semibold">Issue</th>
-                  <th className="p-4 font-semibold">Priority</th>
-                  <th className="p-4 font-semibold">Status</th>
-                  <th className="p-4 font-semibold text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredTickets.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4 font-mono text-gray-500 text-xs font-bold">{t.id}</td>
-                    <td className="p-4 text-black text-xs">{t.date}</td>
-                    <td className="p-4 font-medium">{t.user}</td>
-                    <td className="p-4 text-black max-w-xs truncate">{t.issue}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-bold border ${t.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200' : t.priority === 'Medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}
-                      >
-                        {t.priority}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-bold border ${t.status === 'Open' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-green-50 text-green-600 border-green-200'}`}
-                      >
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      {t.status === 'Open' && (
-                        <button
-                          onClick={() => resolveTicket(t.id)}
-                          className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-1 ml-auto shadow-sm transition-all"
-                        >
-                          <CheckSquare size={12} /> Resolve
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
-              <Activity size={20} /> System Health
-            </h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
-                <span className="text-red-700 font-bold flex items-center gap-2">
-                  <AlertCircle size={16} /> Open High Priority
-                </span>
-                <span className="text-xl font-bold text-red-800">
-                  {tickets.filter((t) => t.status === 'Open' && t.priority === 'High').length}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                <span className="text-green-800 font-bold flex items-center gap-2">
-                  <Ticket size={16} /> Total Open
-                </span>
-                <span className="text-xl font-bold text-green-900">
-                  {tickets.filter((t) => t.status === 'Open').length}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
-              <Star size={20} /> Community Sentiment
-            </h3>
-            <div className="text-center py-4">
-              <div className="text-5xl font-black text-yellow-500">
-                {data.communityFeedbackScore}
-              </div>
-              <div className="flex justify-center gap-1 mt-2 mb-4">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    size={24}
-                    fill={s <= Math.round(data.communityFeedbackScore) ? '#eab308' : '#e5e7eb'}
-                    className={
-                      s <= Math.round(data.communityFeedbackScore)
-                        ? 'text-yellow-500'
-                        : 'text-gray-200'
-                    }
-                  />
-                ))}
-              </div>
-              <div className="text-xs text-gray-500">Based on recent ticket resolutions</div>
-            </div>
-          </div>
-        </div>
+      <div className="bg-white rounded-xl border shadow-sm p-6">
+        <PipelineMapViewer />
       </div>
     </div>
   );
 };
-
-// --- MAIN PARENT ---
 
 const MainDashboard = ({
   data,
@@ -3365,6 +1586,7 @@ const MainDashboard = ({
   onSchedulePumpStop,
   onCancelPumpSchedule,
   globalSearchQuery,
+  forceSimulationState,
 }) => {
   const { t } = useTranslation();
   const userRole = user?.role || 'technician';
@@ -3389,39 +1611,13 @@ const MainDashboard = ({
   }
 
   if (activeTab === 'valves') {
-    return <ValvesDashboard onBack={() => setActiveTab('infrastructure')} />;
+    return <ValvesDashboard onBack={() => setActiveTab('operator')} />;
   }
 
-  if (activeTab === 'network-map') {
-    return (
-      <InfrastructureDashboard
-        data={data}
-        history={history}
-        systemState={systemState}
-        onTogglePump={onTogglePump}
-        onToggleValve={onToggleValve}
-        onSchedulePumpTimer={onSchedulePumpTimer}
-        onSchedulePumpStop={onSchedulePumpStop}
-        onCancelPumpSchedule={onCancelPumpSchedule}
-        focusSection="network"
-      />
-    );
-  }
-
-  // Infrastructure overview
-  if (activeTab === 'infrastructure') {
-    return (
-      <InfrastructureDashboard
-        data={data}
-        history={history}
-        systemState={systemState}
-        onTogglePump={onTogglePump}
-        onToggleValve={onToggleValve}
-        onSchedulePumpTimer={onSchedulePumpTimer}
-        onSchedulePumpStop={onSchedulePumpStop}
-        onCancelPumpSchedule={onCancelPumpSchedule}
-      />
-    );
+  // Removed network-map and infrastructure tabs - redirecting to operator dashboard
+  if (activeTab === 'network-map' || activeTab === 'infrastructure') {
+    setActiveTab('operator');
+    return null;
   }
 
   if (activeTab === 'daily')
@@ -3440,6 +1636,16 @@ const MainDashboard = ({
     );
   if (activeTab === 'service-requests')
     return <ServiceRequestDashboard userRole={userRole} globalSearchQuery={globalSearchQuery} />;
+  if (activeTab === 'control-center')
+    return (
+      <ControlCenter
+        systemState={systemState}
+        onTogglePump={togglePump}
+        onToggleValve={toggleValve}
+        forceAnomaly={forceAnomaly}
+        onSimulateState={forceSimulationState}
+      />
+    );
   if (activeTab === 'maintenance')
     return <MaintenanceDashboard onBack={() => setActiveTab('overview')} />;
   if (activeTab === 'forecasting')
@@ -3511,7 +1717,11 @@ const MainDashboard = ({
   }
 
   // --- ROLE-BASED OVERVIEW DASHBOARD ---
+  // Guest users see their dashboard or complaint submission
   if (userRole === 'public') {
+    if (activeTab === 'complaints') {
+      return <ComplaintSubmission offlineMode={offlineMode} lastSync={lastSync} />;
+    }
     return (
       <GuestDashboard language={language} t={t} offlineMode={offlineMode} lastSync={lastSync} />
     );
@@ -3519,7 +1729,7 @@ const MainDashboard = ({
 
   // Researchers get analytics and data export tools
   if (userRole === 'researcher') {
-    return <ResearcherDashboard sensors={data} systemState={simulation.state} history={history} />;
+    return <ResearcherDashboard sensors={data} systemState={systemState} history={history} />;
   }
 
   // Technicians get full operational dashboard (default)
@@ -3537,138 +1747,20 @@ const MainDashboard = ({
   }
 
   // --- OVERVIEW DASHBOARD (Fallback) ---
+  // Redirect to technician dashboard as default
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-black">{t('nav.console')}</h2>
-          <p className="text-sm text-gray-500 flex items-center gap-2">
-            <WifiOff size={14} /> Offline-First Mode Active
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {/* Feature: Next Supply Card */}
-          <div className="bg-amber-50 px-4 py-2 rounded-lg border border-amber-500 text-amber-900 text-xs font-bold flex items-center gap-2">
-            <Clock size={14} />
-            <div>
-              <div className="uppercase opacity-70 text-2xs">{t('metrics.nextSupply')}</div>
-              <div className="text-sm">{getNextDistributionTime()}</div>
-            </div>
-          </div>
-          {/* Only Tech/Research can force anomalies */}
-          {userRole === 'technician' && (
-            <button
-              onClick={() => forceAnomaly('LEAK')}
-              className="bg-red-100 text-red-700 px-3 py-2 rounded text-xs font-bold border border-red-200"
-            >
-              Simulate Leak
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* CRITICAL METRICS ROW */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard label={t('metrics.pumpStatus')} value={data.pumpStatus} unit="" icon={Power} />
-        <StatCard
-          label={t('metrics.flowRate')}
-          value={data.pumpFlowRate}
-          unit="L/min"
-          icon={Wind}
-        />
-        <StatCard
-          label={t('metrics.pressure')}
-          value={data.pipePressure}
-          unit="Bar"
-          icon={Activity}
-        />
-        <StatCard label={t('metrics.tankLevel')} value={data.tankLevel} unit="%" icon={Droplet} />
-        <StatCard label={t('metrics.tds')} value={data.qualityTDS} unit="ppm" icon={Layers} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* MAIN CHART + ENERGY OVERLAY */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-6 space-y-6">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-gray-700 flex items-center gap-2">
-              <IconImage name="activity.svg" className="h-7 w-7" aria-hidden="true" /> Real-time
-            </h3>
-            <div className="flex gap-3 text-xs font-bold">
-              <span className="text-amber-600 flex items-center gap-1">
-                <Zap size={12} /> {data.pumpPower.toFixed(1)} kW
-              </span>
-              <span className="text-red-600 flex items-center gap-1">
-                <Thermometer size={12} /> {data.pumpMotorTemp.toFixed(1)}°C
-              </span>
-            </div>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={history}>
-                <defs>
-                  <linearGradient id="colorPress" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="time" hide />
-                <YAxis domain={[0, 8]} />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="pipePressure"
-                  stroke="#3b82f6"
-                  fillOpacity={1}
-                  fill="url(#colorPress)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* GIS ALERT FEED WIDGET */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 flex flex-col">
-          <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2 border-b pb-2">
-            <MapPin size={18} className="text-emerald-600" /> GIS Alert Feed
-          </h3>
-          <div className="flex-1 overflow-y-auto space-y-3">
-            {HAZARD_LOGS.slice(0, 3).map((log) => (
-              <div key={log.id} className="p-3 bg-gray-50 border rounded-lg text-sm">
-                <div className="flex justify-between mb-1">
-                  <span className="font-bold text-red-700">{log.type}</span>
-                  <span className="text-xs text-gray-500">{log.time.split(',')[1]}</span>
-                </div>
-                <div className="text-xs text-black flex items-center gap-1">
-                  <MapPin size={10} /> {log.area}
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => setActiveTab('gis')}
-            className="mt-4 w-full py-2 bg-emerald-50 text-emerald-700 font-bold text-xs rounded hover:bg-emerald-100 transition-colors"
-          >
-            {t('actions.viewFullMap')}
-          </button>
-        </div>
-      </div>
-    </div>
+    <TechnicianDashboard
+      sensors={data}
+      offlineMode={offlineMode}
+      lastSync={lastSync}
+      activeView={activeTab}
+      setActiveView={setActiveTab}
+      systemState={systemState}
+    />
   );
 };
 
 // Loading fallback component
-const LoadingFallback = () => (
-  <div className="text-center text-gray-500 py-20">
-    <div className="animate-spin inline-block w-8 h-8 border-4 border-gray-300 border-t-green-600 rounded-full"></div>
-    <p className="mt-4">Loading dashboard...</p>
-  </div>
-);
-
-/**
- * Main Application Component
- * Refactored for modularity and performance
- */
 const App = () => {
   // ===== AUTH & CONTEXT =====
   const { user, login, logout } = useAuth();
@@ -3969,6 +2061,12 @@ const App = () => {
     setActiveTab('overview');
   };
 
+  // Scroll to top whenever activeTab changes (must be before early return)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
+
+  // Early return for non-authenticated users
   if (!user) {
     return <LoginScreen />;
   }
@@ -4004,124 +2102,32 @@ const App = () => {
         onSchedulePumpStop={simulation.schedulePumpStop}
         onCancelPumpSchedule={simulation.cancelPumpSchedule}
         globalSearchQuery={globalSearchQuery}
+        forceSimulationState={simulation.forceSimulationState}
       />
     </div>
   );
 
-  // Language Selector Component
-  const LanguageSelectorDropdown = () => {
-    const currentLang = useMemo(
-      () => LANGUAGES.find((lang) => lang.code === language) || LANGUAGES[0],
-      [language]
-    );
-    const languageMenuRef = useRef(null);
-    const [isLanguageExpanded, setIsLanguageExpanded] = React.useState(false);
+  // Navigation logic for back/forward buttons
+  const tabOrder = user?.role === 'public' 
+    ? [] 
+    : user?.role === 'researcher'
+    ? ['overview', 'pump-station', 'water-tank', 'pipeline', 'valves', 'quality', 'analytics']
+    : ['overview', 'pump-station', 'water-tank', 'pipeline', 'valves', 'quality', 'maintenance', 'service-requests', 'reports', 'accountability', 'energy', 'analytics', 'gis'];
 
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (languageMenuRef.current && !languageMenuRef.current.contains(event.target)) {
-          if (showLanguageMenu) {
-            setShowLanguageMenu(false);
-          }
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showLanguageMenu]);
+  const currentTabIndex = tabOrder.indexOf(activeTab);
+  const canGoBack = currentTabIndex > 0;
+  const canGoForward = currentTabIndex >= 0 && currentTabIndex < tabOrder.length - 1;
 
-    const handleLanguageChange = (langCode) => {
-      if (langCode === language) {
-        setShowLanguageMenu(false);
-        return;
-      }
-      changeLanguage(langCode);
-      setShowLanguageMenu(false);
-    };
+  const handleNavigateBack = () => {
+    if (canGoBack) {
+      setActiveTab(tabOrder[currentTabIndex - 1]);
+    }
+  };
 
-    return (
-      <div ref={languageMenuRef} className="relative z-[60]">
-        {!isLanguageExpanded ? (
-          <button
-            onClick={() => {
-              setIsLanguageExpanded(true);
-              setShowLanguageMenu(true);
-            }}
-            className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-blue-300 transition-all duration-300"
-          >
-            <Languages size={18} className="text-blue-600" />
-          </button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 bg-white shadow-lg border-2 border-blue-500"
-            >
-              <Languages size={18} className="text-blue-600" />
-              <div className="text-left min-w-[60px]">
-                <div className="text-xs font-bold text-gray-800 leading-tight">
-                  {currentLang.nativeName}
-                </div>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                setIsLanguageExpanded(false);
-                setShowLanguageMenu(false);
-              }}
-              className="p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 hover:border-red-300 transition-all duration-300"
-              title="Close language selector"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-gray-600 hover:text-red-600"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {showLanguageMenu && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-[100]">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2">
-              <h3 className="text-white font-bold text-xs flex items-center gap-2">
-                <Languages size={14} />
-                Select Language
-              </h3>
-            </div>
-            <div className="max-h-96 overflow-y-auto">
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLanguageChange(lang.code)}
-                  className={`w-full px-3 py-2 text-left hover:bg-blue-50 transition-all border-b border-gray-100 last:border-0 ${
-                    language === lang.code ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-gray-800">{lang.nativeName}</div>
-                      <div className="text-[10px] text-gray-500">{lang.name}</div>
-                    </div>
-                    {language === lang.code && (
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  const handleNavigateForward = () => {
+    if (canGoForward) {
+      setActiveTab(tabOrder[currentTabIndex + 1]);
+    }
   };
 
   return (
@@ -4165,7 +2171,37 @@ const App = () => {
       >
         {/* Floating Search Bar with Language Selector */}
         <div className="sticky top-4 z-50 px-2 sm:px-4 lg:px-6">
-          <div className="max-w-4xl mx-auto flex items-center justify-end gap-2 sm:gap-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+            {/* Navigation Arrows - Left Side */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleNavigateBack}
+                disabled={!canGoBack}
+                className={`p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 transition-all duration-300 ${
+                  canGoBack 
+                    ? 'hover:border-blue-300 cursor-pointer' 
+                    : 'opacity-40 cursor-not-allowed'
+                }`}
+                aria-label="Go to previous page"
+              >
+                <ArrowLeft size={18} className={canGoBack ? 'text-blue-600' : 'text-gray-400'} />
+              </button>
+              <button
+                onClick={handleNavigateForward}
+                disabled={!canGoForward}
+                className={`p-2 rounded-xl bg-white/60 backdrop-blur-md shadow-sm border border-gray-200 transition-all duration-300 ${
+                  canGoForward 
+                    ? 'hover:border-blue-300 cursor-pointer' 
+                    : 'opacity-40 cursor-not-allowed'
+                }`}
+                aria-label="Go to next page"
+              >
+                <ArrowRight size={18} className={canGoForward ? 'text-blue-600' : 'text-gray-400'} />
+              </button>
+            </div>
+
+            {/* Search Bar and Language Selector - Right Side */}
+            <div className="flex items-center gap-2 sm:gap-3">
             {/* Search Bar */}
             <div
               className={`relative transition-all duration-300 ${showSearchResults ? 'flex-1' : 'flex-none'}`}
@@ -4273,10 +2309,11 @@ const App = () => {
 
             {/* Language Selector */}
             <LanguageSelectorDropdown />
+            </div>
           </div>
         </div>
 
-        {primaryAlert && (
+        {primaryAlert && user?.role !== 'public' && (
           <div className="mx-4 mt-4 mb-2 px-4 py-3 rounded-2xl border-l-4 border-red-500 bg-red-50 shadow-sm flex items-center gap-4 animate-blink">
             <AlertTriangle size={18} className="text-red-600" />
             <div className="flex-1">

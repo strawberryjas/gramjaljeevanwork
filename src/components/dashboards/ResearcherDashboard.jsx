@@ -14,6 +14,7 @@ import {
   Beaker,
   LineChart as LineChartIcon,
   Layout,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   LineChart,
@@ -32,11 +33,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { SystemContainer } from './SystemContainer';
 
 // Researcher Dashboard - Analytics and data export focus
 export const ResearcherDashboard = ({ sensors = {}, systemState, history = [] }) => {
-  const [viewMode, setViewMode] = useState('analytics'); // 'analytics' | 'network'
+  const [viewMode, setViewMode] = useState('analytics'); // Only 'analytics' allowed for researchers
   const [dateRange, setDateRange] = useState('7days');
   const [selectedDataset, setSelectedDataset] = useState('all');
   const pump = systemState?.pumpHouse || {};
@@ -121,6 +121,8 @@ export const ResearcherDashboard = ({ sensors = {}, systemState, history = [] })
   const currentChlorine = tankQuality.chlorine ?? sensors.qualityChlorine ?? 0;
   const currentTDS = tankQuality.TDS ?? sensors.qualityTDS ?? 0;
 
+  const currentRC = tankQuality.residualChlorine ?? sensors.qualityResidualChlorine ?? 0.3;
+
   const waterQualityData = [
     {
       parameter: 'pH',
@@ -150,6 +152,13 @@ export const ResearcherDashboard = ({ sensors = {}, systemState, history = [] })
       max: 500,
       status: currentTDS <= 500 ? 'Good' : 'High',
     },
+    {
+      parameter: 'RC (Residual Chlorine)',
+      value: currentRC.toFixed(2),
+      min: 0.2,
+      max: 2.0,
+      status: currentRC >= 0.2 && currentRC <= 2.0 ? 'Good' : currentRC < 0.2 ? 'Low' : 'High',
+    },
   ];
 
   const handleExport = (format) => {
@@ -159,36 +168,21 @@ export const ResearcherDashboard = ({ sensors = {}, systemState, history = [] })
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
+      {/* Researcher: Analytics Only - No Network Control Access */}
       <div className="flex space-x-4 border-b border-gray-200 pb-2 mb-4">
-        <button
-          onClick={() => setViewMode('analytics')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-colors ${
-            viewMode === 'analytics'
-              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <BarChart3 size={16} /> Analytics
-        </button>
-        <button
-          onClick={() => setViewMode('network')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-colors ${
-            viewMode === 'network'
-              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <Activity size={16} /> Junja Network
-        </button>
+        <div className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-200">
+          <BarChart3 size={16} /> Analytics & Research Tools
+        </div>
+        <div className="ml-auto flex items-center gap-2 text-xs text-gray-500 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+          <ShieldCheck size={14} className="text-blue-600" />
+          <span className="font-semibold">Researcher Access: Read-Only Data & Exports</span>
+        </div>
       </div>
 
-      {viewMode === 'network' ? (
-        <SystemContainer />
-      ) : (
-        <>
-          {/* Header */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-600">
+      {/* Always show analytics view only */}
+      <>
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Microscope size={28} className="text-purple-600" />
@@ -383,7 +377,6 @@ export const ResearcherDashboard = ({ sensors = {}, systemState, history = [] })
             </button>
           </div>
         </>
-      )}
     </div>
   );
 };

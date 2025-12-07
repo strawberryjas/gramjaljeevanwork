@@ -10,6 +10,7 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  Settings,
 } from 'lucide-react';
 import {
   LineChart,
@@ -78,9 +79,95 @@ export const PumpDetails = ({ onBack }) => {
   const [scheduledStop, setScheduledStop] = useState(() =>
     toLocalInputValue(new Date(Date.now() + 30 * 60 * 1000))
   );
+  const [showDetailsSidebar, setShowDetailsSidebar] = useState(false);
 
   // Memoized derived values
   const isPumpOn = useMemo(() => pump.pumpStatus === 'ON', [pump.pumpStatus]);
+
+  // Track accumulated running hours
+  const [dailyRunningHours, setDailyRunningHours] = useState(0);
+  const [weeklyRunningHours, setWeeklyRunningHours] = useState(0);
+  const [monthlyRunningHours, setMonthlyRunningHours] = useState(0);
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
+
+  // Real-time flow rate graph data with multiple granularity levels
+  const [heartbeatData, setHeartbeatData] = useState(() => 
+    Array.from({ length: 300 }, (_, i) => ({
+      index: i,
+      time: '',
+      flow: 0,
+    }))
+  );
+  const [zoomLevel, setZoomLevel] = useState(1); // 1 = hours, 2 = minutes, 3 = seconds
+  
+  // Reset data when zoom level changes
+  React.useEffect(() => {
+    setHeartbeatData(Array.from({ length: 300 }, (_, i) => ({
+      index: i,
+      time: '',
+      flow: 0,
+    })));
+  }, [zoomLevel]);
+
+  // Update running hours when pump is on
+  React.useEffect(() => {
+    if (isPumpOn) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const hoursPassed = (now - lastUpdateTime) / (1000 * 60 * 60);
+        
+        setDailyRunningHours(prev => Math.min(prev + hoursPassed, 24));
+        setWeeklyRunningHours(prev => Math.min(prev + hoursPassed, 168));
+        setMonthlyRunningHours(prev => Math.min(prev + hoursPassed, 720));
+        setLastUpdateTime(now);
+      }, 60000); // Update every minute
+      
+      return () => clearInterval(interval);
+    }
+  }, [isPumpOn, lastUpdateTime]);
+
+  // Real-time flow rate visualization with scrolling data
+  React.useEffect(() => {
+    const updateInterval = zoomLevel === 3 ? 100 : zoomLevel === 2 ? 1000 : 5000;
+    
+    const interval = setInterval(() => {
+      const now = new Date();
+      const flowRate = pump.pumpFlowOutput || 150;
+      
+      // Current flow rate based on pump status
+      let flow = 0;
+      if (isPumpOn) {
+        // Add small variation to simulate real-time fluctuation (±5%)
+        const variation = (Math.random() - 0.5) * 0.1;
+        flow = flowRate * (1 + variation);
+      } else {
+        flow = 0; // Zero when pump is off
+      }
+      
+      // Format time based on zoom level
+      let timeLabel = '';
+      if (zoomLevel === 1) {
+        timeLabel = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      } else if (zoomLevel === 2) {
+        timeLabel = `${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      } else {
+        timeLabel = `${now.getSeconds().toString().padStart(2, '0')}.${Math.floor(now.getMilliseconds() / 100)}`;
+      }
+      
+      setHeartbeatData(prevData => {
+        // Shift data left and add new point on the right
+        const newData = [...prevData.slice(1), {
+          index: prevData[prevData.length - 1]?.index ? prevData[prevData.length - 1].index + 1 : 0,
+          time: timeLabel,
+          flow: flow,
+        }];
+        
+        return newData;
+      });
+    }, updateInterval);
+    
+    return () => clearInterval(interval);
+  }, [isPumpOn, pump.pumpFlowOutput]);
   const isTimerActive = useMemo(() => schedule.mode === 'TIMER', [schedule.mode]);
   const isStopScheduled = useMemo(() => schedule.mode === 'SCHEDULED', [schedule.mode]);
   const countdownLabel = useMemo(
@@ -212,12 +299,6 @@ export const PumpDetails = ({ onBack }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-slate-700" />
-          </button>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-2">
               <Power size={28} className="text-green-600 md:w-9 md:h-9" />
@@ -228,12 +309,39 @@ export const PumpDetails = ({ onBack }) => {
             </p>
           </div>
         </div>
-        {isLive && (
-          <span className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            LIVE
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {isLive && (
+            <span className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              LIVE
+            </span>
+          )}
+          {/* ON/OFF Control Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => !isPumpOn && togglePump()}
+              disabled={isPumpOn}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                isPumpOn
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white shadow-lg'
+              }`}
+            >
+              ON
+            </button>
+            <button
+              onClick={() => isPumpOn && togglePump()}
+              disabled={!isPumpOn}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                !isPumpOn
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700 text-white shadow-lg'
+              }`}
+            >
+              OFF
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Ultra-Realistic Centrifugal Pump Visualization */}
@@ -1427,48 +1535,39 @@ export const PumpDetails = ({ onBack }) => {
           {/* Right: Control Panel */}
           <div className="lg:col-span-2 bg-white p-2 md:p-3">
             <div className="space-y-1.5 md:space-y-2">
-              {/* Status Display */}
-              <div>
-                <label className="text-[10px] md:text-base font-semibold text-slate-600 uppercase tracking-wider mb-0.5 block">
-                  Operational Status
-                </label>
-                <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-2 md:p-3 border-2 border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div
-                      className={`relative w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 border-2 ${
-                        isPumpOn
-                          ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-green-400'
-                          : 'bg-gradient-to-br from-slate-200 to-slate-300 border-slate-400'
-                      }`}
-                    >
-                      <Power size={24} className="text-white md:w-12 md:h-12" />
-                      {isPumpOn && (
-                        <div className="absolute inset-0 rounded-xl md:rounded-2xl bg-green-400 animate-ping opacity-20"></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xl md:text-[2.5rem] md:leading-tight font-black text-slate-800 mb-0.5 md:mb-2">
-                        {pump.pumpStatus || 'OFF'}
-                      </p>
-                      <p className="text-[10px] md:text-lg text-slate-500 flex items-center gap-1.5 md:gap-2">
-                        {isPumpOn ? (
-                          <>
-                            <span className="flex h-1.5 w-1.5 md:h-2 md:w-2">
-                              <span className="animate-ping absolute inline-flex h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-green-500 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-600"></span>
-                            </span>
-                            Active Operation
-                          </>
-                        ) : (
-                          <>
-                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-slate-400"></span>
-                            Standby Mode
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              {/* Control Buttons */}
+              <div className="grid grid-cols-2 gap-2 md:gap-3">
+                {/* ON Button */}
+                <button
+                  onClick={() => !isPumpOn && togglePump()}
+                  disabled={isPumpOn}
+                  className={`px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-base md:text-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                    isPumpOn
+                      ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed shadow-gray-300/30'
+                      : 'bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white shadow-green-500/30'
+                  }`}
+                >
+                  <span className="flex flex-col items-center justify-center gap-1 md:gap-2">
+                    <Power size={28} className="md:w-10 md:h-10" />
+                    <span className="text-sm md:text-2xl">ON</span>
+                  </span>
+                </button>
+
+                {/* OFF Button */}
+                <button
+                  onClick={() => isPumpOn && togglePump()}
+                  disabled={!isPumpOn}
+                  className={`px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-base md:text-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                    !isPumpOn
+                      ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed shadow-gray-300/30'
+                      : 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white shadow-red-500/30'
+                  }`}
+                >
+                  <span className="flex flex-col items-center justify-center gap-1 md:gap-2">
+                    <Power size={28} className="md:w-10 md:h-10" />
+                    <span className="text-sm md:text-2xl">OFF</span>
+                  </span>
+                </button>
               </div>
 
               {/* Real-time Metrics */}
@@ -1539,87 +1638,6 @@ export const PumpDetails = ({ onBack }) => {
                     Performance Monitoring
                   </h4>
                 </div>
-                {/* Warranty Information */}
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-2 border border-blue-200">
-                  <h3 className="text-sm md:text-lg font-bold text-blue-800 mb-1">
-                    Warranty & Service Details
-                  </h3>
-                  <div className="space-y-1">
-                    {/* Warranty Status */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs md:text-sm text-slate-600 font-medium">
-                        Warranty Status
-                      </span>
-                      <span
-                        className={`text-xs md:text-sm font-bold px-3 py-1 rounded-full ${
-                          pump.warrantyStatus === 'ACTIVE'
-                            ? 'bg-green-100 text-green-700'
-                            : pump.warrantyStatus === 'EXPIRED'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {pump.warrantyStatus === 'ACTIVE'
-                          ? '✓ In Warranty'
-                          : pump.warrantyStatus === 'EXPIRED'
-                            ? '✕ Expired'
-                            : 'N/A'}
-                      </span>
-                    </div>
-
-                    {/* Days to Next Service */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs md:text-sm text-slate-600 font-medium">
-                        Next Service In
-                      </span>
-                      <span className="text-xs md:text-sm font-bold text-blue-600">
-                        {Math.max(
-                          0,
-                          Math.ceil((pump.nextServiceDate - Date.now()) / (24 * 60 * 60 * 1000))
-                        )}{' '}
-                        days
-                      </span>
-                    </div>
-
-                    {/* Warranty Details Grid */}
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-blue-200">
-                      <div>
-                        <p className="text-[10px] md:text-xs text-slate-500 mb-1">
-                          Warranty Period
-                        </p>
-                        <p className="text-xs md:text-sm font-semibold text-slate-700">
-                          {pump.warrantyPeriodMonths || 24} months
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-slate-500 mb-1">Provider</p>
-                        <p className="text-xs md:text-sm font-semibold text-slate-700">
-                          {pump.warrantyProvider || 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-slate-500 mb-1">
-                          Installation Date
-                        </p>
-                        <p className="text-xs md:text-sm font-semibold text-slate-700">
-                          {pump.installationDate
-                            ? new Date(pump.installationDate).toLocaleDateString()
-                            : 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] md:text-xs text-slate-500 mb-1">
-                          Warranty Expiry
-                        </p>
-                        <p className="text-xs md:text-sm font-semibold text-slate-700">
-                          {pump.warrantyExpiryDate
-                            ? new Date(pump.warrantyExpiryDate).toLocaleDateString()
-                            : 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="space-y-3 md:space-y-4">
                   {/* Efficiency Monitoring */}
@@ -1676,41 +1694,6 @@ export const PumpDetails = ({ onBack }) => {
                   </div>
                 </div>
               </div>
-
-              {/* Control Buttons */}
-              <div className="grid grid-cols-2 gap-2 md:gap-3">
-                {/* ON Button */}
-                <button
-                  onClick={() => !isPumpOn && togglePump()}
-                  disabled={isPumpOn}
-                  className={`px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-base md:text-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
-                    isPumpOn
-                      ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed shadow-gray-300/30'
-                      : 'bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white shadow-green-500/30'
-                  }`}
-                >
-                  <span className="flex flex-col items-center justify-center gap-1 md:gap-2">
-                    <Power size={28} className="md:w-10 md:h-10" />
-                    <span className="text-sm md:text-2xl">ON</span>
-                  </span>
-                </button>
-
-                {/* OFF Button */}
-                <button
-                  onClick={() => isPumpOn && togglePump()}
-                  disabled={!isPumpOn}
-                  className={`px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-base md:text-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
-                    !isPumpOn
-                      ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-500 cursor-not-allowed shadow-gray-300/30'
-                      : 'bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-700 hover:via-red-600 hover:to-red-700 text-white shadow-red-500/30'
-                  }`}
-                >
-                  <span className="flex flex-col items-center justify-center gap-1 md:gap-2">
-                    <Power size={28} className="md:w-10 md:h-10" />
-                    <span className="text-sm md:text-2xl">OFF</span>
-                  </span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1752,7 +1735,8 @@ export const PumpDetails = ({ onBack }) => {
           Pump Information
         </h3>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+        {/* Info cards visible on mobile/tablet, hidden on desktop lg+ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden gap-3 md:gap-4">
           {/* Basic Info */}
           <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-3 md:p-4 border-2 border-slate-200 shadow-md">
             <h4 className="text-xs md:text-base uppercase tracking-widest text-slate-500 font-bold mb-2 flex items-center gap-2">
@@ -1801,19 +1785,19 @@ export const PumpDetails = ({ onBack }) => {
               <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
                 <span className="text-sm md:text-lg text-gray-600">Today</span>
                 <span className="text-base md:text-xl font-bold text-slate-900">
-                  {Math.min(pump.pumpRunningHours || 0, HOUR_LIMITS.day).toFixed(1)} hrs
+                  {dailyRunningHours.toFixed(1)} hrs
                 </span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
                 <span className="text-sm md:text-lg text-gray-600">This Week</span>
                 <span className="text-base md:text-xl font-bold text-slate-900">
-                  {Math.min(pump.pumpRunningHours || 0, HOUR_LIMITS.week).toFixed(1)} hrs
+                  {weeklyRunningHours.toFixed(1)} hrs
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm md:text-lg text-gray-600">This Month</span>
                 <span className="text-base md:text-xl font-bold text-slate-900">
-                  {Math.min(pump.pumpRunningHours || 0, HOUR_LIMITS.month).toFixed(1)} hrs
+                  {monthlyRunningHours.toFixed(1)} hrs
                 </span>
               </div>
             </div>
@@ -1843,6 +1827,477 @@ export const PumpDetails = ({ onBack }) => {
                     System Healthy
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Warranty & Service Details */}
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 md:p-4 border-2 border-blue-200 shadow-md">
+            <h4 className="text-xs md:text-base uppercase tracking-widest text-blue-700 font-bold mb-2 md:mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+              Warranty & Service Details
+            </h4>
+            <div className="space-y-2">
+              {/* Warranty Status Banner */}
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs md:text-base text-gray-500 uppercase">
+                    Warranty Status
+                  </span>
+                  <span
+                    className={`text-xs md:text-sm font-bold px-3 py-1 rounded-full ${
+                      pump.warrantyStatus === 'ACTIVE'
+                        ? 'bg-green-100 text-green-700'
+                        : pump.warrantyStatus === 'EXPIRED'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {pump.warrantyStatus === 'ACTIVE'
+                      ? '✓ In Warranty'
+                      : pump.warrantyStatus === 'EXPIRED'
+                        ? '✕ Expired'
+                        : 'N/A'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Warranty Period */}
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <span className="text-xs md:text-base text-gray-500 uppercase">Warranty Period</span>
+                <p className="text-xl md:text-3xl font-black text-slate-900 mt-1">{pump.warrantyPeriodMonths || 24} months</p>
+              </div>
+
+              {/* Warranty Details Grid */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <span className="text-xs md:text-sm text-gray-500 uppercase block mb-1">Provider</span>
+                  <p className="text-sm md:text-lg font-bold text-slate-900">
+                    {pump.warrantyProvider || 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <span className="text-xs md:text-sm text-gray-500 uppercase block mb-1">Warranty Expiry</span>
+                  <p className="text-sm md:text-lg font-bold text-slate-900">
+                    {pump.warrantyExpiryDate
+                      ? new Date(pump.warrantyExpiryDate).toLocaleDateString()
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <span className="text-xs md:text-sm text-gray-500 uppercase block mb-1">Installation Date</span>
+                  <p className="text-sm md:text-lg font-bold text-slate-900">
+                    {pump.installationDate
+                      ? new Date(pump.installationDate).toLocaleDateString()
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <span className="text-xs md:text-sm text-gray-500 uppercase block mb-1">Next Service In</span>
+                  <p className="text-sm md:text-lg font-bold text-blue-600">
+                    {Math.max(
+                      0,
+                      Math.ceil((pump.nextServiceDate - Date.now()) / (24 * 60 * 60 * 1000))
+                    )}{' '}
+                    days
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Water Pumped Throughout the Day */}
+      <div className="bg-white rounded-xl p-4 shadow-lg border-2 border-slate-200">
+        <h3 className="text-lg md:text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <Activity size={24} className="text-blue-600" />
+          Water Pumped Today
+        </h3>
+          <div className="h-64 md:h-80 bg-white dark:bg-slate-50 rounded-lg p-4 border border-slate-200">
+            {/* Zoom Controls */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-medium text-slate-700">
+                Time Resolution: <span className="text-blue-600">
+                  {zoomLevel === 1 ? 'Hours' : zoomLevel === 2 ? 'Minutes' : 'Seconds'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setZoomLevel(1)}
+                  className={`px-3 py-1 rounded text-xs transition-colors ${
+                    zoomLevel === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                  }`}
+                >
+                  Hours
+                </button>
+                <button
+                  onClick={() => setZoomLevel(2)}
+                  className={`px-3 py-1 rounded text-xs transition-colors ${
+                    zoomLevel === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                  }`}
+                >
+                  Minutes
+                </button>
+                <button
+                  onClick={() => setZoomLevel(3)}
+                  className={`px-3 py-1 rounded text-xs transition-colors ${
+                    zoomLevel === 3 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                  }`}
+                >
+                  Seconds
+                </button>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height="90%">
+              <LineChart
+                data={heartbeatData}
+                margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
+                syncMethod="value"
+              >
+                <defs>
+                  <linearGradient id="flowGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" opacity={0.5} />
+                <XAxis 
+                  dataKey="time" 
+                  stroke="#475569"
+                  style={{ fontSize: '8px' }}
+                  tick={{ fill: '#475569' }}
+                  interval={Math.floor(300 / 10)}
+                  label={{ 
+                    value: zoomLevel === 1 ? 'Time (HH:MM)' : zoomLevel === 2 ? 'Time (MM:SS)' : 'Time (SS.ms)', 
+                    position: 'insideBottom', 
+                    offset: -10, 
+                    fill: '#475569', 
+                    fontSize: 11 
+                  }}
+                />
+                <YAxis 
+                  stroke="#475569"
+                  domain={[0, 700]}
+                  style={{ fontSize: '10px' }}
+                  tick={{ fill: '#475569' }}
+                  ticks={[0, 100, 200, 300, 400, 500, 600, 700]}
+                  label={{ value: 'Flow Rate (L/min)', angle: -90, position: 'insideLeft', fill: '#475569', fontSize: 11 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value) => [`${value?.toFixed(1) || 0} L/min`, 'Flow Rate']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="flow"
+                  stroke="#3b82f6"
+                  strokeWidth={2.5}
+                  dot={false}
+                  isAnimationActive={false}
+                  connectNulls={true}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${
+                  isPumpOn ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                }`}></div>
+                <span className="text-sm text-slate-700 font-medium">
+                  {isPumpOn ? 'Pumping' : 'Stopped'}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-slate-500">Current Flow:</span>
+                <span className="text-lg font-bold text-blue-600 ml-2">
+                  {isPumpOn ? (pump.pumpFlowOutput || 150).toFixed(1) : '0.0'} L/min
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
+              <p className="text-xs text-blue-600 font-medium">Total Today</p>
+              <p className="text-lg md:text-2xl font-black text-blue-700">
+                {((pump.pumpFlowOutput || 150) * 60 * 10).toFixed(0)} L
+              </p>
+            </div>
+            <div className="bg-cyan-50 rounded-lg p-2 border border-cyan-200">
+              <p className="text-xs text-cyan-600 font-medium">Peak Hour</p>
+              <p className="text-lg md:text-2xl font-black text-cyan-700">
+                {((pump.pumpFlowOutput || 150) * 60 * 1.2).toFixed(0)} L
+              </p>
+            </div>
+            <div className="bg-indigo-50 rounded-lg p-2 border border-indigo-200">
+              <p className="text-xs text-indigo-600 font-medium">Avg/Hour</p>
+              <p className="text-lg md:text-2xl font-black text-indigo-700">
+                {((pump.pumpFlowOutput || 150) * 60 * 0.6).toFixed(0)} L
+              </p>
+            </div>
+          </div>
+        </div>
+
+      {/* Running Hours Log History */}
+      <div className="bg-white rounded-xl p-4 shadow-lg border-2 border-slate-200">
+        <h3 className="text-lg md:text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <Clock size={24} className="text-emerald-600" />
+          Running Hours Log
+        </h3>
+        <div className="space-y-2 max-h-80 md:max-h-96 overflow-y-auto">
+          {Array.from({ length: 10 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            // Fixed historical data - doesn't change in real time
+            const runningHours = i === 0 ? 9.2 : i === 1 ? 10.5 : i === 2 ? 8.7 : i === 3 ? 11.2 : i === 4 ? 9.8 : i === 5 ? 10.1 : i === 6 ? 9.5 : i === 7 ? 10.8 : i === 8 ? 9.3 : 10.6;
+            const startTime = i % 2 === 0 ? 6 : 7;
+            const endTime = startTime + Math.floor(runningHours);
+            
+            return (
+              <div
+                key={i}
+                className="bg-gradient-to-r from-slate-50 to-white rounded-lg p-3 border border-slate-200 hover:border-emerald-300 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-slate-700">
+                    {date.toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-semibold">
+                    {runningHours.toFixed(1)} hrs
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Start: {startTime.toString().padStart(2, '0')}:00</span>
+                  </div>
+                  <span>→</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Stop: {endTime.toString().padStart(2, '0')}:00</span>
+                  </div>
+                </div>
+                <div className="mt-2 w-full bg-slate-200 rounded-full h-2">
+                  <div
+                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full"
+                    style={{ width: `${(runningHours / 12) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="mt-2 text-xs text-slate-500">
+                  Water Pumped: {(150 * 60 * runningHours).toFixed(0)} L
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-4 bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-lg p-3 border border-emerald-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-emerald-600 font-medium">Average Daily Runtime</p>
+              <p className="text-2xl font-black text-emerald-700">10.2 hrs</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-cyan-600 font-medium">This Week Total</p>
+              <p className="text-2xl font-black text-cyan-700">71.4 hrs</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hover Trigger Area - Desktop Only */}
+      <div
+        className="hidden lg:block fixed right-0 top-0 bottom-0 w-4 z-40"
+        onMouseEnter={() => setShowDetailsSidebar(true)}
+      />
+
+      {/* Details Sidebar - Desktop Only */}
+      <div
+        className={`hidden lg:block fixed right-0 top-0 bottom-0 w-96 bg-white shadow-2xl border-l-2 border-blue-200 z-50 transform transition-transform duration-300 overflow-y-auto ${
+          showDetailsSidebar ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        onMouseLeave={() => setShowDetailsSidebar(false)}
+      >
+        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 z-10 shadow-md">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Settings size={20} />
+            Pump Details
+          </h3>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Running Hours */}
+          <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-4 border-2 border-emerald-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-emerald-700 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
+              Running Hours Analysis
+            </h4>
+            <div className="space-y-2">
+              <div className="bg-white rounded-lg p-3 border border-emerald-100">
+                <span className="text-xs text-gray-500 uppercase">Total Runtime</span>
+                <p className="text-2xl font-black text-emerald-600 mt-1">
+                  {(pump.pumpRunningHours || 0).toFixed(1)} hrs
+                </p>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
+                <span className="text-sm text-gray-600">Today</span>
+                <span className="text-base font-bold text-slate-900">
+                  {dailyRunningHours.toFixed(1)} hrs
+                </span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-emerald-100">
+                <span className="text-sm text-gray-600">This Week</span>
+                <span className="text-base font-bold text-slate-900">
+                  {weeklyRunningHours.toFixed(1)} hrs
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">This Month</span>
+                <span className="text-base font-bold text-slate-900">
+                  {monthlyRunningHours.toFixed(1)} hrs
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Maintenance & Health */}
+          <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-4 border-2 border-amber-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-amber-700 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
+              Maintenance & Health
+            </h4>
+            <div className="space-y-2">
+              <div className="bg-white rounded-lg p-3 border border-amber-100">
+                <span className="text-xs text-gray-500 uppercase">
+                  Last Maintenance
+                </span>
+                <p className="text-xl font-black text-amber-600 mt-1">7 days ago</p>
+              </div>
+              <div className="bg-white rounded-lg p-3 border border-amber-100">
+                <span className="text-xs text-gray-500 uppercase">Next Scheduled</span>
+                <p className="text-xl font-black text-slate-900 mt-1">23 days</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle size={18} className="text-green-600" />
+                  <span className="text-sm font-bold text-green-700">
+                    System Healthy
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Warranty & Service Details */}
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border-2 border-blue-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-blue-700 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+              Warranty & Service Details
+            </h4>
+            <div className="space-y-2">
+              {/* Warranty Status Banner */}
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500 uppercase">
+                    Warranty Status
+                  </span>
+                  <span
+                    className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      pump.warrantyStatus === 'ACTIVE'
+                        ? 'bg-green-100 text-green-700'
+                        : pump.warrantyStatus === 'EXPIRED'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {pump.warrantyStatus === 'ACTIVE'
+                      ? '✓ In Warranty'
+                      : pump.warrantyStatus === 'EXPIRED'
+                        ? '✕ Expired'
+                        : 'N/A'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Warranty Period */}
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <span className="text-xs text-gray-500 uppercase">Warranty Period</span>
+                <p className="text-xl font-black text-slate-900 mt-1">{pump.warrantyPeriodMonths || 24} months</p>
+              </div>
+
+              {/* Warranty Details Grid */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white rounded-lg p-2 border border-blue-100">
+                  <span className="text-xs text-gray-500 uppercase block mb-1">Provider</span>
+                  <p className="text-sm font-bold text-slate-900">
+                    {pump.warrantyProvider || 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-blue-100">
+                  <span className="text-xs text-gray-500 uppercase block mb-1">Warranty Expiry</span>
+                  <p className="text-sm font-bold text-slate-900">
+                    {pump.warrantyExpiryDate
+                      ? new Date(pump.warrantyExpiryDate).toLocaleDateString()
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-blue-100">
+                  <span className="text-xs text-gray-500 uppercase block mb-1">Installation Date</span>
+                  <p className="text-sm font-bold text-slate-900">
+                    {pump.installationDate
+                      ? new Date(pump.installationDate).toLocaleDateString()
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-blue-100">
+                  <span className="text-xs text-gray-500 uppercase block mb-1">Next Service In</span>
+                  <p className="text-sm font-bold text-blue-600">
+                    {Math.max(
+                      0,
+                      Math.ceil((pump.nextServiceDate - Date.now()) / (24 * 60 * 60 * 1000))
+                    )}{' '}
+                    days
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Basic Details - Moved to Bottom */}
+          <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border-2 border-slate-200 shadow-md">
+            <h4 className="text-sm uppercase tracking-widest text-slate-500 font-bold mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-slate-500 rounded-full"></span>
+              Basic Details
+            </h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Pump ID</span>
+                <span className="text-base font-black text-slate-900">PUMP-001</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Voltage</span>
+                <span className="text-base font-black text-slate-900">
+                  {(pump.voltage || 220).toFixed(1)} V
+                </span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span className="text-sm text-gray-600">Power Factor</span>
+                <span className="text-base font-black text-slate-900">
+                  {(pump.powerFactor || 0.95).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Discharge Rate</span>
+                <span className="text-base font-black text-slate-900">
+                  {(pump.pumpDischargeRate || 0).toFixed(1)} L/min
+                </span>
               </div>
             </div>
           </div>

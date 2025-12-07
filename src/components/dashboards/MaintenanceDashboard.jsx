@@ -39,8 +39,18 @@ export const MaintenanceDashboard = ({ onBack }) => {
         value: `${pump.motorTemperature?.toFixed(1) || '0'}°C`,
         subtext: pump.motorTemperature > 65 ? '⚠️ Hot' : '✓ Normal',
       },
+      {
+        label: 'Warranty Period',
+        value: `${pump.warrantyPeriodMonths || 24} months`,
+        subtext: pump.warrantyStatus === 'ACTIVE' ? '✓ Active' : '⚠️ Expired',
+      },
+      {
+        label: 'Installation Date',
+        value: pump.installationDate ? new Date(pump.installationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A',
+        subtext: pump.warrantyProvider || 'Warranty Provider',
+      },
     ],
-    [pump.operationCycles, pump.pumpRunningHours, pump.vibration, pump.motorTemperature]
+    [pump.operationCycles, pump.pumpRunningHours, pump.vibration, pump.motorTemperature, pump.warrantyPeriodMonths, pump.warrantyStatus, pump.installationDate, pump.warrantyProvider]
   );
 
   // Tank maintenance metrics
@@ -78,12 +88,6 @@ export const MaintenanceDashboard = ({ onBack }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-slate-700" />
-          </button>
           <div>
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
               <Wrench className="text-orange-600" size={28} />

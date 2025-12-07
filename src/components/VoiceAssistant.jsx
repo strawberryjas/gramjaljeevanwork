@@ -4,6 +4,7 @@ import { X, MessageCircle, Mic, MicOff, Volume2 } from 'lucide-react';
 export const VoiceAssistant = ({ data, alerts = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [messages, setMessages] = useState([
     {
       type: 'bot',
@@ -36,6 +37,8 @@ export const VoiceAssistant = ({ data, alerts = [] }) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -64,15 +67,17 @@ export const VoiceAssistant = ({ data, alerts = [] }) => {
 
   return (
     <>
+      {/* Simple Floating Voice Assistant Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white p-4 rounded-full shadow-xl transition-all z-50 flex items-center gap-2"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[3000] w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+        aria-label="Voice Assistant"
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10">
+        <div className="fixed bottom-20 right-4 left-4 md:bottom-24 md:right-6 md:left-auto md:w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[3000] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 text-white flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Mic size={16} />
@@ -81,23 +86,38 @@ export const VoiceAssistant = ({ data, alerts = [] }) => {
             <Volume2 size={18} className="opacity-70" />
           </div>
 
-          <div className="flex-1 h-80 p-4 overflow-y-auto space-y-3 bg-slate-50">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-xl text-sm ${
-                    msg.type === 'user'
-                      ? 'bg-emerald-600 text-white rounded-tr-none'
-                      : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none shadow-sm'
-                  }`}
-                >
-                  {msg.text}
-                </div>
+          {/* Status indicator */}
+          {(isListening || isSpeaking) && (
+            <div className="flex items-center justify-center p-4 bg-blue-50">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                <span className="text-sm text-blue-600 font-medium">
+                  {isListening ? 'Listening...' : 'Speaking...'}
+                </span>
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="flex-1 h-64 md:h-80 p-3 md:p-4 overflow-y-auto space-y-3 bg-slate-50">
+            {messages.map((msg, idx) => {
+              const isUser = msg.type === 'user';
+              return (
+                <div
+                  key={idx}
+                  className={isUser ? 'flex justify-end' : 'flex justify-start'}
+                >
+                  <div
+                    className={
+                      isUser
+                        ? 'max-w-[80%] p-3 rounded-xl text-sm bg-emerald-600 text-white rounded-tr-none'
+                        : 'max-w-[80%] p-3 rounded-xl text-sm bg-white border border-gray-200 text-gray-700 rounded-tl-none shadow-sm'
+                    }
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              );
+            })}
             {isListening && (
               <div className="flex justify-end">
                 <div className="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full animate-pulse">
@@ -108,16 +128,16 @@ export const VoiceAssistant = ({ data, alerts = [] }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 bg-white border-t border-gray-100">
+          <div className="p-3 md:p-4 bg-white border-t border-gray-100">
             <button
               onClick={handleVoiceInput}
-              className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+              className={
                 isListening
-                  ? 'bg-red-100 text-red-600'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
-              }`}
+                  ? 'w-full py-2.5 md:py-3 rounded-xl text-sm md:text-base font-bold flex items-center justify-center gap-2 transition-all bg-red-100 text-red-600'
+                  : 'w-full py-2.5 md:py-3 rounded-xl text-sm md:text-base font-bold flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+              }
             >
-              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+              {isListening ? <MicOff size={18} /> : <Mic size={18} />}
               {isListening ? 'Stop Listening' : 'Tap to Speak'}
             </button>
           </div>

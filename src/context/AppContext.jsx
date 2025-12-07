@@ -42,8 +42,10 @@ export const AppContextProvider = ({ children }) => {
   const [theme, setTheme] = useStickyState('light', 'gjj_theme');
 
   // ============ AUTHENTICATION STATE ============
-  const [user, setUser] = useStickyState(null, 'gjj_user');
-  const [isAuthenticated, setIsAuthenticated] = useStickyState(false, 'gjj_authenticated');
+  // Changed to regular useState - do NOT persist user in localStorage
+  // This ensures login page shows on every app load
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
 
@@ -106,11 +108,13 @@ export const AppContextProvider = ({ children }) => {
   // ============ AUTH METHODS ============
   const login = useCallback(
     (userData, lang = 'en') => {
+      console.log('🔐 Login called with:', { userData, lang });
       setAuthLoading(true);
       setAuthError(null);
 
       // Simulate auth API call
       setTimeout(() => {
+        console.log('✅ Setting user:', userData);
         setUser(userData);
         setIsAuthenticated(true);
         const nextLang = SUPPORTED_LANGUAGE_CODES.includes(lang) ? lang : 'en';
@@ -118,18 +122,24 @@ export const AppContextProvider = ({ children }) => {
         i18n.changeLanguage(nextLang);
         setAuthLoading(false);
         addNotification('Login successful', 'success', 3000);
+        console.log('✅ Login complete, user should be set');
       }, 500);
     },
-    [setUser, setLanguage]
+    [setUser, setLanguage, setIsAuthenticated, addNotification]
   );
 
   const logout = useCallback(() => {
+    // Clear all authentication state
     setUser(null);
     setIsAuthenticated(false);
-    setAuthError(null);
-    setNotifications([]);
-    addNotification('Logged out successfully', 'info', 2000);
-  }, [setUser]);
+    
+    // Optionally clear other localStorage items if needed
+    // localStorage.removeItem('gjj_user'); // No longer needed
+    // localStorage.removeItem('gjj_authenticated'); // No longer needed
+    
+    // No need to reload - just clear state
+    addNotification('Logged out successfully', 'success', 2000);
+  }, [setUser, setIsAuthenticated, addNotification]);
 
   const updateUser = useCallback(
     (updates) => {
